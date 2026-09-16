@@ -14,6 +14,13 @@
       "env": {
         "FIGMA_API_KEY": "${env:FIGMA_API_KEY}"
       }
+    },
+    "stitch": {
+      "type": "http",
+      "url": "https://stitch.googleapis.com/mcp",
+      "headers": {
+        "X-Goog-Api-Key": "${env:STITCH_API_KEY}"
+      }
     }
   }
 }

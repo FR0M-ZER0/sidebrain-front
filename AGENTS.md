@@ -33,6 +33,6 @@ Se o usuário enviar o ID da task do Jira (SDB-x, onde x é o número da task, e
 
 Além disso, utilize o MCP do Context7 para buscar a documentação atualizada de frameworks e bibliotecas.
 
-Por fim, utilize o MCP do figma utilizando o link https://www.figma.com/design/lbAZF1erny5hn6BZIc9EPc/Sidebrain?node-id=0-1&p=f&t=UFcKdOa107xe30qK-0 como node-id para buscar referências aos visuais das páginas e componentes. O nome da página virá junto da descrição da task do Jira.
+Por fim, utilize o MCP do figma utilizando o link https://www.figma.com/design/lbAZF1erny5hn6BZIc9EPc/Sidebrain?node-id=0-1&p=f&t=UFcKdOa107xe30qK-0 como node-id e para buscar referências dos visuais das páginas e componentes, bem como consultar /docs/img/ para o visual da pagina em questão. O nome da página virá junto da descrição da task do Jira.
 
 **Sempre responda em português brasileiro.**

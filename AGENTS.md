@@ -33,6 +33,6 @@ Se o usuário enviar o ID da task do Jira (SDB-x, onde x é o número da task, e
 
 Além disso, utilize o MCP do Context7 para buscar a documentação atualizada de frameworks e bibliotecas.
 
-Por fim, utilize o MCP do figma utilizando o link https://www.figma.com/design/lbAZF1erny5hn6BZIc9EPc/Sidebrain?node-id=0-1&p=f&t=UFcKdOa107xe30qK-0 como node-id e para buscar referências dos visuais das páginas e componentes, bem como consultar /docs/img/ para o visual da pagina em questão. O nome da página virá junto da descrição da task do Jira.
+Por fim, utilize o MCP do Figma para inspecionar os estilos, paddings, cores e tipografia da tela antes de gerar o CSS/Tailwind, usando como referência o link [https://www.figma.com/design/lbAZF1erny5hn6BZIc9EPc/Sidebrain?node-id=0-1&p=f&t=UFcKdOa107xe30qK-0](https://www.figma.com/design/lbAZF1erny5hn6BZIc9EPc/Sidebrain?node-id=0-1&p=f&t=UFcKdOa107xe30qK-0) (ou o link com o node-id específico do frame, caso fornecido diretamente no chat). Além disso, consulte a imagem de referência correspondente em /docs/img/ para bater o visual pixel a pixel; o nome da página/imagem virá indicado na descrição da task do Jira.
 
 **Sempre responda em português brasileiro.**

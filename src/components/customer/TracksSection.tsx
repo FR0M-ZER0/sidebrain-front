@@ -1,4 +1,5 @@
 import { PlusCircle, Sparkles } from 'lucide-react'
+import { useNavigate } from 'react-router'
 import type { DashboardTrack } from '../../types/dashboard'
 import { TrackCard } from './TrackCard'
 
@@ -7,6 +8,8 @@ interface TracksSectionProps {
 }
 
 export const TracksSection = ({ tracks }: TracksSectionProps) => {
+	const navigate = useNavigate()
+
 	return (
 		<section className="panel tracks-panel">
 			<div className="panel-header">
@@ -26,7 +29,7 @@ export const TracksSection = ({ tracks }: TracksSectionProps) => {
 					<div className="create-track-title">Criar Nova Trilha com IA</div>
 					<p>Dia a dia que deseja dominar e nosso mentor gera um currículo sob medida em segundos.</p>
 				</div>
-				<button type="button" className="primary-button large">
+				<button type="button" className="primary-button large" onClick={() => navigate('/trails/new/start')}>
 					Gerar Trilha <Sparkles size={15} aria-hidden="true" />
 				</button>
 			</div>

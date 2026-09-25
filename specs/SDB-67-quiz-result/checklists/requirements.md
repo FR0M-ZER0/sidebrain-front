@@ -1,6 +1,6 @@
-# Specification Quality Checklist: Interactive assessment flow
+# Specification Quality Checklist: Resultado do Quiz
 
-**Purpose**: Validate specification completeness and quality before proceeding to planning
+**Purpose**: Validar completude e qualidade da especificação antes do planejamento
 **Created**: 2026-09-18
 **Feature**: [spec.md](../spec.md)
 
@@ -31,5 +31,5 @@
 
 ## Notes
 
-- All checklist items pass for this draft specification.
-- The feature is ready to proceed to clarification or planning based on product review.
+- A especificação foi revisada contra cada item e não foram encontrados problemas pendentes.
+- A próxima fase pode ser `/speckit-plan` ou `/speckit-clarify` caso novos requisitos surjam.

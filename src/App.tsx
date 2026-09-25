@@ -6,6 +6,8 @@ import { TrailStartPreferencePage } from './pages/customer/TrailStartPreferenceP
 import { TrailGuidedStartPage } from './pages/customer/TrailGuidedStartPage'
 import { TrailOnboardingSummaryPage } from './pages/customer/TrailOnboardingSummaryPage'
 import { TrailGenerationLoadingPage } from './pages/customer/TrailGenerationLoadingPage'
+import { AssessmentPage } from './pages/customer/AssessmentPage'
+import { QuizResultPage } from './pages/customer/QuizResultPage'
 
 function App() {
 	return (
@@ -17,6 +19,8 @@ function App() {
 				<Route path="/trails/new/guided" element={<TrailGuidedStartPage />} />
 				<Route path="/trails/new/summary" element={<TrailOnboardingSummaryPage />} />
 				<Route path="/trails/new/generating" element={<TrailGenerationLoadingPage />} />
+				<Route path="/quiz" element={<AssessmentPage />} />
+				<Route path="/quiz-result" element={<QuizResultPage />} />
 				<Route path="*" element={<Navigate to="/" replace />} />
 			</Routes>
 		</BrowserRouter>

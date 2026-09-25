@@ -7,6 +7,12 @@ interface TrackCardProps {
 }
 
 export const TrackCard = ({ track }: TrackCardProps) => {
+	const openTrack = () => {
+		if (track.id === 't-02') {
+			window.location.href = '/quiz'
+		}
+	}
+
 	return (
 		<div className="track-card">
 			<div className="track-main">
@@ -26,7 +32,7 @@ export const TrackCard = ({ track }: TrackCardProps) => {
 				<span className="track-percent">{track.progresso}%</span>
 			</div>
 
-			<button type="button" className="primary-button">
+			<button type="button" className="primary-button" onClick={openTrack}>
 				Continuar Trilha <ArrowRight size={15} aria-hidden="true" />
 			</button>
 		</div>

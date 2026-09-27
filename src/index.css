@@ -5,6 +5,11 @@
 @import 'tailwindcss/utilities' layer(utilities);
 
 @theme {
+	--color-track-canvas: #faf8ff;
+	--color-track-ink: #172238;
+	--color-track-blue: #075fc7;
+	--color-track-lavender: #eef0ff;
+	--color-track-muted: #41495b;
 	--color-completion-canvas: #faf8ff;
 	--color-completion-ink: #172238;
 	--color-completion-blue: #075fc7;

@@ -29,7 +29,13 @@ Inicie a aplicação:
 npm run dev
 ```
 
-Use o harness visual ou fluxo de desenvolvimento previsto na implementação. A rota real não deve ser publicada desprotegida; destinos de navegação podem ser substituídos por spies/callbacks durante o teste isolado.
+Use a prévia isolada em `http://localhost:5173/completion-preview.html`. Ela é um segundo documento HTML de desenvolvimento, fora do roteador `App.tsx` e não incluído no build de produção. O harness aceita estes parâmetros para validar estados sem alterar a fixture padrão:
+
+- `?state=incomplete`: resultado abaixo de 100%; deve apresentar somente o estado de encaminhamento, sem recompensas.
+- `?state=no-next`: conclusão perfeita sem próxima lição; a ação primária fica desabilitada e o retorno permanece disponível.
+- `?state=load-error`: falha de carregamento; mostra erro sem pontuação/XP e mantém retorno.
+
+A rota real não deve ser publicada desprotegida; destinos de navegação podem ser substituídos por callbacks no harness.
 
 ### Cenário: conclusão perfeita e dados completos
 

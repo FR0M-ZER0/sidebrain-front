@@ -16,7 +16,7 @@ Definir o contrato entre o contêiner da tela de conclusão e a interface visual
 | Ação | Comportamento requerido |
 |---|---|
 | `onStartNextLesson(lessonId)` | Iniciar a próxima lição fornecida. Não disponível quando `nextLesson` está ausente. A URL final depende de destino de lição existente. |
-| `onReturnToTrails()` | Retornar ao painel de trilhas; o app atual renderiza o dashboard em `/`, a confirmar na integração. |
+| `onReturnToTrails()` | O contêiner da página conduz ao dashboard existente em `/`; a ação permanece disponível nos estados de erro e carregamento. |
 | `onViewProfile()` | Abrir perfil/conquistas. Destino não existe no roteador atual e deve ser fornecido pela aplicação. |
 | `onRetrySync()` | Solicitar nova tentativa; a UI informa progresso e resultado sem bloquear saída. A garantia de evitar duplicidade no backend precisa do futuro contrato de serviço. |
 
@@ -44,5 +44,6 @@ O layout adapta ordem e largura para desktop, tablet e mobile sem cortar métric
 
 - O roteador atual não tem rota de lição nem `PrivateRoute`/sistema de autenticação.
 - Caminho da rota de conclusão e integração do fluxo devem ser decididos quando o contêiner e destinos existirem; não usar URL presumida para perfil ou próxima lição.
+- A página isolada usa o callback injetado pelo host para iniciar a próxima lição e para abrir o perfil; nenhum caminho de URL é presumido para esses destinos.
 - Não publicar rota sem autenticação real. A presença do componente, isoladamente, não estabelece autorização.
 - A tela pode ser validada em harness/visualização interna enquanto o guard real está indisponível, desde que isso não seja tratado como rota autenticada pronta para produção.

@@ -1,6 +1,6 @@
 import { ArrowRight, Loader2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 import { OnboardingProgress } from '../../components/customer/OnboardingProgress'
 import { useTrailOnboarding } from '../../hooks/useTrailOnboarding'
 import type { AssessmentQuestion } from '../../types/trailOnboarding'
@@ -9,6 +9,8 @@ const trailId = 'trail-123'
 
 export const TrailLevelAssessmentPage = () => {
 	const navigate = useNavigate()
+	const location = useLocation()
+	const goalDescription = (location.state as { goalDescription?: string } | null)?.goalDescription
 	const { draftAnswers, updateAnswer, loading, startAssessmentFlow, finishAssessment, submitting, error } = useTrailOnboarding(trailId)
 	const [questions, setQuestions] = useState<AssessmentQuestion[]>([])
 
@@ -46,7 +48,7 @@ export const TrailLevelAssessmentPage = () => {
 
 		try {
 			await finishAssessment(answers)
-			navigate('/trails/new/summary')
+			navigate('/trails/new/summary', { state: { goalDescription } })
 		} catch {
 			// handled in hook
 		}

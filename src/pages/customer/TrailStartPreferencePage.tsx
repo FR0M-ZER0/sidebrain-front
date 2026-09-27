@@ -1,5 +1,5 @@
 import { ArrowRight, CheckCircle2 } from 'lucide-react'
-import { useNavigate } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 import { OnboardingProgress } from '../../components/customer/OnboardingProgress'
 import { TrailStartOptionCard } from '../../components/customer/TrailStartOptionCard'
 import { useTrailOnboarding } from '../../hooks/useTrailOnboarding'
@@ -8,6 +8,8 @@ const trailId = 'trail-123'
 
 export const TrailStartPreferencePage = () => {
 	const navigate = useNavigate()
+	const location = useLocation()
+	const goalDescription = (location.state as { goalDescription?: string } | null)?.goalDescription
 	const {
 		selectedPreference,
 		setSelectedPreference,
@@ -28,11 +30,11 @@ export const TrailStartPreferencePage = () => {
 		}
 
 		if (selectedPreference === 'ai_recommended') {
-			navigate('/trails/new/assessment')
+			navigate('/trails/new/assessment', { state: { goalDescription } })
 			return
 		}
 
-		navigate('/trails/new/guided')
+		navigate('/trails/new/guided', { state: { goalDescription } })
 	}
 
 	return (
@@ -46,6 +48,7 @@ export const TrailStartPreferencePage = () => {
             Podemos calibrar seu nível atual para você não perder tempo com o que já sabe, ou
             começar direto no zero absoluto.
 					</p>
+					{goalDescription && <p className="track-goal-context"><strong>Sua meta:</strong> {goalDescription}</p>}
 
 					<div className="trail-options-grid">
 						<TrailStartOptionCard

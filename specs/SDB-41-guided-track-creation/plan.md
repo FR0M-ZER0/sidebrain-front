@@ -1,6 +1,6 @@
 # Implementation Plan: Criação inicial de trilha guiada
 
-**Branch**: `SDB-74-lesson-completion` (branch ativa; plano direcionado à SDB-41) | **Date**: 2026-09-25 | **Spec**: [spec.md](./spec.md)
+**Branch**: `feat/sdb-41-guided-track-creation` | **Date**: 2026-09-25 | **Spec**: [spec.md](./spec.md)
 
 **Input**: Feature specification from `/specs/SDB-41-guided-track-creation/spec.md`
 

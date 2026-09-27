@@ -6,14 +6,16 @@
 - Para a SDB-41, o mock de submissão é suficiente; nenhuma API real é necessária.
 - A rota deve estar integrada ao limite autenticado do produto antes de validar em ambiente autenticado. A base examinada não apresenta esse limite.
 
-## Executar
+## Executar e visualizar
 
 ```bash
 npm install
 npm run dev
 ```
 
-Abra `/trails/new` ou o alias `/trilhas/nova` no navegador. Após envio mockado aceito, a navegação esperada é `/trails/new/start`.
+Como a aplicação não possui guard de autenticação, não há rota de produção para abrir `/trails/new` com segurança. Para visualizar isoladamente a tela, use `http://localhost:5173/create-track-preview.html`; o harness fica fora de `App.tsx` e não é incluído no build de produção. Após envio mockado aceito, a prévia apresenta o objetivo recebido no estado do passo 2.
+
+Use `?state=fail-once` para simular uma falha inicial e conferir a nova tentativa. A integração real de `/trails/new` e `/trilhas/nova` depende do guard de autenticação do produto.
 
 ## Cenários manuais
 

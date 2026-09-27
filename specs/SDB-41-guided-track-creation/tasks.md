@@ -12,8 +12,8 @@
 
 **Purpose**: Preparar as dependências pedidas pela feature sem aplicar reset visual às páginas existentes.
 
-- [ ] T001 Adicionar Tailwind CSS 4, `@tailwindcss/vite` e Motion for React às dependências em `package.json` e atualizar `package-lock.json`.
-- [ ] T002 Configurar o plugin Tailwind no `vite.config.ts` e importar somente as camadas theme/utilities em `src/index.css`, sem Preflight global.
+- [X] T001 Adicionar Tailwind CSS 4, `@tailwindcss/vite` e Motion for React às dependências em `package.json` e atualizar `package-lock.json`.
+- [X] T002 Configurar o plugin Tailwind no `vite.config.ts` e importar somente as camadas theme/utilities em `src/index.css`, sem Preflight global.
 
 ---
 
@@ -21,11 +21,11 @@
 
 **Purpose**: Resolver o limite obrigatório de autenticação antes de expor rotas customer.
 
-**⚠️ CRITICAL**: A inspeção da branch não encontrou `PrivateRoute` nem integração de autenticação. Não registrar `/trails/new` ou `/trilhas/nova` como rotas públicas. Se o limite autenticado não existir/disponibilizar-se, parar a publicação da rota e obter a integração da plataforma; não criar guarda fictícia.
+**⚠️ CRITICAL — BLOQUEIO DE INTEGRAÇÃO**: A inspeção da branch não encontrou `PrivateRoute` nem integração de autenticação. A tela, o mock e um harness HTML isolado podem ser desenvolvidos/validados, mas não registrar `/trails/new` ou `/trilhas/nova` em `App.tsx` nem ligar entradas de produção enquanto não houver guard real. Não criar guarda fictícia.
 
-- [ ] T003 Confirmar e aplicar o limite autenticado existente às futuras rotas da feature em `src/App.tsx`; se não houver guard/provider real, bloquear a criação da rota e registrar a dependência de autenticação antes de prosseguir.
+- [BLOCKED] T003 Nenhum limite autenticado real existe nesta branch (`PrivateRoute`/provider ausentes). A rota não foi registrada em `src/App.tsx`; a integração aguarda a plataforma fornecer o guard.
 
-**Checkpoint**: A fundação só está pronta para as stories quando as dependências estiverem configuradas e houver uma forma real de manter privadas as rotas customer.
+**Checkpoint**: Dependências configuradas. A integração das rotas e entradas customer continua bloqueada até que a plataforma forneça um limite autenticado real; o restante da UI pode ser validado pelo harness isolado.
 
 ---
 
@@ -37,12 +37,12 @@
 
 ### Implementation for User Story 1
 
-- [ ] T004 [US1] Criar `TrackGoalDraft` e `Step1SubmissionResult` em `src/types/trackCreation.ts`, incluindo `goalDescription`, `sourceSuggestionId`, `submissionStatus` (`idle | submitting | failed | accepted`) e `errorMessage`; aplicar a regra verbatim “para submissão, deve conter ao menos um caractere não branco depois de `trim`” e “Não existe limite máximo de caracteres definido pela spec”; o mock aceito retorna `success: true` e `nextStep: 2`.
-- [ ] T005 [US1] Implementar `submitTrackGoal(goalDescription)` como mock sem chamada HTTP em `src/api/trackCreationApi.ts`, seguindo `contracts/track-creation.md` e rejeitando texto vazio após `trim`; não inventar endpoint de backend.
-- [ ] T006 [US1] Implementar o hook `useTrackCreation` em `src/hooks/useTrackCreation.ts` para controlar texto, validação, estados de envio/erro, prevenção de envio duplicado e retry preservando o objetivo.
-- [ ] T007 [US1] Criar a estrutura principal da tela em `src/pages/customer/CreateTrackPage.tsx`, com shell Sidebar/HeaderBar, indicação “PASSO 1 DE 3”, título, descrição, textarea e placeholder, nota informativa e botão “Avançar”; aplicar entrada do card com Motion e estados de foco/loading acessíveis.
-- [ ] T008 [US1] Registrar `/trails/new` e o alias `/trilhas/nova` dentro do limite autenticado em `src/App.tsx`; após o mock confirmar aceite, navegar para `/trails/new/start` carregando o texto final no estado de navegação.
-- [ ] T009 [US1] Ler e preservar o objetivo recebido em `location state` no passo existente em `src/pages/customer/TrailStartPreferencePage.tsx`, sem persistir texto livre em armazenamento local e sem descartá-lo nas navegações seguintes desse passo.
+- [X] T004 [US1] Criar `TrackGoalDraft` e `Step1SubmissionResult` em `src/types/trackCreation.ts`, incluindo `goalDescription`, `sourceSuggestionId`, `submissionStatus` (`idle | submitting | failed | accepted`) e `errorMessage`; aplicar a regra verbatim “para submissão, deve conter ao menos um caractere não branco depois de `trim`” e “Não existe limite máximo de caracteres definido pela spec”; o mock aceito retorna `success: true` e `nextStep: 2`.
+- [X] T005 [US1] Implementar `submitTrackGoal(goalDescription)` como mock sem chamada HTTP em `src/api/trackCreationApi.ts`, seguindo `contracts/track-creation.md` e rejeitando texto vazio após `trim`; não inventar endpoint de backend.
+- [X] T006 [US1] Implementar o hook `useTrackCreation` em `src/hooks/useTrackCreation.ts` para controlar texto, validação, estados de envio/erro, prevenção de envio duplicado e retry preservando o objetivo.
+- [X] T007 [US1] Criar a estrutura principal da tela em `src/pages/customer/CreateTrackPage.tsx`, com shell Sidebar/HeaderBar, indicação “PASSO 1 DE 3”, título, descrição, textarea e placeholder, nota informativa e botão “Avançar”; aplicar entrada do card com Motion e estados de foco/loading acessíveis.
+- [BLOCKED] T008 [US1] A página implementa a navegação com o objetivo em `location state`, validada no harness; o registro de `/trails/new` e `/trilhas/nova` em `src/App.tsx` aguarda um guard real de autenticação (T003).
+- [X] T009 [US1] Ler e preservar o objetivo recebido em `location state` no passo existente em `src/pages/customer/TrailStartPreferencePage.tsx`, sem persistir texto livre em armazenamento local e sem descartá-lo nas navegações seguintes desse passo.
 
 **Checkpoint**: A pessoa consegue concluir o fluxo usando texto livre, com validação e falha recuperável, mesmo antes da integração real do backend.
 
@@ -56,8 +56,8 @@
 
 ### Implementation for User Story 2
 
-- [ ] T010 [P] [US2] Criar `PopularGoalSuggestions` em `src/components/customer/PopularGoalSuggestions.tsx` com opções acionáveis para “Japonês para Iniciantes”, “Matemática & Geometria”, “Python para Ciência de Dados”, “UI/UX Design Moderno” e “Inglês para Entrevistas”, rótulos acessíveis e estados Motion de hover/tap/foco.
-- [ ] T011 [US2] Integrar `PopularGoalSuggestions` ao formulário em `src/pages/customer/CreateTrackPage.tsx` e `src/hooks/useTrackCreation.ts`; selecionar uma opção preenche `goalDescription`, mantém o campo editável e submete o texto final, não o rótulo original caso tenha sido alterado.
+- [X] T010 [P] [US2] Criar `PopularGoalSuggestions` em `src/components/customer/PopularGoalSuggestions.tsx` com opções acionáveis para “Japonês para Iniciantes”, “Matemática & Geometria”, “Python para Ciência de Dados”, “UI/UX Design Moderno” e “Inglês para Entrevistas”, rótulos acessíveis e estados Motion de hover/tap/foco.
+- [X] T011 [US2] Integrar `PopularGoalSuggestions` ao formulário em `src/pages/customer/CreateTrackPage.tsx` e `src/hooks/useTrackCreation.ts`; selecionar uma opção preenche `goalDescription`, mantém o campo editável e submete o texto final, não o rótulo original caso tenha sido alterado.
 
 **Checkpoint**: O fluxo da US1 permanece funcionando e agora também pode começar a partir de qualquer uma das cinco sugestões.
 
@@ -71,10 +71,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T012 [P] [US3] Ligar “Minhas Trilhas” à rota `/trails/new` e o CTA “Criar Nova Trilha com IA” à mesma rota em `src/components/customer/Sidebar.tsx` e `src/components/customer/TracksSection.tsx`, refletindo a seleção ativa da sidebar durante a criação.
-- [ ] T013 [P] [US3] Implementar o breadcrumb “← Trilhas” em `src/pages/customer/CreateTrackPage.tsx` para retornar a `/` e comunicar interatividade por foco visível e hover/underline, sem iniciar submissão.
-- [ ] T014 [US3] Ajustar a composição da página para desktop, tablet e celular em `src/pages/customer/CreateTrackPage.tsx` e `src/App.css`, mantendo campo, sugestões, nota e ação visíveis/legíveis sem sobreposição ou rolagem horizontal.
-- [ ] T015 [US3] Garantir navegação por teclado, foco identificável, nome/estado acessíveis e anúncio de validação, processamento e falha em `src/pages/customer/CreateTrackPage.tsx` e `src/components/customer/PopularGoalSuggestions.tsx`, conforme FR-010 e FR-013.
+- [BLOCKED] T012 [US3] O estado ativo de “Minhas Trilhas” está suportado pela Sidebar, mas entradas clicáveis de produção (Sidebar/CTA) e link à tela não foram habilitados por dependerem do guard de autenticação (T003).
+- [X] T013 [P] [US3] Implementar o breadcrumb “← Trilhas” em `src/pages/customer/CreateTrackPage.tsx` para retornar a `/` e comunicar interatividade por foco visível e hover/underline, sem iniciar submissão.
+- [X] T014 [US3] Ajustar a composição da página para desktop, tablet e celular em `src/pages/customer/CreateTrackPage.tsx` e `src/App.css`, mantendo campo, sugestões, nota e ação visíveis/legíveis sem sobreposição ou rolagem horizontal.
+- [X] T015 [US3] Garantir navegação por teclado, foco identificável, nome/estado acessíveis e anúncio de validação, processamento e falha em `src/pages/customer/CreateTrackPage.tsx` e `src/components/customer/PopularGoalSuggestions.tsx`, conforme FR-010 e FR-013.
 
 **Checkpoint**: Entrada, avanço e retorno funcionam por rotas e controles visíveis, e a tela pode ser usada sem mouse em todos os tamanhos previstos.
 
@@ -84,8 +84,8 @@
 
 **Purpose**: Fechar animações acessíveis e validar a entrega completa.
 
-- [ ] T016 Respeitar `prefers-reduced-motion` para entrada do card, chips e botão em `src/pages/customer/CreateTrackPage.tsx` e `src/components/customer/PopularGoalSuggestions.tsx`, mantendo estados compreensíveis sem animação.
-- [ ] T017 Executar os cenários manuais de `specs/SDB-41-guided-track-creation/quickstart.md` e corrigir problemas; rodar `npm run lint` e `npm run build` definidos em `package.json`.
+- [X] T016 Respeitar `prefers-reduced-motion` para entrada do card, chips e botão em `src/pages/customer/CreateTrackPage.tsx` e `src/components/customer/PopularGoalSuggestions.tsx`, mantendo estados compreensíveis sem animação.
+- [X] T017 Executar os cenários manuais possíveis pelo harness isolado de `specs/SDB-41-guided-track-creation/quickstart.md` e corrigir problemas; rodar `npm run lint` e `npm run build` definidos em `package.json`.
 
 ---
 
@@ -94,7 +94,7 @@
 ### Phase Dependencies
 
 - **Setup (Phase 1)**: sem dependências; T001 deve preceder T002.
-- **Foundational (Phase 2)**: depende de Setup; T003 bloqueia o registro/liberação de qualquer rota da feature.
+- **Foundational (Phase 2)**: depende de Setup; T003 bloqueia o registro/liberação de qualquer rota da feature até existir autenticação real.
 - **User Stories (Phase 3+)**: dependem da fundação. Executar em prioridade P1 → P2 → P3 para entrega incremental.
 - **Polish (Phase 6)**: depende de US1, US2 e US3 concluídas.
 
@@ -144,7 +144,7 @@ Depois, concluir T014 e T015 sequencialmente para evitar alterações simultâne
 
 ### MVP First (User Story 1 Only)
 
-1. Concluir Setup e Foundational; não contornar o bloqueio de rota autenticada.
+1. Concluir Setup; manter a integração de rota bloqueada enquanto não houver guard real.
 2. Implementar US1: descrição livre, validação, estados do mock e transição para etapa 2 com a meta.
 3. **STOP e VALIDATE**: seguir o teste independente de US1 e os cenários relacionados do quickstart.
 4. Demonstrar o MVP assim que a integração de rota privada estiver disponível.
@@ -162,4 +162,4 @@ Depois, concluir T014 e T015 sequencialmente para evitar alterações simultâne
 - `[P]` indica tarefas em arquivos distintos sem dependência de tarefa incompleta.
 - `[US1]`, `[US2]` e `[US3]` mapeiam as stories e prioridades da spec.
 - O contrato real de backend e o limite de autenticação não aparecem no código; não inventar endpoint nem publicar rotas sem autenticação.
-As tarefas permanecem desmarcadas até implementação e validação.
+T003, T008 e T012 permanecem bloqueadas exclusivamente pela ausência do guard de autenticação. As implementações visuais e funcionais disponíveis no harness foram concluídas e validadas sem adicionar rotas de produção.

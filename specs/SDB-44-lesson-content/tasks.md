@@ -113,7 +113,7 @@ description: "Task list for implementing the lesson reading page"
 **Purpose**: Validar a entrega combinada contra requisitos visuais, acessibilidade, responsividade e convenções do repositório.
 
 - [X] T020 Revisar tokens, espaçamentos, contraste, responsividade, foco de teclado e preferência por movimento reduzido em `src/components/customer/lesson/` e `src/index.css` contra `docs/img/Sidebrain - Tela da lição (Desktop).png`.
-- [ ] T021 Executar lint e build com `npm run lint` e `npm run build`, corrigir os problemas e seguir os cenários do `specs/SDB-44-lesson-content/quickstart.md` (lint/build passaram; validação manual da rota aguarda T007).
+- [X] T021 Executar lint e build com `npm run lint` e `npm run build`, corrigir os problemas e seguir os cenários do `specs/SDB-44-lesson-content/quickstart.md` (lint/build passaram; conteúdo, progresso, imagem, saída ESC/cancelamento, estado de erro e fallback de produção foram verificados; a rota integrada de produção continua bloqueada por T007).
 
 ---
 
@@ -186,3 +186,8 @@ T018 — src/components/customer/lesson/LessonError.tsx
 - US3 acrescenta saída/cancelamento seguro por controle e teclado.
 - US4 fecha os estados de carregamento, falha e recuperação.
 - A entrega integrada só fica acessível após a integração do guard de autenticação.
+
+## Status de implementação
+
+- As histórias US1–US4 e os checks de lint/build estão implementados nesta branch.
+- T007 permanece bloqueada: não existe guard nem fonte real de autenticação no repositório. A prévia `/lessons/:id` só é registrada em desenvolvimento, e o build de produção redireciona esse caminho para `/`.

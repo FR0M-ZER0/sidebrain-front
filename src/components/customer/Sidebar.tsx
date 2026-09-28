@@ -1,15 +1,19 @@
-import { Home, Route, Settings, Sparkles, UserRound } from 'lucide-react'
+import { Award, BookOpen, CircleHelp, ClipboardCheck, FileText, Home, LoaderCircle, Route, Settings, Sparkles, WandSparkles } from 'lucide-react'
+import { NavLink } from 'react-router'
 
-interface SidebarProps {
-	activeItem?: string
-}
-
-export const Sidebar = ({ activeItem = 'Início' }: SidebarProps) => {
+export const Sidebar = () => {
 	const menuItems = [
-		{ label: 'Início', icon: Home },
-		{ label: 'Minhas Trilhas', icon: Route },
-		{ label: 'Missões & Badges', icon: Sparkles },
-		{ label: 'Perfil', icon: UserRound },
+		{ label: 'Início', icon: Home, to: '/' },
+		{ label: 'Criar trilha', icon: Route, to: '/trails/new/create' },
+		{ label: 'Preferência da trilha', icon: ClipboardCheck, to: '/trails/new/start' },
+		{ label: 'Avaliação de nível', icon: CircleHelp, to: '/trails/new/assessment' },
+		{ label: 'Início guiado', icon: Sparkles, to: '/trails/new/guided' },
+		{ label: 'Resumo da trilha', icon: FileText, to: '/trails/new/summary' },
+		{ label: 'Geração da trilha', icon: LoaderCircle, to: '/trails/new/generating' },
+		{ label: 'Quiz', icon: CircleHelp, to: '/quiz' },
+		{ label: 'Resultado do quiz', icon: Award, to: '/quiz-result' },
+		{ label: 'Aula', icon: BookOpen, to: '/lessons/lesson-3' },
+		{ label: 'Conclusão da aula', icon: WandSparkles, to: '/lessons/lesson-3/completion' },
 	]
 
 	return (
@@ -23,14 +27,15 @@ export const Sidebar = ({ activeItem = 'Início' }: SidebarProps) => {
 					const Icon = item.icon
 
 					return (
-						<button
+						<NavLink
 							key={item.label}
-							type="button"
-							className={`nav-item ${activeItem === item.label ? 'active' : ''}`}
+							to={item.to}
+							end
+							className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
 						>
 							<Icon className="nav-icon" size={18} aria-hidden="true" />
 							<span>{item.label}</span>
-						</button>
+						</NavLink>
 					)
 				})}
 			</nav>

@@ -21,6 +21,11 @@
   box-sizing: border-box;
 }
 
+.shared-navigation-content {
+  flex: 1;
+  min-width: 0;
+}
+
 .brand-wrap {
   display: flex;
   align-items: center;
@@ -55,6 +60,7 @@
   color: #47576a;
   font-size: 0.98rem;
   text-align: left;
+  text-decoration: none;
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
@@ -1835,6 +1841,40 @@
     width: 100%;
     border-right: none;
     border-bottom: 1px solid rgba(26, 40, 54, 0.08);
+  }
+
+  .shared-navigation-shell {
+    flex-direction: column;
+  }
+
+  .shared-navigation-shell .sidebar {
+    height: auto;
+    min-width: 0;
+    max-width: none;
+    padding: 10px 16px;
+  }
+
+  .shared-navigation-shell .brand-wrap {
+    justify-content: flex-start;
+    padding: 4px 0;
+  }
+
+  .shared-navigation-shell .sidebar-nav {
+    flex: none;
+    flex-direction: row;
+    gap: 6px;
+    margin-top: 8px;
+    overflow-x: auto;
+  }
+
+  .shared-navigation-shell .nav-item {
+    flex: 0 0 auto;
+    width: auto;
+    white-space: nowrap;
+  }
+
+  .shared-navigation-shell .sidebar-footer {
+    display: none;
   }
 
   .page-shell {

@@ -25,7 +25,7 @@ export const CreateTrackPage = ({ api }: CreateTrackPageProps) => {
 
 	return (
 		<div className="app-shell track-create-shell">
-			<Sidebar activeItem="Minhas Trilhas" />
+			<Sidebar />
 			<main className="page-shell track-create-page">
 				<HeaderBar xp={320} coins={500} notifications={1} />
 				<div className="track-create-content">

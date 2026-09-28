@@ -20,7 +20,11 @@ export const TrackCard = ({ track }: TrackCardProps) => {
 				<div className="track-copy">
 					<div className="track-topline">
 						<span className="track-category">{track.categoria}</span>
-						<span className="track-module">Módulo 2 de 5</span>
+						<span className="track-module">
+							{track.totalModulos > 0
+								? `Módulo ${track.moduloAtual} de ${track.totalModulos}`
+								: 'Sem módulos'}
+						</span>
 					</div>
 					<h3>{track.nome}</h3>
 					<p>{track.descricao}</p>

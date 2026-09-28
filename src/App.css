@@ -71,6 +71,17 @@
   transform: translateX(1px);
 }
 
+.nav-item-disabled:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.nav-item-disabled:disabled:hover {
+  background: transparent;
+  color: #47576a;
+  transform: none;
+}
+
 .nav-item.active {
   background: rgba(51, 110, 218, 0.08);
   color: #1e3a63;

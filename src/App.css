@@ -2036,15 +2036,6 @@
 
 /* Detalhes da trilha */
 .track-details-shell { background: #faf8ff; color: #151d32; font-family: Inter, 'Segoe UI', sans-serif; }
-.track-details-shell .sidebar { width: 23%; min-width: 250px; max-width: 360px; height: 100vh; position: sticky; top: 0; padding: 24px 22px; background: #f1f2ff; border: 0; }
-.track-details-shell .brand-wrap { justify-content: center; padding: 8px 0 32px; }
-.track-details-shell .brand { font-size: 1.5rem; color: #151d32; }
-.track-details-shell .sidebar-nav { gap: 6px; margin-top: 0; }
-.track-details-shell .nav-item { border-radius: 14px; padding: 13px 15px; color: #3d4557; font-size: 1rem; }
-.track-details-shell .nav-item.active { background: #1670ed; color: white; }
-.track-details-shell .nav-item:hover { transform: none; }
-.track-details-shell .sidebar-footer { margin-top: auto; border: 0; padding: 12px; border-radius: 14px; background: white; }
-.track-details-shell .mini-meta { font-size: .78rem; }
 .track-details-page { flex: 1; min-width: 0; min-height: 100vh; background: #faf8ff; }
 .track-topbar { height: 72px; display: flex; align-items: center; gap: 24px; padding: 0 32px; background: rgba(255,255,255,.58); border-bottom: 1px solid #f0eff7; }
 .track-search { display: flex; align-items: center; gap: 12px; width: min(490px, 52%); padding: 10px 14px; border-radius: 12px; background: white; color: #42495a; }
@@ -2124,18 +2115,12 @@
 .track-state-error { color: #a73535; }
 
 @media (max-width: 1050px) {
-	.track-details-shell .sidebar { width: 220px; min-width: 220px; padding-inline: 14px; }
 	.track-details-layout { grid-template-columns: 1fr; }
 	.track-overview-card { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 	.track-overview-meta { grid-column: 1 / -1; margin: 0; }
 	.track-missions-card { margin-top: 0; }
 }
 @media (max-width: 700px) {
-	.track-details-shell .sidebar { position: static; width: 100%; max-width: none; min-width: 0; height: auto; padding: 8px 12px; }
-	.track-details-shell.app-shell { display: block; }
-	.track-details-shell .brand-wrap,.track-details-shell .sidebar-footer { display: none; }
-	.track-details-shell .sidebar-nav { flex-direction: row; overflow-x: auto; }
-	.track-details-shell .nav-item { width: auto; white-space: nowrap; padding: 9px 12px; }
 	.track-topbar { height: 62px; padding: 0 14px; gap: 8px; }
 	.track-search { width: auto; flex: 1; padding: 9px; }
 	.track-search input { font-size: .75rem; }

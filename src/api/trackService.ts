@@ -74,6 +74,13 @@ const getApiTrack = (response: unknown): ApiTrack => {
 const isCompleted = (status: string | null | undefined) => status === 'done' || status === 'completed'
 const isInProgress = (status: string | null | undefined) => status === 'in_progress' || status === 'active'
 
+const getLessonsInPositionOrder = (step: ApiStep) => {
+	const lessons = asItems(step.lessons, isApiLesson)
+	if (!lessons.every((lesson) => Number.isFinite(lesson.position))) return lessons
+
+	return [...lessons].sort((first, second) => (first.position ?? 0) - (second.position ?? 0))
+}
+
 const toLesson = (lesson: ApiLesson, isNextAvailable: boolean): Lesson => {
 	const status = isCompleted(lesson.status) ? 'completed' : isNextAvailable ? 'available' : 'locked'
 	return {
@@ -105,7 +112,7 @@ const getModuleStatus = (step: ApiStep, lessons: Lesson[], isNextModule: boolean
 
 const toTrackDetails = (track: ApiTrack): TrackDetails => {
 	const steps = asItems(track.steps, isApiStep)
-	const apiLessonsByStep = steps.map((step) => asItems(step.lessons, isApiLesson))
+	const apiLessonsByStep = steps.map(getLessonsInPositionOrder)
 	const allLessons = apiLessonsByStep.flat()
 	const completedLessons = allLessons.filter((lesson) => isCompleted(lesson.status)).length
 	const nextLessonIndex = allLessons.findIndex((lesson) => !isCompleted(lesson.status))

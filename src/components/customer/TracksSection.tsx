@@ -11,7 +11,7 @@ export const TracksSection = ({ tracks }: TracksSectionProps) => {
 	const navigate = useNavigate()
 
 	return (
-		<section className="panel tracks-panel">
+		<section id="tracks" className="panel tracks-panel">
 			<div className="panel-header">
 				<h2>🧭 Trilhas em Andamento</h2>
 				<button type="button" className="link-button">Ver todas (4)›</button>

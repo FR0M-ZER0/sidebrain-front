@@ -1,11 +1,15 @@
 import { Home, Route, Settings, Sparkles, UserRound } from 'lucide-react'
 
-export const Sidebar = () => {
+interface SidebarProps {
+	activeItem?: string
+}
+
+export const Sidebar = ({ activeItem = 'Início' }: SidebarProps) => {
 	const menuItems = [
-		{ label: 'Início', active: true, icon: Home },
-		{ label: 'Minhas Trilhas', active: false, icon: Route },
-		{ label: 'Missões & Badges', active: false, icon: Sparkles },
-		{ label: 'Perfil', active: false, icon: UserRound },
+		{ label: 'Início', icon: Home },
+		{ label: 'Minhas Trilhas', icon: Route },
+		{ label: 'Missões & Badges', icon: Sparkles },
+		{ label: 'Perfil', icon: UserRound },
 	]
 
 	return (
@@ -22,7 +26,7 @@ export const Sidebar = () => {
 						<button
 							key={item.label}
 							type="button"
-							className={`nav-item ${item.active ? 'active' : ''}`}
+							className={`nav-item ${activeItem === item.label ? 'active' : ''}`}
 						>
 							<Icon className="nav-icon" size={18} aria-hidden="true" />
 							<span>{item.label}</span>

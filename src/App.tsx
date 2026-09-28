@@ -8,6 +8,7 @@ import { TrailOnboardingSummaryPage } from './pages/customer/TrailOnboardingSumm
 import { TrailGenerationLoadingPage } from './pages/customer/TrailGenerationLoadingPage'
 import { AssessmentPage } from './pages/customer/AssessmentPage'
 import { QuizResultPage } from './pages/customer/QuizResultPage'
+import { LessonPage } from './pages/customer/LessonPage'
 
 function App() {
 	return (
@@ -21,6 +22,7 @@ function App() {
 				<Route path="/trails/new/generating" element={<TrailGenerationLoadingPage />} />
 				<Route path="/quiz" element={<AssessmentPage />} />
 				<Route path="/quiz-result" element={<QuizResultPage />} />
+				{import.meta.env.DEV && <Route path="/lessons/:id" element={<LessonPage />} />}
 				<Route path="*" element={<Navigate to="/" replace />} />
 			</Routes>
 		</BrowserRouter>

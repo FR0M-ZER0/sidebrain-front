@@ -10,7 +10,7 @@ interface TrackCardProps {
 export const TrackCard = ({ track }: TrackCardProps) => {
 	const navigate = useNavigate()
 	const openTrack = () => {
-		if (track.id === 't-01') navigate('/trails/lingua-japonesa')
+		navigate(`/trails/${track.id}`)
 	}
 
 	return (

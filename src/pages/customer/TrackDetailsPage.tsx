@@ -95,7 +95,7 @@ export const TrackDetailsPage = () => {
 					<div className="track-breadcrumb"><a href="/#tracks"><ArrowLeft size={18} /> Trilhas Ativas</a><span>/</span><strong>{track.title}</strong></div>
 					<div className="track-details-layout">
 						<aside className="track-overview-card">
-							<div className="track-overview-title"><span className="track-japanese-icon">日<br />本</span><div><span>TRILHA</span><h1>{track.title}</h1></div></div>
+							<div className="track-overview-title"><span className="track-japanese-icon">{track.icon || '🧭'}</span><div><span>TRILHA</span><h1>{track.title}</h1></div></div>
 							<div className="track-overview-meta"><span><Signal size={18} />{track.level}</span><i /><span><BookOpen size={20} />{track.totalLessons} Lições no total</span></div>
 							<div className="track-progress-card"><h2>Progresso da Trilha</h2><div className="track-progress-bar"><span style={{ width: `${track.progressPercentage}%` }} /></div><div className="track-progress-meta"><span>{track.completedLessons} de {track.totalLessons} lições</span><b>{track.progressPercentage}% Concluído</b></div></div>
 							<div className="track-missions-card">

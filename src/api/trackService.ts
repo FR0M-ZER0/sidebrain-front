@@ -1,87 +1,153 @@
-import type { TrackDetails } from '../types/trackDetails'
+import { api } from './api'
+import { DASHBOARD_USER_ID } from './dashboardApi'
+import type { Lesson, Module, ModuleStatus, Mission, TrackDetails } from '../types/trackDetails'
 
-export const mockTrackDetails: TrackDetails = {
-	id: 'lingua-japonesa',
-	title: 'Língua Japonesa',
-	level: 'Iniciante',
-	totalLessons: 10,
-	completedLessons: 4,
-	progressPercentage: 40,
-	missions: [
-		{
-			id: 'm1',
-			title: 'Completar 3 lições',
-			xpReward: 100,
-			currentProgress: 2,
-			totalProgress: 3,
-			progressPercentage: 66,
-		},
-		{
-			id: 'm2',
-			title: 'Acertar todas os quizzes de uma lição',
-			xpReward: 80,
-			currentProgress: 0,
-			totalProgress: 5,
-			progressPercentage: 67,
-		},
-	],
-	modules: [
-		{
-			id: 'mod-1',
-			title: 'Fundamentos & Escrita',
-			status: 'completed',
-			totalLessons: 3,
-			completedLessons: 3,
-			lessons: [
-				{ id: 'l1', title: 'Lição 1: O Silabário Hiragana Completo', durationText: '12 min', xpReward: 40, status: 'completed' },
-				{ id: 'l2', title: 'Lição 2: Introdução ao Katakana e Estrangeirismos', durationText: '10 min', xpReward: 40, status: 'completed' },
-				{ id: 'l3', title: 'Lição 3: Fonética, Sons Modificados (Dakuten) e Alongamentos', durationText: '15 min', xpReward: 50, status: 'completed' },
-			],
-		},
-		{
-			id: 'mod-2',
-			title: 'Primeiras Conversações',
-			status: 'in_progress',
-			totalLessons: 3,
-			completedLessons: 1,
-			lessons: [
-				{
-					id: 'l4',
-					title: 'Primeiras palavras e saudações',
-					durationText: '8 min de duração',
-					xpReward: 40,
-					status: 'available',
-					description: 'Conheça o sistema de saudações matinais, formais e informais no Japão moderno.',
-				},
-				{ id: 'l5', title: 'Lição 5: Partículas Básicas (は wa, が ga, を no)', durationText: '14 min', xpReward: 50, status: 'locked' },
-				{ id: 'l6', title: 'Lição 6: Apresentando-se a colegas (Jikoshoukai)', durationText: '10 min', xpReward: 45, status: 'locked' },
-			],
-		},
-		{
-			id: 'mod-3',
-			title: 'Rotina e Horários',
-			status: 'locked',
-			totalLessons: 2,
-			completedLessons: 0,
-			lessons: [],
-		},
-		{
-			id: 'mod-4',
-			title: 'Restaurante e Compras',
-			status: 'locked',
-			totalLessons: 2,
-			completedLessons: 0,
-			lessons: [],
-		},
-	],
+interface ApiLesson {
+	id: string
+	title: string
+	text?: string | null
+	status?: string | null
+	position?: number | null
+	updated_at?: string | null
 }
 
-export const getTrackDetails = async (slug: string): Promise<TrackDetails> => {
-	await new Promise((resolve) => window.setTimeout(resolve, 350))
+interface ApiMission {
+	id?: string
+	title?: string
+	name?: string
+	description?: string
+	status?: string
+	progress?: number
+	current_progress?: number
+	total_progress?: number
+	goal?: number
+	xp_reward?: number
+	reward_xp?: number
+}
 
-	if (slug !== mockTrackDetails.id) {
-		throw new Error('Trilha não encontrada.')
+interface ApiStep {
+	id: string
+	level?: string | null
+	title: string
+	status?: string | null
+	lessons?: ApiLesson[] | null
+	missions?: ApiMission[] | null
+}
+
+interface ApiTrack {
+	id: string
+	icon?: string | null
+	title: string
+	description?: string | null
+	steps?: ApiStep[] | null
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+	typeof value === 'object' && value !== null
+
+const asText = (value: unknown, fallback = '') =>
+	typeof value === 'string' ? value : fallback
+
+const asNumber = (value: unknown, fallback = 0) =>
+	typeof value === 'number' && Number.isFinite(value) ? value : fallback
+
+const asItems = <T,>(value: unknown, isItem: (item: unknown) => item is T): T[] =>
+	Array.isArray(value) ? value.filter(isItem) : []
+
+const isApiLesson = (value: unknown): value is ApiLesson =>
+	isRecord(value) && typeof value.id === 'string' && typeof value.title === 'string'
+
+const isApiMission = (value: unknown): value is ApiMission => isRecord(value)
+
+const isApiStep = (value: unknown): value is ApiStep =>
+	isRecord(value) && typeof value.id === 'string' && typeof value.title === 'string'
+
+const isApiTrack = (value: unknown): value is ApiTrack =>
+	isRecord(value) && typeof value.id === 'string' && typeof value.title === 'string'
+
+const getApiTrack = (response: unknown): ApiTrack => {
+	if (!isRecord(response)) throw new Error('A resposta da trilha está em um formato inválido.')
+	const track = response.track ?? response.data ?? response
+	if (!isApiTrack(track)) throw new Error('A resposta da trilha está em um formato inválido.')
+	return track
+}
+
+const isCompleted = (status: string | null | undefined) => status === 'done' || status === 'completed'
+const isInProgress = (status: string | null | undefined) => status === 'in_progress' || status === 'active'
+
+const toLesson = (lesson: ApiLesson, isNextAvailable: boolean): Lesson => {
+	const status = isCompleted(lesson.status) ? 'completed' : isNextAvailable ? 'available' : 'locked'
+	return {
+		id: lesson.id,
+		title: lesson.title,
+		status,
+		description: lesson.text || undefined,
 	}
+}
 
-	return mockTrackDetails
+const toMission = (mission: ApiMission, index: number): Mission => {
+	const currentProgress = asNumber(mission.current_progress, asNumber(mission.progress))
+	const totalProgress = asNumber(mission.total_progress, asNumber(mission.goal, 1))
+	return {
+		id: asText(mission.id, `mission-${index + 1}`),
+		title: asText(mission.title, asText(mission.name, asText(mission.description, 'Missão da trilha'))),
+		xpReward: asNumber(mission.xp_reward, asNumber(mission.reward_xp)),
+		currentProgress,
+		totalProgress,
+		progressPercentage: totalProgress > 0 ? Math.min(100, Math.round((currentProgress / totalProgress) * 100)) : 0,
+	}
+}
+
+const getModuleStatus = (step: ApiStep, lessons: Lesson[], isNextModule: boolean): ModuleStatus => {
+	if (isCompleted(step.status) || (lessons.length > 0 && lessons.every((lesson) => lesson.status === 'completed'))) return 'completed'
+	if (isInProgress(step.status) || isNextModule) return 'in_progress'
+	return 'locked'
+}
+
+const toTrackDetails = (track: ApiTrack): TrackDetails => {
+	const steps = asItems(track.steps, isApiStep)
+	const apiLessonsByStep = steps.map((step) => asItems(step.lessons, isApiLesson))
+	const allLessons = apiLessonsByStep.flat()
+	const completedLessons = allLessons.filter((lesson) => isCompleted(lesson.status)).length
+	const nextLessonIndex = allLessons.findIndex((lesson) => !isCompleted(lesson.status))
+	let lessonOffset = 0
+	const modules = steps.map((step, stepIndex): Module => {
+		const apiLessons = apiLessonsByStep[stepIndex]
+		const lessonModels = apiLessons.map((lesson, index) => toLesson(lesson, lessonOffset + index === nextLessonIndex))
+		const completedInModule = lessonModels.filter((lesson) => lesson.status === 'completed').length
+		const firstIncompleteStepIndex = apiLessonsByStep.findIndex((lessons) => lessons.some((lesson) => !isCompleted(lesson.status)))
+		const module = {
+			id: step.id,
+			title: step.title,
+			status: getModuleStatus(step, lessonModels, stepIndex === firstIncompleteStepIndex) as ModuleStatus,
+			totalLessons: lessonModels.length,
+			completedLessons: completedInModule,
+			lessons: lessonModels,
+		}
+		lessonOffset += apiLessons.length
+		return module
+	})
+	const missions = steps.flatMap((step) => asItems(step.missions, isApiMission)).map(toMission)
+	const progressUnits = allLessons.length > 0 ? allLessons.length : steps.length
+	const progressDone = allLessons.length > 0 ? completedLessons : steps.filter((step) => isCompleted(step.status)).length
+
+	return {
+		id: track.id,
+		title: track.title,
+		icon: track.icon ?? undefined,
+		level: steps.find((step) => step.level)?.level ?? 'Personalizada',
+		totalLessons: allLessons.length,
+		completedLessons,
+		progressPercentage: progressUnits > 0 ? Math.round((progressDone / progressUnits) * 100) : 0,
+		missions,
+		modules,
+	}
+}
+
+export const getTrackDetails = async (trackId: string): Promise<TrackDetails> => {
+	if (!trackId) throw new Error('A trilha solicitada não foi encontrada.')
+	const { data } = await api.get<unknown>(`/api/v1/tracks/${encodeURIComponent(trackId)}`, {
+		headers: { Authorization: `Bearer ${DASHBOARD_USER_ID}` },
+	})
+	return toTrackDetails(getApiTrack(data))
 }

@@ -32,6 +32,7 @@ export interface Mission {
 export interface TrackDetails {
 	id: string
 	title: string
+	icon?: string
 	level: string
 	totalLessons: number
 	completedLessons: number

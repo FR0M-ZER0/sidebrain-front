@@ -1,10 +1,11 @@
 import { Award, BookOpen, CircleHelp, ClipboardCheck, FileText, Home, LoaderCircle, Route, Settings, Sparkles, WandSparkles } from 'lucide-react'
-import { NavLink } from 'react-router'
+import { NavLink, useLocation } from 'react-router'
 
 export const Sidebar = () => {
+	const { pathname } = useLocation()
 	const menuItems = [
 		{ label: 'Início', icon: Home, to: '/' },
-		{ label: 'Minhas Trilhas', icon: Route, to: '/trails/lingua-japonesa' },
+		{ label: 'Minhas Trilhas', icon: Route, to: '/#tracks' },
 		{ label: 'Criar trilha', icon: Route, to: '/trails/new/create' },
 		{ label: 'Preferência da trilha', icon: ClipboardCheck, to: '/trails/new/start' },
 		{ label: 'Avaliação de nível', icon: CircleHelp, to: '/trails/new/assessment' },
@@ -32,7 +33,10 @@ export const Sidebar = () => {
 							key={item.label}
 							to={item.to}
 							end
-							className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+							className={({ isActive }) => {
+								const isTrackActive = item.label === 'Minhas Trilhas' && /^\/trails\/[^/]+$/.test(pathname)
+								return `nav-item${isActive || isTrackActive ? ' active' : ''}`
+							}}
 						>
 							<Icon className="nav-icon" size={18} aria-hidden="true" />
 							<span>{item.label}</span>

@@ -2030,3 +2030,133 @@
   .track-create-chip,
   .track-create-submit { transition: none; }
 }
+
+/* Detalhes da trilha */
+.track-details-shell { background: #faf8ff; color: #151d32; font-family: Inter, 'Segoe UI', sans-serif; }
+.track-details-shell .sidebar { width: 23%; min-width: 250px; max-width: 360px; height: 100vh; position: sticky; top: 0; padding: 24px 22px; background: #f1f2ff; border: 0; }
+.track-details-shell .brand-wrap { justify-content: center; padding: 8px 0 32px; }
+.track-details-shell .brand { font-size: 1.5rem; color: #151d32; }
+.track-details-shell .sidebar-nav { gap: 6px; margin-top: 0; }
+.track-details-shell .nav-item { border-radius: 14px; padding: 13px 15px; color: #3d4557; font-size: 1rem; }
+.track-details-shell .nav-item.active { background: #1670ed; color: white; }
+.track-details-shell .nav-item:hover { transform: none; }
+.track-details-shell .sidebar-footer { margin-top: auto; border: 0; padding: 12px; border-radius: 14px; background: white; }
+.track-details-shell .mini-meta { font-size: .78rem; }
+.track-details-page { flex: 1; min-width: 0; min-height: 100vh; background: #faf8ff; }
+.track-topbar { height: 72px; display: flex; align-items: center; gap: 24px; padding: 0 32px; background: rgba(255,255,255,.58); border-bottom: 1px solid #f0eff7; }
+.track-search { display: flex; align-items: center; gap: 12px; width: min(490px, 52%); padding: 10px 14px; border-radius: 12px; background: white; color: #42495a; }
+.track-search input { min-width: 0; flex: 1; border: 0; outline: 0; color: #42495a; background: transparent; font-size: .95rem; }
+.track-topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+.track-xp-pill,.track-streak-pill { display: flex; align-items: center; gap: 9px; padding: 9px 15px; border-radius: 999px; background: white; font-weight: 700; white-space: nowrap; }
+.track-xp-pill svg,.track-lesson-reward svg,.track-mission b svg { color: #00783f; }
+.track-streak-pill { background: #fff0df; color: #925800; }
+.track-bell { position: relative; border: 0; background: none; font-size: 1.8rem; color: #4a5060; }
+.track-bell i { position: absolute; top: 2px; right: -1px; width: 10px; height: 10px; border-radius: 50%; background: #d21c29; }
+.track-breadcrumb { display: flex; align-items: center; gap: 12px; padding: 0 32px; min-height: 48px; color: #171f33; }
+.track-breadcrumb a { display: inline-flex; align-items: center; gap: 8px; color: #3f4657; text-decoration: none; }
+.track-breadcrumb > span { color: #b8bed0; }
+.track-details-layout { display: grid; grid-template-columns: minmax(290px, 32%) minmax(0, 1fr); gap: 32px; padding: 0 32px 36px; align-items: start; }
+.track-overview-card { padding: 30px; border-radius: 19px; background: white; box-shadow: 0 2px 4px rgba(31,39,71,.04); }
+.track-overview-title { display: flex; align-items: center; gap: 16px; }
+.track-japanese-icon { display: grid; place-content: center; width: 60px; height: 60px; border-radius: 16px; background: #e4eaff; color: #075fc7; font-weight: 800; text-align: center; line-height: 1.1; }
+.track-overview-title > div > span { color: #075fc7; font-weight: 800; font-size: .78rem; letter-spacing: .04em; }
+.track-overview-title h1 { margin: 3px 0 0; font-size: clamp(1.35rem, 2vw, 1.85rem); line-height: 1.15; letter-spacing: -.04em; }
+.track-overview-meta { display: flex; align-items: center; gap: 14px; margin: 22px 0; color: #41495b; white-space: nowrap; }
+.track-overview-meta span { display: inline-flex; align-items: center; gap: 6px; }
+.track-overview-meta i { width: 5px; height: 5px; border-radius: 50%; background: #c5c9da; }
+.track-progress-card,.track-missions-card { padding: 22px; border-radius: 17px; background: #f1f2ff; }
+.track-progress-card h2,.track-missions-card h2 { margin: 0 0 12px; font-size: 1.05rem; }
+.track-progress-bar,.track-mission-bar { overflow: hidden; height: 9px; border-radius: 999px; background: #e4e8ff; }
+.track-progress-bar span,.track-mission-bar span { display: block; height: 100%; border-radius: inherit; background: #075fc7; }
+.track-progress-meta { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-top: 12px; color: #41495b; }
+.track-progress-meta b { padding: 6px 10px; border-radius: 999px; background: #dce5ff; color: #075fc7; white-space: nowrap; }
+.track-missions-card { margin-top: 20px; padding: 22px; }
+.track-missions-card h2 { display: flex; align-items: center; gap: 7px; margin-bottom: 16px; }
+.track-missions-card h2 span { color: #075fc7; }
+.track-mission { margin-top: 10px; padding: 12px; border-radius: 13px; background: white; }
+.track-mission > div:first-child,.track-mission footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.track-mission > div:first-child strong { font-size: .85rem; }
+.track-mission > div:first-child b { display: flex; align-items: center; color: #00783f; }
+.track-mission-bar { height: 7px; margin-top: 7px; }
+.track-mission footer { margin-top: 9px; color: #41495b; font-size: .82rem; }
+.track-mission footer b { color: #075fc7; }
+.track-mission:nth-of-type(3) .track-mission-bar span { background: #936000; }
+.track-all-missions { display: flex; justify-content: center; align-items: center; gap: 6px; width: 100%; margin-top: 12px; padding: 10px; border: 0; border-radius: 11px; background: white; font-weight: 700; color: #172238; }
+.track-curriculum-heading { margin: 0 0 34px; }
+.track-curriculum-heading h2 { margin: 0; font-size: clamp(2rem, 3vw, 2.8rem); letter-spacing: -.055em; }
+.track-curriculum-heading p { margin: 4px 0 0; color: #41495b; font-size: 1.08rem; }
+.track-module-list { display: grid; gap: 18px; }
+.track-module-card { overflow: hidden; border-radius: 17px; background: white; box-shadow: 0 2px 4px rgba(31,39,71,.04); }
+.track-module-header { display: flex; align-items: center; gap: 18px; width: 100%; padding: 22px 24px; border: 0; background: transparent; color: #151d32; text-align: left; }
+.track-module-header:disabled { cursor: default; }
+.track-module-status-icon { display: grid; place-items: center; width: 52px; height: 52px; flex: 0 0 52px; border-radius: 17px; background: #e5f2eb; color: #00783f; }
+.track-module-status-icon.in_progress { background: #dfe7ff; color: #102951; }
+.track-module-status-icon.locked { background: #edf0ff; color: #9ca4b4; }
+.track-module-heading { display: grid; gap: 5px; flex: 1; min-width: 0; }
+.track-module-kicker { display: flex; align-items: center; gap: 10px; font-size: .88rem; font-weight: 700; color: #41495b; }
+.track-module-heading > strong { font-size: 1.25rem; letter-spacing: -.025em; }
+.track-status-pill { padding: 4px 12px; border-radius: 999px; background: #e6f1ea; color: #00783f; }
+.track-status-pill.in_progress { background: #dce5ff; color: #102951; }
+.track-status-pill.locked { background: #f0f1ff; color: #858b9a; }
+.track-module-count { margin-left: auto; white-space: nowrap; font-weight: 600; color: #41495b; }
+.track-lock { color: #a8adbb; }
+.track-module-card.is-locked { opacity: .62; }
+.track-lesson-list { display: grid; gap: 10px; padding: 0 24px 24px; }
+.track-lesson { display: flex; align-items: center; gap: 16px; min-height: 76px; padding: 14px 18px; border-radius: 17px; }
+.track-lesson.completed,.track-lesson.available { background: #f1f2ff; }
+.track-lesson-icon { display: grid; place-items: center; width: 42px; height: 42px; flex: 0 0 42px; border-radius: 50%; background: #00783f; color: white; font-weight: 700; }
+.track-lesson.available .track-lesson-icon { background: #075fc7; font-size: 1.25rem; }
+.track-lesson.locked .track-lesson-icon { color: #9ca4b4; background: #edf0ff; }
+.track-lesson-copy { display: grid; gap: 3px; flex: 1; min-width: 0; }
+.track-lesson-copy > strong { font-size: 1.06rem; line-height: 1.3; }
+.track-lesson-copy p { margin: 0; color: #41495b; line-height: 1.45; }
+.track-lesson-meta { display: flex; align-items: center; gap: 8px; color: #41495b; }
+.track-lesson-meta b { padding: 3px 9px; border-radius: 5px; background: #dce5ff; color: #075fc7; }
+.track-lesson-meta em { color: #00783f; font-style: normal; }
+.track-lesson-reward { display: flex; align-items: center; color: #00783f; font-weight: 700; white-space: nowrap; }
+.track-review-button,.track-start-button,.track-locked-label { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 17px; border: 0; border-radius: 12px; background: white; color: #151d32; font-weight: 700; white-space: nowrap; box-shadow: 0 2px 4px rgba(24,32,67,.08); }
+.track-start-button { padding: 13px 19px; background: #075fc7; color: white; font-size: 1rem; }
+.track-locked-label { padding: 7px 11px; background: #edf0ff; color: #969dac; }
+.track-state { padding: 60px; text-align: center; }
+.track-state-error { color: #a73535; }
+
+@media (max-width: 1050px) {
+	.track-details-shell .sidebar { width: 220px; min-width: 220px; padding-inline: 14px; }
+	.track-details-layout { grid-template-columns: 1fr; }
+	.track-overview-card { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+	.track-overview-meta { grid-column: 1 / -1; margin: 0; }
+	.track-missions-card { margin-top: 0; }
+}
+@media (max-width: 700px) {
+	.track-details-shell .sidebar { position: static; width: 100%; max-width: none; min-width: 0; height: auto; padding: 8px 12px; }
+	.track-details-shell.app-shell { display: block; }
+	.track-details-shell .brand-wrap,.track-details-shell .sidebar-footer { display: none; }
+	.track-details-shell .sidebar-nav { flex-direction: row; overflow-x: auto; }
+	.track-details-shell .nav-item { width: auto; white-space: nowrap; padding: 9px 12px; }
+	.track-topbar { height: 62px; padding: 0 14px; gap: 8px; }
+	.track-search { width: auto; flex: 1; padding: 9px; }
+	.track-search input { font-size: .75rem; }
+	.track-topbar-actions { gap: 5px; }
+	.track-xp-pill,.track-streak-pill { padding: 8px; font-size: .75rem; }
+	.track-xp-pill svg,.track-streak-pill svg { width: 16px; }
+	.track-bell { display: none; }
+	.track-breadcrumb { padding: 0 16px; font-size: .85rem; }
+	.track-details-layout { padding: 0 14px 24px; gap: 24px; }
+	.track-overview-card { display: block; padding: 18px; }
+	.track-overview-meta { margin: 18px 0; font-size: .83rem; gap: 8px; }
+	.track-progress-card,.track-missions-card { padding: 17px; }
+	.track-curriculum-heading { margin-bottom: 20px; }
+	.track-curriculum-heading h2 { font-size: 2rem; }
+	.track-curriculum-heading p { font-size: .95rem; }
+	.track-module-header { gap: 10px; padding: 16px 12px; }
+	.track-module-status-icon { width: 42px; height: 42px; flex-basis: 42px; }
+	.track-module-heading > strong { font-size: 1rem; }
+	.track-module-kicker { font-size: .72rem; gap: 5px; flex-wrap: wrap; }
+	.track-status-pill { padding: 3px 8px; }
+	.track-module-count { font-size: .75rem; }
+	.track-lesson-list { padding: 0 10px 12px; }
+	.track-lesson { flex-wrap: wrap; gap: 10px; padding: 12px; }
+	.track-lesson-copy { flex-basis: calc(100% - 54px); }
+	.track-lesson-copy > strong { font-size: .95rem; }
+	.track-lesson-reward { margin-left: 52px; }
+}

@@ -4,6 +4,7 @@ import { NavLink } from 'react-router'
 export const Sidebar = () => {
 	const menuItems = [
 		{ label: 'Início', icon: Home, to: '/' },
+		{ label: 'Minhas Trilhas', icon: Route, to: '/trails/lingua-japonesa' },
 		{ label: 'Criar trilha', icon: Route, to: '/trails/new/create' },
 		{ label: 'Preferência da trilha', icon: ClipboardCheck, to: '/trails/new/start' },
 		{ label: 'Avaliação de nível', icon: CircleHelp, to: '/trails/new/assessment' },

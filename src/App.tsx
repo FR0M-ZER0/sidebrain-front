@@ -13,6 +13,7 @@ import { AssessmentPage } from './pages/customer/AssessmentPage'
 import { QuizResultPage } from './pages/customer/QuizResultPage'
 import { LessonPage } from './pages/customer/LessonPage'
 import { LessonCompletionPage } from './pages/lessons/LessonCompletionPage'
+import { TrackDetailsPage } from './pages/customer/TrackDetailsPage'
 
 const NavigationPage = ({ children }: { children: ReactNode }) => (
 	<div className="app-shell shared-navigation-shell">
@@ -37,6 +38,7 @@ function App() {
 		<BrowserRouter>
 			<Routes>
 				<Route path="/" element={<HomeDashboardPage />} />
+				<Route path="/trails/:slug" element={<TrackDetailsPage />} />
 				<Route path="/trails/new/create" element={<CreateTrackPage />} />
 				<Route path="/trails/new/start" element={<NavigationPage><TrailStartPreferencePage /></NavigationPage>} />
 				<Route path="/trails/new/assessment" element={<NavigationPage><TrailLevelAssessmentPage /></NavigationPage>} />

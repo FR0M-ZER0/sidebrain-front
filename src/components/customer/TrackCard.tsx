@@ -1,16 +1,16 @@
 import { ArrowRight } from 'lucide-react'
 import type { DashboardTrack } from '../../types/dashboard'
 import { ProgressBar } from '../general/ProgressBar'
+import { useNavigate } from 'react-router'
 
 interface TrackCardProps {
   track: DashboardTrack
 }
 
 export const TrackCard = ({ track }: TrackCardProps) => {
+	const navigate = useNavigate()
 	const openTrack = () => {
-		if (track.id === 't-02') {
-			window.location.href = '/quiz'
-		}
+		if (track.id === 't-01') navigate('/trails/lingua-japonesa')
 	}
 
 	return (

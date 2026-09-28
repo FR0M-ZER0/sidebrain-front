@@ -8,7 +8,7 @@ interface MissionsSectionProps {
 
 export const MissionsSection = ({ missions }: MissionsSectionProps) => {
 	return (
-		<section className="panel missions-panel">
+		<section id="missions" className="panel missions-panel">
 			<div className="panel-header">
 				<h2><Target size={18} aria-hidden="true" /> Missões Semanais & Recompensas</h2>
 				<button type="button" className="link-button">Expira em 3 dias</button>

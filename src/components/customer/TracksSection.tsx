@@ -17,7 +17,7 @@ export const TracksSection = ({ tracks }: TracksSectionProps) => {
 	const visibleTracks = isExpanded ? tracks : tracks.slice(0, VISIBLE_TRACKS_LIMIT)
 
 	return (
-		<section className="panel tracks-panel">
+		<section id="tracks" className="panel tracks-panel">
 			<div className="panel-header">
 				<h2>🧭 Trilhas em Andamento</h2>
 				{hasHiddenTracks && (

@@ -14,6 +14,7 @@ import { QuizResultPage } from './pages/customer/QuizResultPage'
 import { LessonPage } from './pages/customer/LessonPage'
 import { LessonCompletionPage } from './pages/lessons/LessonCompletionPage'
 import { TrackDetailsPage } from './pages/customer/TrackDetailsPage'
+import { LessonQuizPage } from './pages/customer/LessonQuizPage'
 
 const NavigationPage = ({ children }: { children: ReactNode }) => (
 	<div className="app-shell shared-navigation-shell">
@@ -48,6 +49,7 @@ function App() {
 				<Route path="/quiz" element={<NavigationPage><AssessmentPage /></NavigationPage>} />
 				<Route path="/quiz-result" element={<NavigationPage><QuizResultPage /></NavigationPage>} />
 				<Route path="/lessons/:id/completion" element={<NavigationPage><LessonCompletionRoute /></NavigationPage>} />
+				<Route path="/lessons/:id/quiz" element={<LessonQuizPage />} />
 				<Route path="/lessons/:id" element={<NavigationPage><LessonPage /></NavigationPage>} />
 				<Route path="*" element={<Navigate to="/" replace />} />
 			</Routes>

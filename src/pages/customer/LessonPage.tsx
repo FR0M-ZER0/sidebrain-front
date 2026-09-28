@@ -1,3 +1,4 @@
+import { ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { useLocation, useNavigate, useParams } from 'react-router'
@@ -77,6 +78,15 @@ export const LessonPage = () => {
 					<LessonHeader breadcrumbs={lesson.breadcrumbs} onExit={requestExit} />
 					<LessonProgress progress={lesson.progress} />
 					<LessonContent title={lesson.content.title} blocks={lesson.content.blocks} />
+					<footer className="mt-auto flex flex-wrap items-center justify-between gap-4 border-t border-dashed border-indigo-200 pt-5">
+						<button type="button" onClick={() => navigate(returnTo)} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-primary-soft px-4 py-2 text-sm font-semibold text-muted transition-colors hover:bg-indigo-100">
+							<ArrowLeft size={16} aria-hidden="true" /> Voltar
+						</button>
+						<div className="flex items-center gap-2 text-sm font-medium text-slate-600"><CheckCircle2 size={16} className="text-emerald-600" aria-hidden="true" /> Teoria concluída</div>
+						<button type="button" onClick={() => navigate(`/lessons/${lesson.id}/quiz`, { state: location.state })} className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-blue-700 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-800">
+							Continuar para o Quiz <ArrowRight size={17} aria-hidden="true" />
+						</button>
+					</footer>
 				</motion.main>
 			)}
 			<LessonExitDialog isOpen={isExitDialogOpen} onCancel={cancelExit} onConfirm={confirmExit} />

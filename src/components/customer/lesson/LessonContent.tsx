@@ -13,7 +13,7 @@ interface LessonImageProps {
 	caption?: string
 }
 
-const LessonImage = ({ url, altText, caption }: LessonImageProps) => {
+export const LessonImage = ({ url, altText, caption }: LessonImageProps) => {
 	const [hasFailed, setHasFailed] = useState(!url)
 	const shouldReduceMotion = useReducedMotion()
 
@@ -47,7 +47,9 @@ export const LessonContent = ({ title, blocks }: LessonContentProps) => (
 		<div className="mx-auto max-w-5xl">
 			{blocks.map((block) => {
 				if (block.type === 'image') {
-					return <LessonImage key={block.id} url={block.url} altText={block.altText} caption={block.caption} />
+					// Imagens permanecem prontas para exibição quando a API passar a fornecê-las.
+					// return <LessonImage key={block.id} url={block.url} altText={block.altText} caption={block.caption} />
+					return null
 				}
 
 				if (!block.text.trim()) {

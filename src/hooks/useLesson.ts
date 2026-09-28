@@ -1,21 +1,21 @@
 import { useCallback, useEffect, useState } from 'react'
 import { getLesson } from '../api/lessonsApi'
-import type { LessonData } from '../api/lessonsApi'
+import type { LessonData, LessonNavigationContext } from '../api/lessonsApi'
 
 type LessonState =
 	| { requestKey: string, status: 'success', lesson: LessonData, error: null }
 	| { requestKey: string, status: 'error', lesson: null, error: Error }
 
-export const useLesson = (lessonId: string | undefined) => {
+export const useLesson = (lessonId: string | undefined, context?: LessonNavigationContext) => {
 	const [state, setState] = useState<LessonState | null>(null)
 	const [attempt, setAttempt] = useState(0)
 	const requestedLessonId = lessonId ?? ''
-	const requestKey = `${requestedLessonId}:${attempt}`
+	const requestKey = `${requestedLessonId}:${attempt}:${JSON.stringify(context ?? null)}`
 
 	useEffect(() => {
 		let isActive = true
 
-		getLesson(requestedLessonId)
+		getLesson(requestedLessonId, context)
 			.then((lesson) => {
 				if (isActive) {
 					setState({ requestKey, status: 'success', lesson, error: null })
@@ -37,7 +37,7 @@ export const useLesson = (lessonId: string | undefined) => {
 		return () => {
 			isActive = false
 		}
-	}, [requestedLessonId, requestKey])
+	}, [requestedLessonId, requestKey, context])
 
 	const retry = useCallback(() => setAttempt((current) => current + 1), [])
 

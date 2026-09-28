@@ -17,13 +17,26 @@ import {
 } from 'lucide-react'
 import { Sidebar } from '../../components/customer/Sidebar'
 import { useTrackDetails } from '../../hooks/useTrackDetails'
-import type { Module } from '../../types/trackDetails'
+import type { LessonNavigationContext } from '../../api/lessonsApi'
+import type { Module, TrackDetails } from '../../types/trackDetails'
 
-const ModuleCard = ({ module, index }: { module: Module; index: number }) => {
+const ModuleCard = ({ module, index, track }: { module: Module; index: number; track: TrackDetails }) => {
 	const navigate = useNavigate()
 	const [isExpanded, setIsExpanded] = useState(module.status !== 'locked')
 	const isLocked = module.status === 'locked'
 	const statusLabel = module.status === 'completed' ? 'Concluído' : module.status === 'in_progress' ? 'Em Andamento' : 'Bloqueado'
+	const lessonOffset = track.modules.slice(0, index).reduce((total, item) => total + item.lessons.length, 0)
+	const navigateToLesson = (lessonId: string, lessonIndex: number) => {
+		const context: LessonNavigationContext = {
+			from: `/trails/${track.id}`,
+			trackTitle: track.title,
+			moduleTitle: module.title,
+			currentLesson: lessonOffset + lessonIndex + 1,
+			totalLessons: track.totalLessons,
+			trailCompletionPercentage: track.progressPercentage,
+		}
+		navigate(`/lessons/${lessonId}`, { state: context })
+	}
 
 	return (
 		<section className={`track-module-card${isLocked ? ' is-locked' : ''}`}>
@@ -58,10 +71,10 @@ const ModuleCard = ({ module, index }: { module: Module; index: number }) => {
 								{lesson.description && <p>{lesson.description}</p>}
 								{lesson.status !== 'available' && <span className="track-lesson-meta">{lesson.durationText} <span>•</span> <em>+{lesson.xpReward} XP</em></span>}
 							</div>
-							{lesson.status === 'completed' && <button type="button" className="track-review-button" onClick={() => navigate(`/lessons/${lesson.id}`)}>Revisar</button>}
+							{lesson.status === 'completed' && <button type="button" className="track-review-button" onClick={() => navigateToLesson(lesson.id, lessonIndex)}>Revisar</button>}
 							{lesson.status === 'available' && <>
 								<span className="track-lesson-reward"><Zap size={19} /> +{lesson.xpReward} XP</span>
-								<button type="button" className="track-start-button" onClick={() => navigate(`/lessons/${lesson.id}`)}>Iniciar <ArrowRight size={18} /></button>
+								<button type="button" className="track-start-button" onClick={() => navigateToLesson(lesson.id, lessonIndex)}>Iniciar <ArrowRight size={18} /></button>
 							</>}
 							{lesson.status === 'locked' && <span className="track-locked-label"><LockKeyhole size={15} /> Bloqueada</span>}
 						</div>
@@ -106,7 +119,7 @@ export const TrackDetailsPage = () => {
 						</aside>
 						<div className="track-curriculum">
 							<div className="track-curriculum-heading"><h2>Roteiro de Aprendizado</h2><p>Siga a ordem guiada ou revise tópicos concluídos para reforço de memória.</p></div>
-							<div className="track-module-list">{track.modules.map((module, index) => <ModuleCard key={module.id} module={module} index={index} />)}</div>
+							<div className="track-module-list">{track.modules.map((module, index) => <ModuleCard key={module.id} module={module} index={index} track={track} />)}</div>
 						</div>
 					</div>
 				</>}

@@ -9,12 +9,16 @@ import { LessonHeader } from '../../components/customer/lesson/LessonHeader'
 import { LessonLoading } from '../../components/customer/lesson/LessonLoading'
 import { LessonProgress } from '../../components/customer/lesson/LessonProgress'
 import { useLesson } from '../../hooks/useLesson'
+import type { LessonNavigationContext } from '../../api/lessonsApi'
 
 export const LessonPage = () => {
 	const { id } = useParams<{ id: string }>()
 	const location = useLocation()
 	const navigate = useNavigate()
-	const lessonState = useLesson(id)
+	const lessonContext = typeof location.state === 'object' && location.state !== null && 'trackTitle' in location.state
+		? location.state as LessonNavigationContext
+		: undefined
+	const lessonState = useLesson(id, lessonContext)
 	const shouldReduceMotion = useReducedMotion()
 	const [isExitDialogOpen, setIsExitDialogOpen] = useState(false)
 	const [isLeaving, setIsLeaving] = useState(false)

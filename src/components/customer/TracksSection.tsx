@@ -47,7 +47,7 @@ export const TracksSection = ({ tracks }: TracksSectionProps) => {
 					<div className="create-track-title">Criar Nova Trilha com IA</div>
 					<p>Dia a dia que deseja dominar e nosso mentor gera um currículo sob medida em segundos.</p>
 				</div>
-				<button type="button" className="primary-button large" onClick={() => navigate('/trails/new/start')}>
+				<button type="button" className="primary-button large" onClick={() => navigate('/trails/new/create')}>
 					Gerar Trilha <Sparkles size={15} aria-hidden="true" />
 				</button>
 			</div>

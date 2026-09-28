@@ -1,5 +1,4 @@
 import { api } from './api'
-import { DASHBOARD_USER_ID } from './dashboardApi'
 import type { Lesson, Module, ModuleStatus, Mission, TrackDetails } from '../types/trackDetails'
 
 interface ApiLesson {
@@ -146,8 +145,6 @@ const toTrackDetails = (track: ApiTrack): TrackDetails => {
 
 export const getTrackDetails = async (trackId: string): Promise<TrackDetails> => {
 	if (!trackId) throw new Error('A trilha solicitada não foi encontrada.')
-	const { data } = await api.get<unknown>(`/api/v1/tracks/${encodeURIComponent(trackId)}`, {
-		headers: { Authorization: `Bearer ${DASHBOARD_USER_ID}` },
-	})
+	const { data } = await api.get<unknown>(`/api/v1/tracks/${encodeURIComponent(trackId)}`)
 	return toTrackDetails(getApiTrack(data))
 }

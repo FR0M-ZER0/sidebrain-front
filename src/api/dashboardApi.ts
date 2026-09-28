@@ -1,7 +1,7 @@
 import { api } from './api'
 import type { DashboardTrack, DashboardTrackStatus } from '../types/dashboard'
 
-export const DASHBOARD_USER_ID = '00000000-0000-4000-8000-000000000001'
+export { DASHBOARD_USER_ID } from './auth'
 
 interface ApiLesson {
 	status?: string
@@ -104,9 +104,6 @@ const toDashboardTrack = (track: ApiTrack): DashboardTrack => {
 
 export const getDashboardTracks = async (): Promise<DashboardTrack[]> => {
 	const { data } = await api.get<unknown>('/api/v1/tracks', {
-		headers: {
-			Authorization: `Bearer ${DASHBOARD_USER_ID}`,
-		},
 		params: {
 			page: 1,
 			page_size: 100,

@@ -87,7 +87,7 @@ export const CreateTrackPage = ({ api }: CreateTrackPageProps) => {
 							</motion.button>
 						</div>
 					</motion.section>
-					<p className="track-create-mock-note">O envio desta etapa é demonstrativo. Seu objetivo só será enviado ao servidor quando a integração real estiver disponível.</p>
+					<p className="track-create-mock-note">Seu objetivo será enviado para gerar a trilha depois da configuração inicial e do diagnóstico, se você escolher essa opção.</p>
 				</div>
 			</main>
 		</div>

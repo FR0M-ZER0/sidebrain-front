@@ -1,5 +1,4 @@
 import { api } from './api'
-import { DASHBOARD_USER_ID } from './dashboardApi'
 
 export interface LessonBreadcrumb {
 	label: string
@@ -103,9 +102,7 @@ export const getLesson = async (
 ): Promise<LessonData> => {
 	if (!lessonId) throw new Error('Não foi possível encontrar esta lição.')
 
-	const { data } = await api.get<unknown>(`/api/v1/lessons/${encodeURIComponent(lessonId)}`, {
-		headers: { Authorization: `Bearer ${DASHBOARD_USER_ID}` },
-	})
+	const { data } = await api.get<unknown>(`/api/v1/lessons/${encodeURIComponent(lessonId)}`)
 	const lesson = getApiLesson(data)
 	const title = lesson.title
 	const text = typeof lesson.text === 'string' ? lesson.text : ''

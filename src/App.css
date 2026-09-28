@@ -295,6 +295,9 @@
 }
 
 .link-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   background: rgba(61, 94, 180, 0.08);
   border: 1px solid rgba(51, 108, 216, 0.14);
   color: #2c6dd8;

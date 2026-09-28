@@ -49,7 +49,7 @@ function App() {
 				<Route path="/quiz" element={<NavigationPage><AssessmentPage /></NavigationPage>} />
 				<Route path="/quiz-result" element={<NavigationPage><QuizResultPage /></NavigationPage>} />
 				<Route path="/lessons/:id/completion" element={<NavigationPage><LessonCompletionRoute /></NavigationPage>} />
-				<Route path="/lessons/:id/quiz" element={<LessonQuizPage />} />
+				<Route path="/lessons/:id/quiz" element={<NavigationPage><LessonQuizPage /></NavigationPage>} />
 				<Route path="/lessons/:id" element={<NavigationPage><LessonPage /></NavigationPage>} />
 				<Route path="*" element={<Navigate to="/" replace />} />
 			</Routes>

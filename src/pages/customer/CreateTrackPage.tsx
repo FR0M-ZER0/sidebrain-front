@@ -30,7 +30,7 @@ export const CreateTrackPage = ({ api }: CreateTrackPageProps) => {
 			<main className="page-shell track-create-page">
 				<HeaderBar xp={320} coins={500} notifications={1} />
 				<div className="track-create-content">
-					<Link to="/" className="track-create-breadcrumb"><ArrowLeft aria-hidden="true" size={22} /><span>Trilhas</span><span aria-hidden="true">/</span><span className="track-create-breadcrumb__current">Nova Jornada Guiada</span></Link>
+					<Link to="/" className="track-create-breadcrumb"><ArrowLeft aria-hidden="true" size={22} /><span>Trilhas</span><span aria-hidden="true">/</span><span className="track-create-breadcrumb__current">Criar trilha</span></Link>
 					<OnboardingProgress currentStep={1} totalSteps={3} title="Etapa 1 de 3: Configuração Inicial" />
 
 					<motion.section

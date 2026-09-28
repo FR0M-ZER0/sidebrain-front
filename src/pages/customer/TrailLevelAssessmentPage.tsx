@@ -1,8 +1,9 @@
-import { ArrowRight, Loader2 } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router'
-import { OnboardingProgress } from '../../components/customer/OnboardingProgress'
+import { Link, useLocation, useNavigate } from 'react-router'
 import { startTrackAssessment, submitTrackAssessment } from '../../api/trackAssessmentApi'
+import { HeaderBar } from '../../components/customer/HeaderBar'
+import { OnboardingProgress } from '../../components/customer/OnboardingProgress'
 import type { AssessmentQuestion } from '../../types/trailOnboarding'
 import type { TrackAssessmentAnswer } from '../../types/trackFlow'
 
@@ -68,22 +69,35 @@ export const TrailLevelAssessmentPage = () => {
 	}
 
 	return (
-		<div className="onboarding-page-shell">
-			<div className="onboarding-container">
-				<OnboardingProgress currentStep={2} totalSteps={3} title="Etapa 2 de 3: Calibração de Conhecimento" />
-				<div className="onboarding-card assessment-card">
-					<div className="assessment-header-row"><div><p className="eyebrow">Diagnóstico rápido</p><h1>Quanto você conhece o tema?</h1></div><div className="time-pill">~2 min</div></div>
-					{goalDescription && <p className="track-goal-context"><strong>Sua meta:</strong> {goalDescription}</p>}
-					{loading ? <div className="assessment-loading" aria-live="polite"><Loader2 className="spinner" size={20} aria-hidden="true" /><span>Preparando perguntas para o seu diagnóstico...</span></div> : (
-						<div>{questions.map((question, index) => <div className="assessment-question" key={question.id}>
-							<p className="question-index">Pergunta {index + 1} de {questions.length}</p><h2>{question.prompt}</h2>
-							<div className="answer-options" role="radiogroup" aria-label={question.prompt}>{question.options.map((option) => <button key={option.id} type="button" className={`answer-option ${draftAnswers[question.id] === option.id ? 'selected' : ''}`} onClick={() => setDraftAnswers((current) => ({ ...current, [question.id]: option.id }))} aria-pressed={draftAnswers[question.id] === option.id}>{option.label}</button>)}</div>
-						</div>)}</div>
-					)}
-					{error && <div className="onboarding-error" role="alert">{error}</div>}
-					<div className="assessment-footer"><span className="status-line">{Object.keys(draftAnswers).length} de {questions.length} respondidas</span><button type="button" className="primary-button onboarding-primary" disabled={!complete || submitting || loading} onClick={() => void handleSubmit()}>{submitting ? 'Confirmando...' : 'Concluir diagnóstico'}<ArrowRight size={16} aria-hidden="true" /></button></div>
+		<main className="page-shell track-create-page track-start-page">
+			<HeaderBar xp={320} coins={500} notifications={1} />
+			<div className="track-create-content track-assessment-content">
+				<Link to="/trails/new/start" state={{ goalDescription }} className="track-create-breadcrumb">
+					<ArrowLeft aria-hidden="true" size={22} />
+					<span>Trilhas</span>
+					<span aria-hidden="true">/</span>
+					<span>Criar trilha</span>
+					<span aria-hidden="true">/</span>
+					<span>Escolher nivelamento</span>
+					<span aria-hidden="true">/</span>
+					<span className="track-create-breadcrumb__current">Nivelamento</span>
+				</Link>
+				<div className="onboarding-container">
+					<OnboardingProgress currentStep={3} totalSteps={3} title="Etapa 3 de 3: Diagnóstico de Conhecimento" />
+					<div className="onboarding-card assessment-card">
+						<div className="assessment-header-row"><div><p className="eyebrow">Diagnóstico rápido</p><h1>Quanto você conhece o tema?</h1></div><div className="time-pill">~2 min</div></div>
+						{goalDescription && <p className="track-goal-context"><strong>Sua meta:</strong> {goalDescription}</p>}
+						{loading ? <div className="assessment-loading" aria-live="polite"><Loader2 className="spinner" size={20} aria-hidden="true" /><span>Preparando perguntas para o seu diagnóstico...</span></div> : (
+							<div>{questions.map((question, index) => <div className="assessment-question" key={question.id}>
+								<p className="question-index">Pergunta {index + 1} de {questions.length}</p><h2>{question.prompt}</h2>
+								<div className="answer-options" role="radiogroup" aria-label={question.prompt}>{question.options.map((option) => <button key={option.id} type="button" className={`answer-option ${draftAnswers[question.id] === option.id ? 'selected' : ''}`} onClick={() => setDraftAnswers((current) => ({ ...current, [question.id]: option.id }))} aria-pressed={draftAnswers[question.id] === option.id}>{option.label}</button>)}</div>
+							</div>)}</div>
+						)}
+						{error && <div className="onboarding-error" role="alert">{error}</div>}
+						<div className="assessment-footer"><span className="status-line">{Object.keys(draftAnswers).length} de {questions.length} respondidas</span><button type="button" className="primary-button onboarding-primary" disabled={!complete || submitting || loading} onClick={() => void handleSubmit()}>{submitting ? 'Confirmando...' : 'Concluir diagnóstico'}<ArrowRight size={16} aria-hidden="true" /></button></div>
+					</div>
 				</div>
 			</div>
-		</div>
+		</main>
 	)
 }

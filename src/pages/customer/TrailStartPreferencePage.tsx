@@ -34,7 +34,7 @@ export const TrailStartPreferencePage = () => {
 					<span aria-hidden="true">/</span>
 					<span>Criar trilha</span>
 					<span aria-hidden="true">/</span>
-					<span className="track-create-breadcrumb__current">Nova Jornada Guiada</span>
+					<span className="track-create-breadcrumb__current">Escolher nivelamento</span>
 				</Link>
 
 				<div className="onboarding-container">

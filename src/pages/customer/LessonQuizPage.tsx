@@ -27,40 +27,43 @@ export const LessonQuizPage = () => {
 		: undefined
 	const lessonState = useLesson(lessonId, lessonContext)
 	const lesson = lessonState.status === 'success' ? lessonState.lesson : null
-	const [quizzes, setQuizzes] = useState<LessonQuiz[]>([])
+	const [quizState, setQuizState] = useState<{
+		lessonId: string | undefined
+		quizzes: LessonQuiz[]
+		loading: boolean
+		error: string | null
+	}>(() => ({ lessonId, quizzes: [], loading: Boolean(lessonId), error: null }))
 	const [currentIndex, setCurrentIndex] = useState(0)
 	const [answer, setAnswer] = useState('')
 	const [evaluation, setEvaluation] = useState<QuizAnswerRate | null>(null)
-	const [loading, setLoading] = useState(true)
 	const [submitting, setSubmitting] = useState(false)
-	const [error, setError] = useState<string | null>(null)
+	const isCurrentLesson = quizState.lessonId === lessonId
+	const quizzes = isCurrentLesson ? quizState.quizzes : []
+	const loading = lessonId ? !isCurrentLesson || quizState.loading : false
+	const error = isCurrentLesson ? quizState.error : null
 	const returnTo = `/lessons/${lessonId ?? ''}`
 	const currentQuiz = quizzes[currentIndex]
 	const isLoading = loading || lessonState.status === 'loading'
 	const pageError = lessonState.status === 'error'
 		? lessonState.error?.message ?? 'Ocorreu um erro ao carregar a lição.'
-		: error && quizzes.length === 0 ? error : null
+		: !lessonId ? 'Não foi possível identificar a lição deste quiz.'
+			: error && quizzes.length === 0 ? error : null
 
 	useEffect(() => {
 		let isActive = true
-		setLoading(true)
-		setError(null)
-		setQuizzes([])
-		if (!lessonId) {
-			setError('Não foi possível identificar a lição deste quiz.')
-			setLoading(false)
-			return
-		}
+		if (!lessonId) return () => { isActive = false }
 
 		getLessonQuizzes(lessonId)
 			.then((result) => {
-				if (isActive) setQuizzes(result)
+				if (isActive) setQuizState({ lessonId, quizzes: result, loading: false, error: null })
 			})
 			.catch((quizError: unknown) => {
-				if (isActive) setError(quizError instanceof Error ? quizError.message : 'Não foi possível carregar o quiz desta lição.')
-			})
-			.finally(() => {
-				if (isActive) setLoading(false)
+				if (isActive) setQuizState({
+					lessonId,
+					quizzes: [],
+					loading: false,
+					error: quizError instanceof Error ? quizError.message : 'Não foi possível carregar o quiz desta lição.',
+				})
 			})
 
 		return () => { isActive = false }
@@ -81,12 +84,12 @@ export const LessonQuizPage = () => {
 		}
 		if (!answer.trim()) return
 		setSubmitting(true)
-		setError(null)
+		setQuizState((state) => ({ ...state, error: null }))
 		try {
 			const result = await submitLessonQuizAnswer(currentQuiz.id, answer.trim())
 			setEvaluation(result)
 		} catch (submitError) {
-			setError(submitError instanceof Error ? submitError.message : 'Não foi possível registrar sua resposta.')
+			setQuizState((state) => ({ ...state, error: submitError instanceof Error ? submitError.message : 'Não foi possível registrar sua resposta.' }))
 		} finally {
 			setSubmitting(false)
 		}

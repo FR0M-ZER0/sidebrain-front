@@ -42,19 +42,16 @@ const createJob = (requestId: string, trackId: string | null, status: TrailGener
 
 export const useTrailGeneration = (request: TrackGenerationRequest | null) => {
 	const [job, setJob] = useState<TrailGenerationJob | null>(null)
-	const [loading, setLoading] = useState(Boolean(request))
+	const [finishedRequest, setFinishedRequest] = useState<{ request: TrackGenerationRequest; retryCount: number } | null>(null)
 	const [error, setError] = useState<string | null>(null)
 	const [retryCount, setRetryCount] = useState(0)
 	const startedRequest = useRef<{ retryCount: number; promise: Promise<string> } | null>(null)
+	const loading = Boolean(request) && (finishedRequest?.request !== request || finishedRequest?.retryCount !== retryCount)
 
 	useEffect(() => {
-		if (!request) {
-			setLoading(false)
-			return
-		}
+		if (!request) return
 
 		const controller = new AbortController()
-		setLoading(true)
 		setError(null)
 		let requestPromise = startedRequest.current?.retryCount === retryCount
 			? startedRequest.current.promise
@@ -91,10 +88,9 @@ export const useTrailGeneration = (request: TrackGenerationRequest | null) => {
 					const message = generationError instanceof Error ? generationError.message : 'Não foi possível gerar a trilha.'
 					setError(message)
 					if (activeRequestId) setJob(createJob(activeRequestId, null, 'failed', message))
-					setLoading(false)
 				}
 			} finally {
-				if (!controller.signal.aborted) setLoading(false)
+				if (!controller.signal.aborted) setFinishedRequest({ request, retryCount })
 			}
 		}
 

@@ -1,50 +1,70 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# SideBrain Frontend Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Organização por Domínio (NON-NEGOTIABLE)
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+Páginas ficam em `src/pages/<dominio>` e componentes específicos em
+`src/components/<dominio>`; componentes compartilhados ficam em
+`src/components/general`. Novos domínios MUST seguir o mesmo padrão
+(`pages/<dominio>` + `components/<dominio>`). Hooks customizados MUST
+ficar em `src/hooks` com prefixo `use` e responsabilidade única.
+Slices Redux MUST ficar em `src/store/slices` por domínio.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### II. Rotas Protegidas por Padrão
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+Todas as rotas MUST exigir autenticação via `PrivateRoute` por padrão.
+Rotas públicas (login, cadastro, recuperação de senha) MUST ser
+explicitamente marcadas como sem autenticação. Nenhuma rota privada
+pode ser exposta sem `PrivateRoute`.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### III. API Centralizada via Axios (NON-NEGOTIABLE)
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+Toda chamada HTTP MUST usar a instância configurada em `src/api/api.ts`.
+É proibido instanciar axios diretamente em componentes, páginas ou hooks.
+Endpoints, interceptors e configuração de `baseURL` vivem em `src/api`.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### IV. Layout Base, Arrow Functions e Estado via Hooks
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+Páginas MUST ser compostas a partir de `Layout.tsx` (ou especializações
+como `LayoutWithSearchBar`, `CustomerLayout`). Componentes, utilitários,
+hooks e handlers MUST usar arrow functions. Declarações MUST omitir ponto
+e vírgula final. Acesso ao Redux MUST passar por hooks customizados
+(ex: `useAuth`), nunca `useSelector`/`useDispatch` espalhados.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### V. Fidelidade Visual e Qualidade de Entrega
+
+Antes de gerar CSS/Tailwind, MUST inspecionar o Figma de referência e a
+imagem correspondente em `docs/img/` para bater o visual pixel a pixel
+(estilos, paddings, cores, tipografia). Toda entrega MUST passar em
+`npm run lint` e `npm run build` sem erros. Validação manual segue o
+`quickstart.md` da feature quando não houver framework de testes.
+
+## Technology Stack & Constraints
+
+**Stack**: React 19 + Vite 8 + TypeScript 6.x, React Router 7, Axios,
+lucide-react, Redux (via hooks). **Setup**: `npm install`, `npm run dev`,
+`npm run lint`, `npm run build`. **Docs normativas**: `docs/architecture.md`
+e `docs/code_conventions.md` MUST ser consultadas antes de qualquer
+alteração de código; `AGENTS.md` é normativo. Respostas ao usuário MUST
+ser em português brasileiro.
+
+## Development Workflow
+
+Fluxo Spec-Driven: `specify → clarify → plan → tasks → implement`, com
+artefatos em `specs/<feature>/` (spec.md, plan.md, tasks.md, research.md,
+data-model.md, contracts/, checklists/). Task do Jira (`SDB-x`, espaço
+Sidebrain) é a fonte da descrição; usar MCP do Jira, Context7 para docs
+atualizadas e Figma para o visual. Commits seguem conventional commits
+(via commitlint + husky + lint-staged).
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+Esta constituição prevalece sobre práticas ad-hoc. Emendas requerem
+atualização deste arquivo, bump de versão semântica e plano de migração
+quando houver quebra. MAJOR: remoção/redefinição incompatível de
+princípio. MINOR: novo princípio ou seção. PATCH: clarificações e
+correções de texto. Todo PR/review MUST verificar conformidade com os
+princípios I–V e com as convenções de domínio, rotas, API e layout.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-09-23 | **Last Amended**: 2026-09-23

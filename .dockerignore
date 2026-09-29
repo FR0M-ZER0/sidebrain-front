@@ -16,22 +16,12 @@ credentials
 secrets.yml
 secrets.yaml
 
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-pip-log.txt
-pip-delete-this-directory.txt
-.mypy_cache/
-.dmypy.json
-*.egg-info/
+# Build and package artifacts
+node_modules/
+dist/
+build/
+Dockerfile*
+.dockerignore
 
 # Version control
 .git/
@@ -58,24 +48,11 @@ LICENSE*
 CHANGELOG*
 docs/
 documentation/
-.readthedocs.yml
-mkdocs.yml
 
 # Tests & Coverage
-test/
-tests/
-__tests__/
-*.test.js
-*.test.ts
-*.spec.js
-*.spec.ts
-*.test.py
-*_test.go
 coverage/
 .coverage
 htmlcov/
-.pytest_cache/
-.tox/
 jest.config.js
 vitest.config.js
 
@@ -84,9 +61,6 @@ vitest.config.js
 .gitlab-ci.yml
 .circleci/
 .travis.yml
-azure-pipelines.yml
-Jenkinsfile
-.drone.yml
 
 # Log files
 *.log

@@ -1,3 +1,5 @@
+import { api } from './api'
+
 export interface LessonBreadcrumb {
 	label: string
 	destination?: string
@@ -38,48 +40,13 @@ export interface LessonData {
 	}
 }
 
-const lessonMock: LessonData = {
-	id: 'lesson-3',
-	title: 'Teorema de Pitágoras',
-	breadcrumbs: [
-		{ label: 'Trilhas', destination: '/', current: false },
-		{ label: 'Matemática do zero' },
-		{ label: 'Módulo 1' },
-		{ label: 'Teorema de Pitágoras', current: true },
-	],
-	progress: {
-		currentLesson: 3,
-		totalLessons: 8,
-		trailCompletionPercentage: 35,
-	},
-	streakCount: 12,
-	content: {
-		title: 'Teorema de Pitágoras',
-		blocks: [
-			{
-				id: 'pythagorean-figure',
-				type: 'image',
-				url: '/assets/images/pythagorean-theorem.png',
-				caption: 'Figura 1: A soma das áreas dos quadrados construídos sobre os catetos (a² + b²) equivale com exatidão à área do quadrado formado sobre a hipotenusa (c²).',
-				altText: 'Triângulo retângulo com catetos a e b e hipotenusa c, ilustrando a² + b² = c²',
-			},
-			{
-				id: 'pythagorean-paragraph-1',
-				type: 'paragraph',
-				text: 'O Teorema de Pitágoras afirma que, em qualquer triângulo retângulo, o quadrado do comprimento da hipotenusa é igual à soma dos quadrados dos comprimentos dos catetos. Representado algebricamente pela consagrada equação a² + b² = c², este princípio transcende uma simples fórmula numérica — trata-se de uma propriedade geométrica direta sobre equivalência de áreas.',
-			},
-			{
-				id: 'pythagorean-paragraph-2',
-				type: 'paragraph',
-				text: 'Os catetos são os dois lados adjacentes que se encontram formando o ângulo reto exato de 90 graus. Já a hipotenusa é sempre o lado oposto a esse ângulo reto, correspondendo invariavelmente ao maior segmento do triângulo e indicando a menor distância vetorial direta entre dois pontos.',
-			},
-			{
-				id: 'pythagorean-paragraph-3',
-				type: 'paragraph',
-				text: 'Quando desenhamos geometricamente um quadrado com base em cada cateto, as superfícies somadas desses dois quadrados menores preenchem perfeitamente a superfície do quadrado construído apoiado sobre a hipotenusa. Esse conceito clássico continua sendo a fundação indispensável da trigonometria, navegação por coordenadas cartesianas, física vetorial e computação gráfica tridimensional.',
-			},
-		],
-	},
+export interface LessonNavigationContext {
+	from: string
+	trackTitle: string
+	moduleTitle: string
+	currentLesson: number
+	totalLessons: number
+	trailCompletionPercentage: number
 }
 
 const isPositiveInteger = (value: number) => Number.isInteger(value) && value > 0
@@ -108,10 +75,60 @@ const isValidLesson = (lesson: LessonData) => {
 		&& hasValidBlocks
 }
 
-export const getLesson = async (lessonId: string): Promise<LessonData> => {
-	if (lessonId !== lessonMock.id || !isValidLesson(lessonMock)) {
-		throw new Error('Não foi possível encontrar esta lição.')
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+	typeof value === 'object' && value !== null
+
+interface ApiLessonResponse {
+	id: string
+	title: string
+	text?: unknown
+}
+
+const isApiLesson = (value: unknown): value is ApiLessonResponse =>
+	isRecord(value) && typeof value.id === 'string' && typeof value.title === 'string'
+
+const getApiLesson = (response: unknown): ApiLessonResponse => {
+	if (!isRecord(response)) throw new Error('A resposta da lição está em um formato inválido.')
+	const lesson = response.lesson ?? response.data ?? response
+	if (!isApiLesson(lesson)) {
+		throw new Error('A resposta da lição está em um formato inválido.')
+	}
+	return lesson
+}
+
+export const getLesson = async (
+	lessonId: string,
+	context?: LessonNavigationContext,
+): Promise<LessonData> => {
+	if (!lessonId) throw new Error('Não foi possível encontrar esta lição.')
+
+	const { data } = await api.get<unknown>(`/api/v1/lessons/${encodeURIComponent(lessonId)}`)
+	const lesson = getApiLesson(data)
+	const title = lesson.title
+	const text = typeof lesson.text === 'string' ? lesson.text : ''
+	const breadcrumbs: LessonBreadcrumb[] = context
+		? [
+			{ label: 'Trilhas', destination: '/' },
+			{ label: context.trackTitle, destination: context.from },
+			{ label: context.moduleTitle },
+			{ label: title, current: true },
+		]
+		: [{ label: 'Trilhas', destination: '/' }, { label: title, current: true }]
+	const apiLesson: LessonData = {
+		id: lesson.id,
+		title,
+		breadcrumbs,
+		progress: {
+			currentLesson: context?.currentLesson ?? 1,
+			totalLessons: context?.totalLessons,
+			trailCompletionPercentage: context?.trailCompletionPercentage ?? 0,
+		},
+		content: {
+			title,
+			blocks: text.trim() ? [{ id: `${lesson.id}-text`, type: 'paragraph', text }] : [],
+		},
 	}
 
-	return lessonMock
+	if (!isValidLesson(apiLesson)) throw new Error('O conteúdo desta lição está em um formato inválido.')
+	return apiLesson
 }

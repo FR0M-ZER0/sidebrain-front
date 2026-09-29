@@ -4,6 +4,7 @@ import { useCallback } from 'react'
 import { Link, useNavigate } from 'react-router'
 import type { TrackCreationApi } from '../../api/trackCreationApi'
 import { HeaderBar } from '../../components/customer/HeaderBar'
+import { OnboardingProgress } from '../../components/customer/OnboardingProgress'
 import { PopularGoalSuggestions } from '../../components/customer/PopularGoalSuggestions'
 import { Sidebar } from '../../components/customer/Sidebar'
 import { useTrackCreation } from '../../hooks/useTrackCreation'
@@ -25,11 +26,12 @@ export const CreateTrackPage = ({ api }: CreateTrackPageProps) => {
 
 	return (
 		<div className="app-shell track-create-shell">
-			<Sidebar activeItem="Minhas Trilhas" />
+			<Sidebar />
 			<main className="page-shell track-create-page">
 				<HeaderBar xp={320} coins={500} notifications={1} />
 				<div className="track-create-content">
-					<Link to="/" className="track-create-breadcrumb"><ArrowLeft aria-hidden="true" size={22} /><span>Trilhas</span><span aria-hidden="true">/</span><span className="track-create-breadcrumb__current">Nova Jornada Guiada</span></Link>
+					<Link to="/" className="track-create-breadcrumb"><ArrowLeft aria-hidden="true" size={22} /><span>Trilhas</span><span aria-hidden="true">/</span><span className="track-create-breadcrumb__current">Criar trilha</span></Link>
+					<OnboardingProgress currentStep={1} totalSteps={3} title="Etapa 1 de 3: Configuração Inicial" />
 
 					<motion.section
 						initial={reduceMotion ? false : { opacity: 0, y: 14 }}
@@ -37,7 +39,6 @@ export const CreateTrackPage = ({ api }: CreateTrackPageProps) => {
 						transition={reduceMotion ? { duration: 0 } : { duration: 0.35, ease: 'easeOut' }}
 						className="track-create-card"
 					>
-						<div className="track-create-step"><span>Passo 1 de 3</span><span aria-hidden="true">•</span><span>Configuração Inicial</span></div>
 						<h1>O que você quer aprender hoje?</h1>
 						<p className="track-create-intro">Nossa IA analisa seus objetivos, cria um currículo estruturado sob medida e acompanha sua evolução em tempo real.</p>
 
@@ -87,7 +88,7 @@ export const CreateTrackPage = ({ api }: CreateTrackPageProps) => {
 							</motion.button>
 						</div>
 					</motion.section>
-					<p className="track-create-mock-note">O envio desta etapa é demonstrativo. Seu objetivo só será enviado ao servidor quando a integração real estiver disponível.</p>
+					<p className="track-create-mock-note">Seu objetivo será enviado para gerar a trilha depois da configuração inicial e do diagnóstico, se você escolher essa opção.</p>
 				</div>
 			</main>
 		</div>

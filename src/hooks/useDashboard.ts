@@ -1,4 +1,5 @@
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
+import { getDashboardTracks } from '../api/dashboardApi'
 import type { DashboardData } from '../types/dashboard'
 
 const dashboardData: DashboardData = {
@@ -85,11 +86,42 @@ const dashboardData: DashboardData = {
 }
 
 export const useDashboard = () => {
-	const data = useMemo(() => dashboardData, [])
+	const [tracks, setTracks] = useState<DashboardData['trilhas']>([])
+	const [loading, setLoading] = useState(true)
+	const [error, setError] = useState<string | null>(null)
+
+	useEffect(() => {
+		let isActive = true
+
+		getDashboardTracks()
+			.then((result) => {
+				if (isActive) {
+					setTracks(result)
+					setError(null)
+				}
+			})
+			.catch(() => {
+				if (isActive) {
+					setTracks(dashboardData.trilhas)
+					setError('Não foi possível carregar suas trilhas. Exibindo os dados de demonstração.')
+				}
+			})
+			.finally(() => {
+				if (isActive) {
+					setLoading(false)
+				}
+			})
+
+		return () => {
+			isActive = false
+		}
+	}, [])
+
+	const data: DashboardData = { ...dashboardData, trilhas: tracks }
 
 	return {
 		data,
-		loading: false,
-		error: null,
+		loading,
+		error,
 	}
 }

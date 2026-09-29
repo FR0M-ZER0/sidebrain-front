@@ -1,16 +1,16 @@
 import { ArrowRight } from 'lucide-react'
 import type { DashboardTrack } from '../../types/dashboard'
 import { ProgressBar } from '../general/ProgressBar'
+import { useNavigate } from 'react-router'
 
 interface TrackCardProps {
   track: DashboardTrack
 }
 
 export const TrackCard = ({ track }: TrackCardProps) => {
+	const navigate = useNavigate()
 	const openTrack = () => {
-		if (track.id === 't-02') {
-			window.location.href = '/quiz'
-		}
+		navigate(`/trails/${track.id}`)
 	}
 
 	return (
@@ -20,7 +20,11 @@ export const TrackCard = ({ track }: TrackCardProps) => {
 				<div className="track-copy">
 					<div className="track-topline">
 						<span className="track-category">{track.categoria}</span>
-						<span className="track-module">Módulo 2 de 5</span>
+						<span className="track-module">
+							{track.totalModulos > 0
+								? `Módulo ${track.moduloAtual} de ${track.totalModulos}`
+								: 'Sem módulos'}
+						</span>
 					</div>
 					<h3>{track.nome}</h3>
 					<p>{track.descricao}</p>

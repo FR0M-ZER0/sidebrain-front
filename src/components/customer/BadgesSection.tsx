@@ -8,7 +8,7 @@ interface BadgesSectionProps {
 
 export const BadgesSection = ({ badges }: BadgesSectionProps) => {
 	return (
-		<section className="panel badges-panel">
+		<section id="badges" className="panel badges-panel">
 			<div className="panel-header">
 				<h2><Trophy size={18} aria-hidden="true" /> Badges & Conquistas</h2>
 				<button type="button" className="link-button">Ver todas as missões (12)›</button>

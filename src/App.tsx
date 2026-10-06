@@ -6,8 +6,6 @@ import { HomeDashboardPage } from './pages/customer/HomeDashboardPage'
 import { CreateTrackPage } from './pages/customer/CreateTrackPage'
 import { TrailLevelAssessmentPage } from './pages/customer/TrailLevelAssessmentPage'
 import { TrailStartPreferencePage } from './pages/customer/TrailStartPreferencePage'
-import { TrailGuidedStartPage } from './pages/customer/TrailGuidedStartPage'
-import { TrailOnboardingSummaryPage } from './pages/customer/TrailOnboardingSummaryPage'
 import { TrailGenerationLoadingPage } from './pages/customer/TrailGenerationLoadingPage'
 import { AssessmentPage } from './pages/customer/AssessmentPage'
 import { QuizResultPage } from './pages/customer/QuizResultPage'
@@ -43,8 +41,6 @@ function App() {
 				<Route path="/trails/new/create" element={<CreateTrackPage />} />
 				<Route path="/trails/new/start" element={<NavigationPage><TrailStartPreferencePage /></NavigationPage>} />
 				<Route path="/trails/new/assessment" element={<NavigationPage><TrailLevelAssessmentPage /></NavigationPage>} />
-				<Route path="/trails/new/guided" element={<NavigationPage><TrailGuidedStartPage /></NavigationPage>} />
-				<Route path="/trails/new/summary" element={<NavigationPage><TrailOnboardingSummaryPage /></NavigationPage>} />
 				<Route path="/trails/new/generating" element={<NavigationPage><TrailGenerationLoadingPage /></NavigationPage>} />
 				<Route path="/quiz" element={<NavigationPage><AssessmentPage /></NavigationPage>} />
 				<Route path="/quiz-result" element={<NavigationPage><QuizResultPage /></NavigationPage>} />

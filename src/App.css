@@ -2216,6 +2216,48 @@
   margin-inline: auto;
 }
 
+.student-page-main.trail-generation-page .student-page-content {
+  min-height: calc(100vh - 90px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.trail-generation-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  width: min(100%, 680px);
+  text-align: center;
+}
+
+.trail-generation-spinner {
+  color: #1b5ec6;
+  flex: none;
+}
+
+.trail-generation-loading h1 {
+  margin: 0;
+  color: #1d2a3a;
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  line-height: 1.15;
+}
+
+.trail-generation-loading p {
+  margin: 0;
+  color: #425574;
+  font-size: 1.125rem;
+  line-height: 1.5;
+}
+
+.trail-generation-error {
+  width: min(100%, 680px);
+  margin-top: 24px;
+}
+
 .header-streak-pill {
   display: inline-flex;
   align-items: center;

@@ -1,7 +1,5 @@
 import './App.css'
-import type { ReactNode } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router'
-import { Sidebar } from './components/customer/Sidebar'
 import { HomeDashboardPage } from './pages/customer/HomeDashboardPage'
 import { CreateTrackPage } from './pages/customer/CreateTrackPage'
 import { TrailLevelAssessmentPage } from './pages/customer/TrailLevelAssessmentPage'
@@ -13,13 +11,6 @@ import { LessonPage } from './pages/customer/LessonPage'
 import { LessonCompletionPage } from './pages/lessons/LessonCompletionPage'
 import { TrackDetailsPage } from './pages/customer/TrackDetailsPage'
 import { LessonQuizPage } from './pages/customer/LessonQuizPage'
-
-const NavigationPage = ({ children }: { children: ReactNode }) => (
-	<div className="app-shell shared-navigation-shell">
-		<Sidebar />
-		<div className="shared-navigation-content">{children}</div>
-	</div>
-)
 
 const LessonCompletionRoute = () => {
 	const navigate = useNavigate()
@@ -39,14 +30,14 @@ function App() {
 				<Route path="/" element={<HomeDashboardPage />} />
 				<Route path="/trails/:slug" element={<TrackDetailsPage />} />
 				<Route path="/trails/new/create" element={<CreateTrackPage />} />
-				<Route path="/trails/new/start" element={<NavigationPage><TrailStartPreferencePage /></NavigationPage>} />
-				<Route path="/trails/new/assessment" element={<NavigationPage><TrailLevelAssessmentPage /></NavigationPage>} />
-				<Route path="/trails/new/generating" element={<NavigationPage><TrailGenerationLoadingPage /></NavigationPage>} />
-				<Route path="/quiz" element={<NavigationPage><AssessmentPage /></NavigationPage>} />
-				<Route path="/quiz-result" element={<NavigationPage><QuizResultPage /></NavigationPage>} />
-				<Route path="/lessons/:id/completion" element={<NavigationPage><LessonCompletionRoute /></NavigationPage>} />
-				<Route path="/lessons/:id/quiz" element={<NavigationPage><LessonQuizPage /></NavigationPage>} />
-				<Route path="/lessons/:id" element={<NavigationPage><LessonPage /></NavigationPage>} />
+				<Route path="/trails/new/start" element={<TrailStartPreferencePage />} />
+				<Route path="/trails/new/assessment" element={<TrailLevelAssessmentPage />} />
+				<Route path="/trails/new/generating" element={<TrailGenerationLoadingPage />} />
+				<Route path="/quiz" element={<AssessmentPage />} />
+				<Route path="/quiz-result" element={<QuizResultPage />} />
+				<Route path="/lessons/:id/completion" element={<LessonCompletionRoute />} />
+				<Route path="/lessons/:id/quiz" element={<LessonQuizPage />} />
+				<Route path="/lessons/:id" element={<LessonPage />} />
 				<Route path="*" element={<Navigate to="/" replace />} />
 			</Routes>
 		</BrowserRouter>

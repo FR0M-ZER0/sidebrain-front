@@ -97,7 +97,7 @@ export const LessonQuizPage = () => {
 
 	return (
 		<LessonFocusLayout streakCount={lesson?.streakCount} onExit={() => navigate(returnTo, { state: location.state })}>
-			<main className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col gap-6 px-4 py-6 sm:gap-8 sm:px-6 sm:py-8">
+			<main className="lesson-quiz-main mx-auto flex w-full max-w-[1440px] flex-1 flex-col gap-6 px-4 py-6 sm:gap-8 sm:px-6 sm:py-8">
 				{isLoading && <div className="flex flex-1 items-center justify-center gap-3 text-slate-600" role="status"><LoaderCircle className="animate-spin" />Carregando quiz da lição...</div>}
 				{lesson && <>
 					<LessonHeader breadcrumbs={lesson.breadcrumbs} onExit={() => navigate(returnTo, { state: location.state })} />

@@ -9,13 +9,12 @@ import {
 	ChevronDown,
 	ChevronUp,
 	CircleDashed,
-	Flame,
 	LockKeyhole,
-	Search,
 	Signal,
 	Zap,
 } from 'lucide-react'
-import { Sidebar } from '../../components/customer/Sidebar'
+import { Link } from 'react-router'
+import { StudentPageLayout } from '../../components/customer/layouts/StudentPageLayout'
 import { useTrackDetails } from '../../hooks/useTrackDetails'
 import type { LessonNavigationContext } from '../../api/lessonsApi'
 import type { Module, TrackDetails } from '../../types/trackDetails'
@@ -91,39 +90,41 @@ export const TrackDetailsPage = () => {
 	const track = trackState.status === 'success' ? trackState.track : null
 
 	return (
-		<div className="app-shell track-details-shell">
-			<Sidebar />
-			<main className="track-details-page">
-				<header className="track-topbar">
-					<div className="track-search"><Search size={21} /><input aria-label="Pesquisar" value="Pesquisar conceitos, trilhas ou mentoria..." readOnly /></div>
-					<div className="track-topbar-actions">
-						<span className="track-xp-pill"><Zap size={22} />320 / 500 XP</span>
-						<span className="track-streak-pill"><Flame size={21} />12</span>
-						<button type="button" aria-label="Notificações" className="track-bell"><span>♧</span><i /></button>
-					</div>
-				</header>
-				{trackState.status === 'loading' && <div className="track-state" role="status">Carregando trilha...</div>}
-				{trackState.status === 'error' && <div className="track-state track-state-error" role="alert">{trackState.message}</div>}
-				{track && <>
-					<div className="track-breadcrumb"><a href="/#tracks"><ArrowLeft size={18} /> Trilhas Ativas</a><span>/</span><strong>{track.title}</strong></div>
-					<div className="track-details-layout">
-						<aside className="track-overview-card">
-							<div className="track-overview-title"><span className="track-japanese-icon">{track.icon || '🧭'}</span><div><span>TRILHA</span><h1>{track.title}</h1></div></div>
-							<div className="track-overview-meta"><span><Signal size={18} />{track.level}</span><i /><span><BookOpen size={20} />{track.totalLessons} Lições no total</span></div>
-							<div className="track-progress-card"><h2>Progresso da Trilha</h2><div className="track-progress-bar"><span style={{ width: `${track.progressPercentage}%` }} /></div><div className="track-progress-meta"><span>{track.completedLessons} de {track.totalLessons} lições</span><b>{track.progressPercentage}% Concluído</b></div></div>
-							<div className="track-missions-card">
-								<h2><span>◉</span> Missões da trilha</h2>
-								{track.missions.map((mission) => <article className="track-mission" key={mission.id}><div><strong>{mission.title}</strong><b><Zap size={16} /> +{mission.xpReward} XP</b></div><div className="track-mission-bar"><span style={{ width: `${mission.progressPercentage}%` }} /></div><footer><span>{mission.currentProgress} de {mission.totalProgress} {mission.title.toLowerCase().includes('quiz') ? 'quizzes' : 'concluídas'}</span><b>{mission.progressPercentage}%</b></footer></article>)}
-								<button type="button" className="track-all-missions">Ver todas as missões <ArrowRight size={17} /></button>
-							</div>
-						</aside>
-						<div className="track-curriculum">
-							<div className="track-curriculum-heading"><h2>Roteiro de Aprendizado</h2><p>Siga a ordem guiada ou revise tópicos concluídos para reforço de memória.</p></div>
-							<div className="track-module-list">{track.modules.map((module, index) => <ModuleCard key={module.id} module={module} index={index} track={track} />)}</div>
+		<StudentPageLayout
+			xp={320}
+			coins={500}
+			notifications={1}
+			streakCount={12}
+			className="track-details-shell"
+			pageClassName="track-details-page"
+			breadcrumb={track && (
+				<nav className="track-breadcrumb" aria-label="Navegação estrutural">
+					<Link to="/#tracks"><ArrowLeft size={18} /> Trilhas Ativas</Link>
+					<span aria-hidden="true">/</span>
+					<strong aria-current="page">{track.title}</strong>
+				</nav>
+			)}
+		>
+			{trackState.status === 'loading' && <div className="track-state" role="status">Carregando trilha...</div>}
+			{trackState.status === 'error' && <div className="track-state track-state-error" role="alert">{trackState.message}</div>}
+			{track && (
+				<div className="track-details-layout">
+					<aside className="track-overview-card">
+						<div className="track-overview-title"><span className="track-japanese-icon">{track.icon || '🧭'}</span><div><span>TRILHA</span><h1>{track.title}</h1></div></div>
+						<div className="track-overview-meta"><span><Signal size={18} />{track.level}</span><i /><span><BookOpen size={20} />{track.totalLessons} Lições no total</span></div>
+						<div className="track-progress-card"><h2>Progresso da Trilha</h2><div className="track-progress-bar"><span style={{ width: `${track.progressPercentage}%` }} /></div><div className="track-progress-meta"><span>{track.completedLessons} de {track.totalLessons} lições</span><b>{track.progressPercentage}% Concluído</b></div></div>
+						<div className="track-missions-card">
+							<h2><span>◉</span> Missões da trilha</h2>
+							{track.missions.map((mission) => <article className="track-mission" key={mission.id}><div><strong>{mission.title}</strong><b><Zap size={16} /> +{mission.xpReward} XP</b></div><div className="track-mission-bar"><span style={{ width: `${mission.progressPercentage}%` }} /></div><footer><span>{mission.currentProgress} de {mission.totalProgress} {mission.title.toLowerCase().includes('quiz') ? 'quizzes' : 'concluídas'}</span><b>{mission.progressPercentage}%</b></footer></article>)}
+							<button type="button" className="track-all-missions">Ver todas as missões <ArrowRight size={17} /></button>
 						</div>
+					</aside>
+					<div className="track-curriculum">
+						<div className="track-curriculum-heading"><h2>Roteiro de Aprendizado</h2><p>Siga a ordem guiada ou revise tópicos concluídos para reforço de memória.</p></div>
+						<div className="track-module-list">{track.modules.map((module, index) => <ModuleCard key={module.id} module={module} index={index} track={track} />)}</div>
 					</div>
-				</>}
-			</main>
-		</div>
+				</div>
+			)}
+		</StudentPageLayout>
 	)
 }

@@ -5,6 +5,7 @@ import { ProgressBar } from '../../components/general/ProgressBar'
 import { StatusBadge } from '../../components/general/StatusBadge'
 import { GenerationStepList } from '../../components/customer/GenerationStepList'
 import { StudyTipCard } from '../../components/customer/StudyTipCard'
+import { StudentPageLayout } from '../../components/customer/layouts/StudentPageLayout'
 import { useTrailGeneration } from '../../hooks/useTrailGeneration'
 import type { TrackGenerationRequest } from '../../types/trackFlow'
 
@@ -33,7 +34,7 @@ export const TrailGenerationLoadingPage = () => {
 	const milestone = error ?? (job?.status === 'completed' ? 'Trilha pronta! Redirecionando...' : 'Gerando e estruturando o conteúdo da sua trilha...')
 
 	return (
-		<div className="onboarding-page-shell">
+		<StudentPageLayout xp={320} coins={500} notifications={1} pageClassName="trail-generation-page">
 			<div className="onboarding-container">
 				<div className="generation-hero">
 					<div className="generation-orb" aria-hidden="true"><Sparkles size={48} /></div>
@@ -52,6 +53,6 @@ export const TrailGenerationLoadingPage = () => {
 				{loading && !job ? <div className="assessment-loading"><Loader2 className="spinner" size={20} aria-hidden="true" /><span>Iniciando geração...</span></div> : null}
 				{error && <div><div className="onboarding-error">{error}</div><div className="generation-error-actions"><button type="button" className="primary-button onboarding-primary" onClick={() => void retry()}><RefreshCw size={16} aria-hidden="true" />Tentar novamente</button></div></div>}
 			</div>
-		</div>
+		</StudentPageLayout>
 	)
 }

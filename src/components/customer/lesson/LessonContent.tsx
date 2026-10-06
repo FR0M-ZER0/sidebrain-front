@@ -40,16 +40,14 @@ export const LessonImage = ({ url, altText, caption }: LessonImageProps) => {
 }
 
 export const LessonContent = ({ title, blocks }: LessonContentProps) => (
-	<article className="mx-auto w-full max-w-6xl rounded-[28px] bg-white px-5 py-8 shadow-sm sm:px-10 sm:py-12 lg:px-12">
+	<article className="mx-auto w-full max-w-none rounded-[28px] bg-white px-5 py-8 shadow-sm sm:px-10 sm:py-12 lg:px-12">
 		<h1 className="mb-8 text-center text-4xl font-bold leading-tight tracking-[-0.04em] text-foreground sm:mb-10 sm:text-5xl lg:text-6xl">
 			{title}
 		</h1>
 		<div className="mx-auto max-w-5xl">
 			{blocks.map((block) => {
 				if (block.type === 'image') {
-					// Imagens permanecem prontas para exibição quando a API passar a fornecê-las.
-					// return <LessonImage key={block.id} url={block.url} altText={block.altText} caption={block.caption} />
-					return null
+					return <LessonImage key={block.id} url={block.url} altText={block.altText} caption={block.caption} />
 				}
 
 				if (!block.text.trim()) {

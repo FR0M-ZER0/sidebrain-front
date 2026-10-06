@@ -43,18 +43,18 @@ export const LessonFocusLayout = ({ children, streakCount, onExit }: LessonFocus
 
 			{children}
 
-			<div className="activity-help-bar">
-				<button type="button" onClick={(event) => openHelp(event.currentTarget)} aria-keyshortcuts="Control+K">
-					<Keyboard aria-hidden="true" size={18} />
-					<span>Ajuda e atalhos</span>
-					<kbd>Ctrl</kbd><span aria-hidden="true">+</span><kbd>K</kbd>
-				</button>
-				<span>Pressione ESC para sair ou retornar</span>
-			</div>
 			<KeyboardShortcutsHelp isOpen={isOpen} onClose={closeHelp} />
 
-			<footer className="mt-auto flex flex-col items-start justify-between gap-3 border-t border-slate-100 bg-primary-soft px-5 py-4 text-sm font-medium text-muted sm:flex-row sm:items-center sm:px-8">
+			<footer className="lesson-focus-footer mt-auto flex flex-col items-start justify-between gap-3 border-t border-slate-100 bg-primary-soft px-5 py-4 text-sm font-medium text-muted sm:flex-row sm:items-center sm:px-8">
 				<span>© {new Date().getFullYear()} Sidebrain AI. Modo de foco sem distrações.</span>
+				<div className="activity-help-bar">
+					<button type="button" onClick={(event) => openHelp(event.currentTarget)} aria-keyshortcuts="Control+K">
+						<Keyboard aria-hidden="true" size={18} />
+						<span>Ajuda e atalhos</span>
+						<kbd>Ctrl</kbd><span aria-hidden="true">+</span><kbd>K</kbd>
+					</button>
+					<span>Pressione ESC para sair ou retornar</span>
+				</div>
 			</footer>
 		</div>
 	)

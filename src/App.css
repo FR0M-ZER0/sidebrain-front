@@ -2324,6 +2324,14 @@
   font-size: 0.875rem;
 }
 
+.lesson-focus-footer .activity-help-bar {
+  width: auto;
+  margin: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+}
+
 .activity-help-bar > button {
   display: inline-flex;
   min-height: 44px;
@@ -2638,8 +2646,18 @@
     flex-direction: column;
   }
 
+  .lesson-focus-footer .activity-help-bar {
+    align-items: flex-end;
+    align-self: flex-end;
+    flex-direction: row;
+  }
+
   .activity-help-bar > span {
     font-size: 0.78rem;
+  }
+
+  .lesson-focus-footer .activity-help-bar > span {
+    text-align: right;
   }
 
   .keyboard-help-list > div {

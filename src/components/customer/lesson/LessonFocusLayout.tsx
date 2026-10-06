@@ -53,7 +53,7 @@ export const LessonFocusLayout = ({ children, streakCount, onExit }: LessonFocus
 			<KeyboardShortcutsHelp isOpen={isOpen} onClose={closeHelp} />
 
 			<footer className="mt-auto flex flex-col items-start justify-between gap-3 border-t border-slate-100 bg-primary-soft px-5 py-4 text-sm font-medium text-muted sm:flex-row sm:items-center sm:px-8">
-				<span>© 2025 Sidebrain AI. Modo de foco sem distrações.</span>
+				<span>© {new Date().getFullYear()} Sidebrain AI. Modo de foco sem distrações.</span>
 			</footer>
 		</div>
 	)

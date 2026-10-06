@@ -73,13 +73,13 @@ export const LessonPage = () => {
 					initial={shouldReduceMotion ? false : { opacity: 0, y: 15 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.45, ease: 'easeOut' }}
-					className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col gap-6 px-4 py-6 sm:gap-8 sm:px-6 sm:py-8"
+					className="mx-auto flex w-full max-w-360 flex-1 flex-col gap-6 px-4 py-6 sm:gap-8 sm:px-6 sm:py-8"
 				>
 					<LessonHeader breadcrumbs={lesson.breadcrumbs} onExit={requestExit} />
 					<LessonProgress progress={lesson.progress} />
 					<LessonContent title={lesson.content.title} blocks={lesson.content.blocks} />
-					<footer className="mt-auto flex flex-wrap items-center justify-between gap-4 border-t border-dashed border-indigo-200 pt-5">
-						<button type="button" onClick={() => navigate(returnTo)} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-primary-soft px-4 py-2 text-sm font-semibold text-muted transition-colors hover:bg-indigo-100">
+					<footer className="mt-auto flex flex-wrap items-center justify-between gap-4 pt-5">
+						<button type="button" onClick={() => navigate(returnTo)} className="normalize-button inline-flex min-h-10 items-center gap-2 rounded-lg bg-primary-soft px-4 py-2 text-sm font-semibold text-muted transition-colors hover:bg-indigo-100">
 							<ArrowLeft size={16} aria-hidden="true" /> Voltar
 						</button>
 						<div className="flex items-center gap-2 text-sm font-medium text-slate-600"><CheckCircle2 size={16} className="text-emerald-600" aria-hidden="true" /> Teoria concluída</div>

@@ -2481,6 +2481,11 @@
   margin-top: 16px;
 }
 
+.normalize-button {
+  border: none;
+  background: none;
+}
+
 .assessment-main .assessment-card {
   margin-top: 28px;
   border-radius: 22px;

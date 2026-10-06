@@ -23,7 +23,7 @@ export const LessonFocusLayout = ({ children, streakCount, onExit }: LessonFocus
 					onClick={onExit}
 					whileHover={shouldReduceMotion ? undefined : { scale: 1.02 }}
 					whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
-					className="inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline focus-visible:outline-primary"
+					className="normalize-button inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-600 transition-colors hover:text-red-900"
 				>
 					<X aria-hidden="true" size={24} />
 				</motion.button>

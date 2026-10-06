@@ -16,14 +16,14 @@ export const LessonFocusLayout = ({ children, streakCount, onExit }: LessonFocus
 
 	return (
 		<div className="flex min-h-screen flex-col bg-background text-foreground">
-			<header className="grid h-[76px] shrink-0 grid-cols-3 items-center border-b border-slate-100 bg-white/80 px-5 shadow-sm sm:px-8">
+			<header className="grid h-19 shrink-0 grid-cols-3 items-center border-b border-slate-100 bg-white/80 px-5 shadow-sm sm:px-8">
 				<motion.button
 					type="button"
 					aria-label="Sair da aula"
 					onClick={onExit}
 					whileHover={shouldReduceMotion ? undefined : { scale: 1.02 }}
 					whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
-					className="inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+					className="inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline focus-visible:outline-primary"
 				>
 					<X aria-hidden="true" size={24} />
 				</motion.button>

@@ -160,16 +160,13 @@
 
 .topbar {
   display: flex;
+  justify-content: space-evenly;
   align-items: center;
   gap: 18px;
   background: rgba(255, 255, 255, 0.1);
   border-bottom: 1px solid rgba(26, 40, 54, 0.08);
-  padding: 18px 18px 14px;
+  padding: 18px 0px;
   margin-bottom: 18px;
-}
-
-.topbar-left {
-  min-width: 140px;
 }
 
 .brand-inline {
@@ -187,7 +184,6 @@
   border: 1px solid rgba(53, 68, 84, 0.12);
   border-radius: 999px;
   padding: 8px 14px;
-  max-width: 560px;
 }
 
 .search-icon {

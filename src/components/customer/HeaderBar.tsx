@@ -10,9 +10,6 @@ interface HeaderBarProps {
 export const HeaderBar = ({ xp, coins, notifications, streakCount }: HeaderBarProps) => {
 	return (
 		<header className="topbar">
-			<div className="topbar-left">
-			</div>
-
 			<div className="search-box" role="search">
 				<Search className="search-icon" size={16} aria-hidden="true" />
 				<input type="text" value="Pesquisar conceitos, trilhas ou mentoria..." aria-label="Pesquisa" readOnly />

@@ -1,6 +1,7 @@
 import { Flame, Keyboard, X } from 'lucide-react'
 import { motion, useReducedMotion } from 'motion/react'
 import type { ReactNode } from 'react'
+import sidebrainLogo from '../../../assets/sidebrain-logo.svg'
 import { KeyboardShortcutsHelp } from './KeyboardShortcutsHelp'
 import { useKeyboardHelp } from '../../../hooks/useKeyboardHelp'
 
@@ -27,7 +28,7 @@ export const LessonFocusLayout = ({ children, streakCount, onExit }: LessonFocus
 				>
 					<X aria-hidden="true" size={24} />
 				</motion.button>
-				<strong className="justify-self-center text-xl font-bold tracking-tight">Sidebrain</strong>
+				<img className="h-5 w-auto justify-self-center" src={sidebrainLogo} alt="Sidebrain" />
 				{typeof streakCount === 'number' && (
 					<div
 						className="inline-flex items-center justify-self-end gap-2 font-semibold text-amber-800"

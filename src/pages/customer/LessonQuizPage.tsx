@@ -104,7 +104,6 @@ export const LessonQuizPage = () => {
 				{!isLoading && !pageError && currentQuiz && <motion.section initial={shouldReduceMotion ? false : { opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.45, ease: 'easeOut' }} className="min-h-0 w-full flex-1 overflow-y-auto overscroll-contain rounded-[28px] bg-white px-5 py-8 shadow-sm sm:px-10 sm:py-12 lg:px-12">
 					<p className="mb-2 mt-0 text-right text-xs font-semibold text-muted sm:text-sm">Questão {currentIndex + 1} de {quizzes.length}</p>
 					<h1 className="mb-8 mt-0 text-center text-4xl font-bold leading-tight tracking-[-0.04em] text-foreground sm:mb-10 sm:text-5xl lg:text-6xl">{currentQuiz.question}</h1>
-					<label className="block text-base font-semibold text-foreground" htmlFor="quiz-answer">Sua resposta</label>
 					<textarea id="quiz-answer" rows={6} value={answer} disabled={Boolean(evaluation) || submitting} onChange={(event) => setAnswer(event.target.value)} placeholder="Escreva sua resposta..." className="mt-3 w-full resize-y rounded-xl border border-slate-200 p-4 text-lg leading-relaxed text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50" />
 					{evaluation && <div className={`mt-6 rounded-xl border p-4 text-base font-medium ${evaluationFeedback[evaluation].className}`} role="status">{evaluationFeedback[evaluation].title}</div>}
 					{error && quizzes.length > 0 && <p className="mt-5 rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert">{error}</p>}

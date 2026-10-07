@@ -1,5 +1,4 @@
-import { X } from 'lucide-react'
-import { motion, useReducedMotion } from 'motion/react'
+import { ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router'
 import type { LessonBreadcrumb } from '../../../api/lessonsApi'
 
@@ -8,40 +7,28 @@ interface LessonHeaderProps {
 	onExit: () => void
 }
 
-export const LessonHeader = ({ breadcrumbs, onExit }: LessonHeaderProps) => {
-	const shouldReduceMotion = useReducedMotion()
-
+export const LessonHeader = ({ breadcrumbs }: LessonHeaderProps) => {
 	return (
-		<div className="mb-3 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-			<nav aria-label="Navegação estrutural" className="min-w-0">
-				<ol className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-semibold uppercase tracking-wide text-slate-600 sm:text-sm">
+		<div className="shrink-0">
+			<nav aria-label="Navegação estrutural" className="track-breadcrumb lesson-breadcrumb min-w-0">
+				<ol className="m-0 flex list-none flex-wrap items-center gap-x-3 gap-y-1 p-0 text-sm text-slate-600">
 					{breadcrumbs.map((breadcrumb, index) => (
 						<li key={`${breadcrumb.label}-${index}`} className="inline-flex min-w-0 items-center gap-3">
 							{index > 0 && <span aria-hidden="true" className="text-slate-400">/</span>}
 							{breadcrumb.destination && !breadcrumb.current ? (
-								<Link to={breadcrumb.destination} className="rounded-sm hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+								<Link to={breadcrumb.destination} className="rounded-sm hover:text-primary focus-visible:outline focus-visible:outline-primary">
+									{index === 0 && <ArrowLeft size={16} aria-hidden="true" />}
 									{breadcrumb.label}
 								</Link>
 							) : (
-								<span aria-current={breadcrumb.current ? 'page' : undefined} className={breadcrumb.current ? 'text-foreground' : undefined}>
+								<strong aria-current={breadcrumb.current ? 'page' : undefined} className={breadcrumb.current ? 'text-foreground' : undefined}>
 									{breadcrumb.label}
-								</span>
+								</strong>
 							)}
 						</li>
 					))}
 				</ol>
 			</nav>
-
-			<motion.button
-				type="button"
-				onClick={onExit}
-				whileHover={shouldReduceMotion ? undefined : { scale: 1.02 }}
-				whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
-				className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 self-start rounded-full bg-primary-soft px-5 py-2 text-sm font-semibold text-muted transition-colors hover:bg-indigo-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary lg:self-auto"
-			>
-				<X aria-hidden="true" size={18} />
-			Sair da aula
-			</motion.button>
 		</div>
 	)
 }

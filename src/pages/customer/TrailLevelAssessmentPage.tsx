@@ -2,8 +2,8 @@ import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { startTrackAssessment, submitTrackAssessment } from '../../api/trackAssessmentApi'
-import { HeaderBar } from '../../components/customer/HeaderBar'
 import { OnboardingProgress } from '../../components/customer/OnboardingProgress'
+import { StudentPageLayout } from '../../components/customer/layouts/StudentPageLayout'
 import type { AssessmentQuestion } from '../../types/trailOnboarding'
 import type { TrackAssessmentAnswer } from '../../types/trackFlow'
 
@@ -69,19 +69,21 @@ export const TrailLevelAssessmentPage = () => {
 	}
 
 	return (
-		<main className="page-shell track-create-page track-start-page">
-			<HeaderBar xp={320} coins={500} notifications={1} />
-			<div className="track-create-content track-assessment-content">
+		<StudentPageLayout
+			xp={320}
+			coins={500}
+			notifications={1}
+			className="track-create-shell"
+			pageClassName="track-create-page track-start-page"
+			breadcrumb={(
 				<Link to="/trails/new/start" state={{ goalDescription }} className="track-create-breadcrumb">
 					<ArrowLeft aria-hidden="true" size={22} />
-					<span>Trilhas</span>
-					<span aria-hidden="true">/</span>
-					<span>Criar trilha</span>
-					<span aria-hidden="true">/</span>
-					<span>Escolher nivelamento</span>
-					<span aria-hidden="true">/</span>
-					<span className="track-create-breadcrumb__current">Nivelamento</span>
+					<span>Trilhas</span><span aria-hidden="true">/</span><span>Criar trilha</span><span aria-hidden="true">/</span>
+					<span>Escolher nivelamento</span><span aria-hidden="true">/</span><span className="track-create-breadcrumb__current">Nivelamento</span>
 				</Link>
+			)}
+		>
+			<div className="track-create-content track-assessment-content">
 				<div className="onboarding-container">
 					<OnboardingProgress currentStep={3} totalSteps={3} title="Etapa 3 de 3: Diagnóstico de Conhecimento" />
 					<div className="onboarding-card assessment-card">
@@ -98,6 +100,6 @@ export const TrailLevelAssessmentPage = () => {
 					</div>
 				</div>
 			</div>
-		</main>
+		</StudentPageLayout>
 	)
 }

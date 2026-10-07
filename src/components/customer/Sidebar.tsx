@@ -1,5 +1,6 @@
 import { Award, Bot, Home, LogOut, Route, Target, UserRound } from 'lucide-react'
 import { NavLink, useLocation } from 'react-router'
+import sidebrainLogo from '../../assets/sidebrain-logo.svg'
 
 export const Sidebar = () => {
 	const { pathname, hash } = useLocation()
@@ -16,7 +17,7 @@ export const Sidebar = () => {
 	return (
 		<aside className="sidebar">
 			<div className="brand-wrap">
-				<div className="brand">Sidebrain</div>
+				<img className="brand-logo" src={sidebrainLogo} alt="Sidebrain" />
 			</div>
 
 			<nav className="sidebar-nav" aria-label="Navegação principal">

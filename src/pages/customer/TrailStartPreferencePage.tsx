@@ -1,9 +1,9 @@
 import { ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
-import { HeaderBar } from '../../components/customer/HeaderBar'
 import { OnboardingProgress } from '../../components/customer/OnboardingProgress'
 import { TrailStartOptionCard } from '../../components/customer/TrailStartOptionCard'
+import { StudentPageLayout } from '../../components/customer/layouts/StudentPageLayout'
 
 export const TrailStartPreferencePage = () => {
 	const navigate = useNavigate()
@@ -25,18 +25,21 @@ export const TrailStartPreferencePage = () => {
 	}
 
 	return (
-		<main className="page-shell track-create-page track-start-page">
-			<HeaderBar xp={320} coins={500} notifications={1} />
-			<div className="track-create-content track-start-content">
+		<StudentPageLayout
+			xp={320}
+			coins={500}
+			notifications={1}
+			className="track-create-shell"
+			pageClassName="track-create-page track-start-page"
+			breadcrumb={(
 				<Link to="/trails/new/create" className="track-create-breadcrumb">
 					<ArrowLeft aria-hidden="true" size={22} />
-					<span>Trilhas</span>
-					<span aria-hidden="true">/</span>
-					<span>Criar trilha</span>
-					<span aria-hidden="true">/</span>
+					<span>Trilhas</span><span aria-hidden="true">/</span><span>Criar trilha</span><span aria-hidden="true">/</span>
 					<span className="track-create-breadcrumb__current">Escolher nivelamento</span>
 				</Link>
-
+			)}
+		>
+			<div className="track-create-content track-start-content">
 				<div className="onboarding-container">
 					<OnboardingProgress currentStep={2} totalSteps={3} title="Etapa 2 de 3: Calibração de Conhecimento" />
 
@@ -94,6 +97,6 @@ export const TrailStartPreferencePage = () => {
 					</div>
 				</div>
 			</div>
-		</main>
+		</StudentPageLayout>
 	)
 }

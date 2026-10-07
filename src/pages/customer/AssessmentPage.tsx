@@ -1,5 +1,6 @@
-import { ArrowLeft, Clock3, Coins, LifeBuoy } from 'lucide-react'
+import { ArrowLeft, Clock3 } from 'lucide-react'
 import { AssessmentCard } from '../../components/customer/AssessmentCard'
+import { LessonFocusLayout } from '../../components/customer/lesson/LessonFocusLayout'
 import { useAssessmentFlow } from '../../hooks/useAssessmentFlow'
 import type { Challenge } from '../../types/assessment'
 
@@ -47,29 +48,27 @@ export const AssessmentPage = () => {
 
 	if (progress.isComplete) {
 		return (
-			<div className="assessment-page">
-				<header className="assessment-header"><button type="button" aria-label="Voltar"><ArrowLeft size={17} /></button><strong>Sidebrain</strong><span><Coins size={14} /> 12</span></header>
-				<main className="assessment-main assessment-complete"><div className="completion-mark">✓</div><span className="eyebrow">Atividade concluída</span><h1>Você mandou muito bem.</h1><p>Seu raciocínio está ficando cada vez mais afiado. Continue praticando para consolidar o conceito.</p><button className="primary-button" type="button" onClick={() => window.location.reload()}>Refazer atividade <ArrowLeft size={17} /></button></main>
-			</div>
+			<LessonFocusLayout streakCount={12} onExit={() => undefined}>
+				<main className="assessment-main assessment-complete">
+					<div className="completion-mark">✓</div>
+					<span className="eyebrow">Atividade concluída</span>
+					<h1>Você mandou muito bem.</h1>
+					<p>Seu raciocínio está ficando cada vez mais afiado. Continue praticando para consolidar o conceito.</p>
+					<button className="primary-button" type="button" onClick={() => window.location.reload()}>Refazer atividade <ArrowLeft size={17} /></button>
+				</main>
+			</LessonFocusLayout>
 		)
 	}
 
 	return (
-		<div className="assessment-page">
-			<header className="assessment-header">
-				<button type="button" aria-label="Sair da atividade"><ArrowLeft size={17} /></button>
-				<strong>Sidebrain</strong>
-				<span><Coins size={14} /> 12</span>
-			</header>
+		<LessonFocusLayout streakCount={12} onExit={() => undefined}>
 			<main className="assessment-main">
 				<section className="progress-card" aria-label="Progresso da atividade">
 					<div className="progress-card__meta"><span className="progress-label">Módulo de geometria plana</span><span>Pergunta <strong>{progress.currentIndex + 1}</strong> de {progress.totalItems}</span><span className="progress-card__stats"><b>⚡ +16 XP por acerto</b><b><Clock3 size={13} /> 01:44</b></span></div>
 					<div className="progress-track"><span style={{ width: `${((progress.currentIndex + 1) / progress.totalItems) * 100}%` }} /></div>
 				</section>
 				<AssessmentCard challenge={challenge} selectedOptionId={selectedOptionId} evaluation={evaluation} onSelectOption={selectOption} onSubmit={submitAnswer} onNext={nextChallenge} nextActionLabel={progress.nextActionLabel} />
-				<div className="mentor-bar"><button type="button"><LifeBuoy size={17} /> Ajuda do Mentor <small>IA</small></button><span>Pressione ESC para retornar</span></div>
 			</main>
-			<footer>© 2025 Sidebrain AI. Modo de foco sem distrações.</footer>
-		</div>
+		</LessonFocusLayout>
 	)
 }

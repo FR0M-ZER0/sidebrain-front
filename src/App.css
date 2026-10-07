@@ -2202,6 +2202,12 @@
   padding-inline: 0;
 }
 
+.lesson-breadcrumb {
+  min-height: 0;
+  padding: 0;
+  font-size: 0.875rem;
+}
+
 .student-page-shell.track-details-shell,
 .student-page-main.track-details-page {
   background: #edf1f5;

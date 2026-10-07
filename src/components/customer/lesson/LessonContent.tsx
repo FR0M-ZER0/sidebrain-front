@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
-import type { LessonContentBlock } from '../../../api/lessonsApi'
+import type { LessonContentBlock, LessonProgressData } from '../../../api/lessonsApi'
+import { LessonProgress } from './LessonProgress'
 
 interface LessonContentProps {
 	title: string
 	blocks: LessonContentBlock[]
+	progress: LessonProgressData
 }
 
 interface LessonImageProps {
@@ -39,8 +41,9 @@ export const LessonImage = ({ url, altText, caption }: LessonImageProps) => {
 	)
 }
 
-export const LessonContent = ({ title, blocks }: LessonContentProps) => (
-	<article className="mx-auto w-full max-w-none rounded-[28px] bg-white px-5 py-8 shadow-sm sm:px-10 sm:py-12 lg:px-12">
+export const LessonContent = ({ title, blocks, progress }: LessonContentProps) => (
+	<article className="mx-auto min-h-0 w-full max-w-none flex-1 overflow-y-auto overscroll-contain rounded-[28px] bg-white px-5 py-8 shadow-sm sm:px-10 sm:py-12 lg:px-12">
+		<LessonProgress progress={progress} />
 		<h1 className="mb-8 text-center text-4xl font-bold leading-tight tracking-[-0.04em] text-foreground sm:mb-10 sm:text-5xl lg:text-6xl">
 			{title}
 		</h1>

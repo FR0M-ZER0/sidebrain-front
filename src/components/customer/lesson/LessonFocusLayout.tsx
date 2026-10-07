@@ -16,7 +16,7 @@ export const LessonFocusLayout = ({ children, streakCount, onExit }: LessonFocus
 	const { isOpen, openHelp, closeHelp } = useKeyboardHelp()
 
 	return (
-		<div className="flex min-h-screen flex-col bg-background text-foreground">
+		<div className="flex h-dvh flex-col overflow-hidden bg-background text-foreground">
 			<header className="grid h-19 shrink-0 grid-cols-3 items-center border-b border-slate-100 bg-white/80 px-5 shadow-sm sm:px-8">
 				<motion.button
 					type="button"

@@ -28,6 +28,7 @@ export const QuizResultQuestionItem = ({ question, isExpanded, onToggle }: QuizR
 							className="quiz-result-question__toggle"
 							onClick={() => onToggle(question.id)}
 							aria-expanded={isExpanded}
+							aria-controls={`${question.id}-details`}
 							aria-label={isExpanded ? `Recolher ${question.title}` : `Expandir ${question.title}`}
 						>
 							{isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -45,14 +46,22 @@ export const QuizResultQuestionItem = ({ question, isExpanded, onToggle }: QuizR
 			</div>
 
 			{isExpanded && (
-				<div className="quiz-result-question__details-panel">
+				<div className="quiz-result-question__details-panel" id={`${question.id}-details`}>
 					<div className="quiz-result-question__row">
-						<span className="quiz-result-question__label">Resposta do usuário</span>
-						<strong>{question.userAnswer ?? 'Resposta indisponível'}</strong>
+						<span className="quiz-result-question__label">Enunciado</span>
+						<p>{question.prompt}</p>
+					</div>
+					<div className="quiz-result-question__row">
+						<span className="quiz-result-question__label">Resposta selecionada</span>
+						<strong>{question.userAnswer}</strong>
+					</div>
+					<div className="quiz-result-question__row">
+						<span className="quiz-result-question__label">Resposta correta</span>
+						<strong>{question.correctAnswer}</strong>
 					</div>
 					<div className="quiz-result-question__row">
 						<span className="quiz-result-question__label">Explicação</span>
-						<p>{question.explanation ?? 'Não há explicação detalhada disponível para esta questão.'}</p>
+						<p>{question.explanation}</p>
 					</div>
 				</div>
 			)}

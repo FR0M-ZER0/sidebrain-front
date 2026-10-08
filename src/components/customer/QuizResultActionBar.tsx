@@ -1,13 +1,12 @@
-import { ArrowLeft, RotateCcw, Sparkles } from 'lucide-react'
-import type { ContinuationActionId } from '../../types/quizResult'
+import { RotateCcw, Sparkles } from 'lucide-react'
+import type { ContinuationAction, ContinuationActionId } from '../../types/quizResult'
 
 interface QuizResultActionBarProps {
-	actions: Array<{ id: ContinuationActionId; label: string; destination: string }>
+	actions: ContinuationAction[]
 	onAction: (actionId: ContinuationActionId) => void
 }
 
 const icons = {
-	'back-to-track': ArrowLeft,
 	retry: RotateCcw,
 	feedback: Sparkles,
 }

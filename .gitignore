@@ -174,3 +174,11 @@ sketch
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,node,react
+
+# Additional build and local tooling artifacts
+.env*
+!.env.example
+__pycache__/
+*.py[cod]
+*.tmp
+Thumbs.db

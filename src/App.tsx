@@ -11,6 +11,7 @@ import { LessonPage } from './pages/customer/LessonPage'
 import { LessonCompletionPage } from './pages/lessons/LessonCompletionPage'
 import { TrackDetailsPage } from './pages/customer/TrackDetailsPage'
 import { LessonQuizPage } from './pages/customer/LessonQuizPage'
+import { MissionsAndBadgesPage } from './pages/customer/MissionsAndBadgesPage'
 
 const LessonCompletionRoute = () => {
 	const navigate = useNavigate()
@@ -28,6 +29,8 @@ function App() {
 		<BrowserRouter>
 			<Routes>
 				<Route path="/" element={<HomeDashboardPage />} />
+				<Route path="/missions" element={<MissionsAndBadgesPage />} />
+				<Route path="/missoes" element={<Navigate to="/missions" replace />} />
 				<Route path="/trails/:slug" element={<TrackDetailsPage />} />
 				<Route path="/trails/new/create" element={<CreateTrackPage />} />
 				<Route path="/trails/new/start" element={<TrailStartPreferencePage />} />

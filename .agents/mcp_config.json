@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "context7": {
+      "serverUrl": "https://mcp.context7.com/mcp"
+    },
+    "atlassian": {
+      "serverUrl": "https://mcp.atlassian.com/v2/mcp"
+    },
+    "figma": {
+      "command": "npx",
+      "args": ["-y", "figma-developer-mcp", "--stdio"],
+      "env": {
+        "FIGMA_API_KEY": "${FIGMA_API_KEY}"
+      }
+    },
+    "stitch": {
+      "serverUrl": "https://stitch.googleapis.com/mcp"
+    }
+  }
+}

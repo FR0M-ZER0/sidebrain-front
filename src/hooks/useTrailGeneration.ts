@@ -52,7 +52,6 @@ export const useTrailGeneration = (request: TrackGenerationRequest | null) => {
 		if (!request) return
 
 		const controller = new AbortController()
-		setError(null)
 		let requestPromise = startedRequest.current?.retryCount === retryCount
 			? startedRequest.current.promise
 			: null
@@ -63,6 +62,7 @@ export const useTrailGeneration = (request: TrackGenerationRequest | null) => {
 		}
 
 		const runGeneration = async () => {
+			setError(null)
 			let activeRequestId: string | null = null
 			try {
 				const requestId = await requestPromise

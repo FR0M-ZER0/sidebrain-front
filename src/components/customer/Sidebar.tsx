@@ -1,9 +1,11 @@
 import { Award, Bot, Home, LogOut, Route, Target, UserRound } from 'lucide-react'
 import { NavLink, useLocation } from 'react-router'
 import sidebrainLogo from '../../assets/sidebrain-logo.svg'
+import { useAuth } from '../../hooks/useAuth'
 
 export const Sidebar = () => {
 	const { pathname, hash } = useLocation()
+	const { logout } = useAuth()
 	const menuItems = [
 		{ label: 'Início', icon: Home, to: '/' },
 		{ label: 'Criar trilha', icon: Route, to: '/trails/new/create' },
@@ -11,7 +13,7 @@ export const Sidebar = () => {
 		{ label: 'Missões', icon: Target, to: '/#missions' },
 		{ label: 'Badges', icon: Award, to: '/#badges' },
 		{ label: 'Mentor', icon: Bot, disabled: true },
-		{ label: 'Perfil', icon: UserRound, disabled: true },
+		{ label: 'Perfil', icon: UserRound, to: '/perfil' },
 	]
 
 	return (
@@ -28,6 +30,7 @@ export const Sidebar = () => {
 					const isMissionsActive = item.label === 'Missões' && pathname === '/' && hash === '#missions'
 					const isBadgesActive = item.label === 'Badges' && pathname === '/' && hash === '#badges'
 					const isHomeActive = item.label === 'Início' && pathname === '/' && !hash
+					const isProfileActive = item.label === 'Perfil' && pathname === '/perfil'
 
 					if (item.disabled) {
 						return (
@@ -55,6 +58,7 @@ export const Sidebar = () => {
 								if (item.label === 'Minhas Trilhas') active = isTrackActive
 								if (item.label === 'Missões') active = isMissionsActive
 								if (item.label === 'Badges') active = isBadgesActive
+								if (item.label === 'Perfil') active = isProfileActive
 								return `nav-item${active ? ' active' : ''}`
 							}}
 						>
@@ -66,7 +70,12 @@ export const Sidebar = () => {
 			</nav>
 
 			<div className="sidebar-footer">
-				<button type="button" className="nav-item nav-item-disabled" disabled title="Disponível em breve">
+				<button
+					type="button"
+					onClick={logout}
+					className="nav-item cursor-pointer"
+					title="Encerrar sessão"
+				>
 					<LogOut className="nav-icon" size={18} aria-hidden="true" />
 					<span>Sair</span>
 				</button>

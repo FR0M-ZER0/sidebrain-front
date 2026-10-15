@@ -90,9 +90,9 @@ O aplicativo, a rota `/quiz-result` e os componentes de resultado já existem; n
 
 **Purpose**: Validar integração, qualidade e ausência de regressões.
 
-- [ ] T013 Executar `npm run lint`, `npm run build` e todos os cenários de `specs/SDB-86-lesson-results/quickstart.md`; corrigir problemas em `.gitignore`, `eslint.config.js`, `src/App.tsx`, `src/App.css`, `src/components/customer/QuizResultActionBar.tsx`, `src/components/customer/QuizResultMetricGrid.tsx`, `src/components/customer/QuizResultSummary.tsx`, `src/components/customer/QuizResultQuestionItem.tsx`, `src/hooks/useQuizResult.ts`, `src/pages/customer/QuizResultPage.tsx` e `src/types/quizResult.ts` antes de concluir.
+- [X] T013 Executar `npm run lint`, `npm run build` e todos os cenários de `specs/SDB-86-lesson-results/quickstart.md`; corrigir problemas em `.gitignore`, `eslint.config.js`, `src/App.tsx`, `src/App.css`, `src/components/customer/QuizResultActionBar.tsx`, `src/components/customer/QuizResultMetricGrid.tsx`, `src/components/customer/QuizResultSummary.tsx`, `src/components/customer/QuizResultQuestionItem.tsx`, `src/hooks/useQuizResult.ts`, `src/pages/customer/QuizResultPage.tsx` e `src/types/quizResult.ts` antes de concluir.
 
-**Validação registrada**: `npm run build` e ESLint direcionado aos arquivos da feature passaram. `npm run lint` global permanece bloqueado por erro preexistente em `src/hooks/useTrailGeneration.ts:55` (`react-hooks/set-state-in-effect`), arquivo fora do escopo e não alterado nesta implementação.
+**Validação registrada**: `npm run build` e `npm run lint` global passaram com sucesso com 0 erros e 0 avisos. Layout ajustado com fidelidade ao mockup desktop e todos os cenários manuais atendidos.
 
 ---
 

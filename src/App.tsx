@@ -17,6 +17,7 @@ import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
 import { PasswordRecoveryPage } from './pages/auth/PasswordRecoveryPage'
 import { UserProfilePage } from './pages/customer/UserProfilePage'
+import { RankingPage } from './pages/customer/RankingPage'
 import { PrivateRoute } from './components/general/PrivateRoute'
 
 const LessonCompletionRoute = () => {
@@ -42,6 +43,7 @@ const App = () => {
 				{/* Rota autenticada do perfil do estudante */}
 				<Route element={<PrivateRoute />}>
 					<Route path="/perfil" element={<UserProfilePage />} />
+					<Route path="/ranking" element={<RankingPage />} />
 				</Route>
 
 				<Route path="/" element={<HomeDashboardPage />} />

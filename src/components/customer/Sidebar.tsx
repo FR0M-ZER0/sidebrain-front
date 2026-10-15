@@ -1,17 +1,20 @@
-import { Award, Bot, Home, LogOut, Route, Target, UserRound } from 'lucide-react'
+import { Bot, Home, LogOut, Route, Target, UserRound } from 'lucide-react'
 import { NavLink, useLocation } from 'react-router'
 import sidebrainLogo from '../../assets/sidebrain-logo.svg'
 import { useAuth } from '../../hooks/useAuth'
 
-export const Sidebar = () => {
+interface SidebarProps {
+	activeItem?: string
+}
+
+export const Sidebar = ({ activeItem }: SidebarProps = {}) => {
 	const { pathname, hash } = useLocation()
 	const { logout } = useAuth()
 	const menuItems = [
 		{ label: 'Início', icon: Home, to: '/' },
 		{ label: 'Criar trilha', icon: Route, to: '/trails/new/create' },
 		{ label: 'Minhas Trilhas', icon: Route, to: '/#tracks' },
-		{ label: 'Missões', icon: Target, to: '/#missions' },
-		{ label: 'Badges', icon: Award, to: '/#badges' },
+		{ label: 'Missões & Badges', icon: Target, to: '/missions' },
 		{ label: 'Mentor', icon: Bot, disabled: true },
 		{ label: 'Perfil', icon: UserRound, to: '/perfil' },
 	]
@@ -27,8 +30,8 @@ export const Sidebar = () => {
 					const Icon = item.icon
 					const isTrackActive = item.label === 'Minhas Trilhas'
 						&& (/^\/trails\/[^/]+$/.test(pathname) || (pathname === '/' && hash === '#tracks'))
-					const isMissionsActive = item.label === 'Missões' && pathname === '/' && hash === '#missions'
-					const isBadgesActive = item.label === 'Badges' && pathname === '/' && hash === '#badges'
+					const isMissionsActive = item.label === 'Missões & Badges'
+						&& (pathname === '/missions' || (pathname === '/' && (hash === '#missions' || hash === '#badges')))
 					const isHomeActive = item.label === 'Início' && pathname === '/' && !hash
 					const isProfileActive = item.label === 'Perfil' && pathname === '/perfil'
 
@@ -53,9 +56,14 @@ export const Sidebar = () => {
 							to={item.to!}
 							end
 							className={({ isActive }) => {
+								if (activeItem) {
+									return `nav-item${activeItem === item.label ? ' active' : ''}`
+								}
+
 								let active = isActive
 								if (item.label === 'Início') active = isHomeActive
 								if (item.label === 'Minhas Trilhas') active = isTrackActive
+								if (item.label === 'Missões & Badges') active = isMissionsActive
 								if (item.label === 'Missões') active = isMissionsActive
 								if (item.label === 'Badges') active = isBadgesActive
 								if (item.label === 'Perfil') active = isProfileActive

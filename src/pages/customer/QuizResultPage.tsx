@@ -82,7 +82,7 @@ export const QuizResultPage = () => {
 					</section>
 
 					<div className="quiz-result-actions-footer">
-						<QuizResultActionBar actions={result.actions} onAction={handleAction} />
+						<QuizResultActionBar actions={result.actions} onAction={handleAction} onBack={returnToPreviousPage} />
 					</div>
 
 					{showFeedback && (

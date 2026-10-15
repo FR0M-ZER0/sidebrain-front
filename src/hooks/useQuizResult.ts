@@ -13,9 +13,9 @@ const buildMockQuizResult = (): QuizResultViewModel => ({
 	studyStreakDays: 12,
 	status: 'success',
 	metrics: [
-		{ id: 'xp', label: 'XP ganho', value: '+80 XP', tone: 'warning' },
-		{ id: 'precision', label: 'Precisão', value: '100%', tone: 'success' },
-		{ id: 'time', label: 'Tempo gasto', value: '2m 15s', tone: 'info' },
+		{ id: 'xp', label: 'XP ganho', value: '+80 XP', detail: 'Bônus de precisão incluso', tone: 'warning' },
+		{ id: 'precision', label: 'Precisão', value: '100%', detail: 'Meta do módulo: 80%', tone: 'success' },
+		{ id: 'time', label: 'Tempo gasto', value: '2m 15s', detail: '42s mais rápido que a média', tone: 'info' },
 	],
 	questions: [
 		{

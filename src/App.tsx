@@ -13,6 +13,12 @@ import { TrackDetailsPage } from './pages/customer/TrackDetailsPage'
 import { LessonQuizPage } from './pages/customer/LessonQuizPage'
 import { MissionsAndBadgesPage } from './pages/customer/MissionsAndBadgesPage'
 
+import { LoginPage } from './pages/auth/LoginPage'
+import { RegisterPage } from './pages/auth/RegisterPage'
+import { PasswordRecoveryPage } from './pages/auth/PasswordRecoveryPage'
+import { UserProfilePage } from './pages/customer/UserProfilePage'
+import { PrivateRoute } from './components/general/PrivateRoute'
+
 const LessonCompletionRoute = () => {
 	const navigate = useNavigate()
 
@@ -24,10 +30,20 @@ const LessonCompletionRoute = () => {
 	)
 }
 
-function App() {
+const App = () => {
 	return (
 		<BrowserRouter>
 			<Routes>
+				{/* Rotas públicas de autenticação */}
+				<Route path="/login" element={<LoginPage />} />
+				<Route path="/cadastro" element={<RegisterPage />} />
+				<Route path="/recuperar-senha" element={<PasswordRecoveryPage />} />
+
+				{/* Rota autenticada do perfil do estudante */}
+				<Route element={<PrivateRoute />}>
+					<Route path="/perfil" element={<UserProfilePage />} />
+				</Route>
+
 				<Route path="/" element={<HomeDashboardPage />} />
 				<Route path="/missions" element={<MissionsAndBadgesPage />} />
 				<Route path="/missoes" element={<Navigate to="/missions" replace />} />

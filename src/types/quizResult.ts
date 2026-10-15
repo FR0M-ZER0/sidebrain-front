@@ -4,7 +4,7 @@ export type MetricTone = 'neutral' | 'success' | 'warning' | 'info'
 
 export type QuestionStatus = 'correct' | 'incorrect' | 'unanswered'
 
-export type ContinuationActionId = 'back-to-track' | 'retry' | 'feedback'
+export type ContinuationActionId = 'retry' | 'feedback'
 
 export interface MetricCard {
 	id: string
@@ -18,18 +18,25 @@ export interface QuizQuestionReview {
 	id: string
 	number: number
 	title: string
-	category?: string
-	duration?: string
+	category: string
+	duration: string
 	status: QuestionStatus
-	userAnswer?: string
-	explanation?: string
+	prompt: string
+	userAnswer: string
+	correctAnswer: string
+	explanation: string
 	isExpanded?: boolean
 }
 
 export interface ContinuationAction {
 	id: ContinuationActionId
 	label: string
-	destination: string
+}
+
+export interface DetailedFeedback {
+	highlight: string
+	positivePoint: string
+	recommendation: string
 }
 
 export interface QuizResultViewModel {
@@ -41,10 +48,10 @@ export interface QuizResultViewModel {
 	xpEarned: number
 	precision: number
 	elapsedTime: string
-	retentionEstimate: string
-	currentSequence: string
+	studyStreakDays: number
 	status: QuizResultStatus
 	metrics: MetricCard[]
 	questions: QuizQuestionReview[]
 	actions: ContinuationAction[]
+	feedback: DetailedFeedback
 }

@@ -1,6 +1,7 @@
 import { Bot, Home, LogOut, Route, Target, UserRound } from 'lucide-react'
 import { NavLink, useLocation } from 'react-router'
 import sidebrainLogo from '../../assets/sidebrain-logo.svg'
+import { useAuth } from '../../hooks/useAuth'
 
 interface SidebarProps {
 	activeItem?: string
@@ -8,13 +9,14 @@ interface SidebarProps {
 
 export const Sidebar = ({ activeItem }: SidebarProps = {}) => {
 	const { pathname, hash } = useLocation()
+	const { logout } = useAuth()
 	const menuItems = [
 		{ label: 'Início', icon: Home, to: '/' },
 		{ label: 'Criar trilha', icon: Route, to: '/trails/new/create' },
 		{ label: 'Minhas Trilhas', icon: Route, to: '/#tracks' },
 		{ label: 'Missões & Badges', icon: Target, to: '/missions' },
 		{ label: 'Mentor', icon: Bot, disabled: true },
-		{ label: 'Perfil', icon: UserRound, disabled: true },
+		{ label: 'Perfil', icon: UserRound, to: '/perfil' },
 	]
 
 	return (
@@ -31,6 +33,7 @@ export const Sidebar = ({ activeItem }: SidebarProps = {}) => {
 					const isMissionsActive = item.label === 'Missões & Badges'
 						&& (pathname === '/missions' || (pathname === '/' && (hash === '#missions' || hash === '#badges')))
 					const isHomeActive = item.label === 'Início' && pathname === '/' && !hash
+					const isProfileActive = item.label === 'Perfil' && pathname === '/perfil'
 
 					if (item.disabled) {
 						return (
@@ -61,6 +64,9 @@ export const Sidebar = ({ activeItem }: SidebarProps = {}) => {
 								if (item.label === 'Início') active = isHomeActive
 								if (item.label === 'Minhas Trilhas') active = isTrackActive
 								if (item.label === 'Missões & Badges') active = isMissionsActive
+								if (item.label === 'Missões') active = isMissionsActive
+								if (item.label === 'Badges') active = isBadgesActive
+								if (item.label === 'Perfil') active = isProfileActive
 								return `nav-item${active ? ' active' : ''}`
 							}}
 						>
@@ -72,7 +78,12 @@ export const Sidebar = ({ activeItem }: SidebarProps = {}) => {
 			</nav>
 
 			<div className="sidebar-footer">
-				<button type="button" className="nav-item nav-item-disabled" disabled title="Disponível em breve">
+				<button
+					type="button"
+					onClick={logout}
+					className="nav-item cursor-pointer"
+					title="Encerrar sessão"
+				>
 					<LogOut className="nav-icon" size={18} aria-hidden="true" />
 					<span>Sair</span>
 				</button>

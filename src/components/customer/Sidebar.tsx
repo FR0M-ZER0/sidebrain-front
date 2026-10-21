@@ -63,9 +63,9 @@ export const Sidebar = ({ activeItem }: SidebarProps = {}) => {
 								let active = isActive
 								if (item.label === 'Início') active = isHomeActive
 								if (item.label === 'Minhas Trilhas') active = isTrackActive
-								if (item.label === 'Missões & Badges') active = isMissionsActive
-								if (item.label === 'Missões') active = isMissionsActive
-								if (item.label === 'Badges') active = isBadgesActive
+								if (item.label === 'Missões & Badges' || item.label === 'Missões' || item.label === 'Badges') {
+								    active = isMissionsActive
+								}
 								if (item.label === 'Perfil') active = isProfileActive
 								return `nav-item${active ? ' active' : ''}`
 							}}

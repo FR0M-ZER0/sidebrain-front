@@ -9,7 +9,7 @@ interface SidebarProps {
 
 export const Sidebar = ({ activeItem }: SidebarProps = {}) => {
 	const { pathname, hash } = useLocation()
-	const { logout } = useAuth()
+	const { logout, user } = useAuth()
 	const menuItems = [
 		{ label: 'Início', icon: Home, to: '/' },
 		{ label: 'Criar trilha', icon: Route, to: '/trails/new/create' },
@@ -76,6 +76,12 @@ export const Sidebar = ({ activeItem }: SidebarProps = {}) => {
 			</nav>
 
 			<div className="sidebar-footer">
+				{user && (
+					<div className="mb-3 min-w-0 px-3">
+						<p className="truncate text-sm font-semibold text-slate-800">{user.name}</p>
+						<p className="truncate text-xs text-slate-500">{user.email}</p>
+					</div>
+				)}
 				<button
 					type="button"
 					onClick={logout}

@@ -11,7 +11,7 @@ import { PasswordStrengthIndicator } from './PasswordStrengthIndicator'
 
 export const RegisterForm = () => {
 	const navigate = useNavigate()
-	const { register, isLoading } = useAuth()
+	const { register, isLoading, error, clearAuthError } = useAuth()
 
 	const [formData, setFormData] = useState<RegisterFormData>({
 		name: '',
@@ -57,6 +57,7 @@ export const RegisterForm = () => {
 
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault()
+		clearAuthError()
 		if (!validate()) return
 
 		const success = await register(formData)
@@ -87,6 +88,8 @@ export const RegisterForm = () => {
 					{infoToast}
 				</div>
 			)}
+
+			{error && <p role="alert" className="mt-4 text-sm font-medium text-rose-600">{error}</p>}
 
 			{/* Botões sociais no topo */}
 			<div className="grid grid-cols-2 gap-2 mt-5">

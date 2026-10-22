@@ -1,9 +1,25 @@
 import axios from "axios"
-import { DASHBOARD_USER_ID } from './auth'
 
 export const api = axios.create({
 	baseURL: import.meta.env.VITE_API_URL,
-	headers: {
-		Authorization: `Bearer ${DASHBOARD_USER_ID}`,
-	},
+})
+
+let accessToken: string | null = null
+
+export const setApiAccessToken = (token: string | null) => {
+	accessToken = token
+}
+
+api.interceptors.request.use((config) => {
+	if (config.headers.Authorization) {
+		return config
+	}
+
+	if (accessToken) {
+		config.headers.Authorization = `Bearer ${accessToken}`
+	} else {
+		delete config.headers.Authorization
+	}
+
+	return config
 })

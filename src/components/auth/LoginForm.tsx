@@ -6,7 +6,7 @@ import type { LoginCredentials, LoginFormValidationErrors } from '../../types/au
 
 export const LoginForm = () => {
 	const navigate = useNavigate()
-	const { login, isLoading } = useAuth()
+	const { login, isLoading, error, clearAuthError } = useAuth()
 
 	const [formData, setFormData] = useState<LoginCredentials>({
 		email: '',
@@ -38,6 +38,7 @@ export const LoginForm = () => {
 
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault()
+		clearAuthError()
 		if (!validate()) return
 
 		const success = await login(formData)
@@ -72,6 +73,8 @@ export const LoginForm = () => {
 						{socialToast}
 					</div>
 				)}
+
+				{error && <p role="alert" className="mt-4 text-sm font-medium text-rose-600">{error}</p>}
 
 				<form onSubmit={handleSubmit} className="mt-7 space-y-4" noValidate>
 					{/* Campo de E-mail */}

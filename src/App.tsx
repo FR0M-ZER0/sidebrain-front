@@ -1,5 +1,7 @@
 import './App.css'
 import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router'
+import { useEffect, useRef } from 'react'
+import { useAuth } from './hooks/useAuth'
 import { HomeDashboardPage } from './pages/customer/HomeDashboardPage'
 import { CreateTrackPage } from './pages/customer/CreateTrackPage'
 import { TrailLevelAssessmentPage } from './pages/customer/TrailLevelAssessmentPage'
@@ -32,6 +34,16 @@ const LessonCompletionRoute = () => {
 }
 
 const App = () => {
+	const { isInitialized, restoreSession } = useAuth()
+	const restoreStarted = useRef(false)
+
+	useEffect(() => {
+		if (!isInitialized && !restoreStarted.current) {
+			restoreStarted.current = true
+			void restoreSession()
+		}
+	}, [isInitialized, restoreSession])
+
 	return (
 		<BrowserRouter>
 			<Routes>
@@ -40,25 +52,25 @@ const App = () => {
 				<Route path="/cadastro" element={<RegisterPage />} />
 				<Route path="/recuperar-senha" element={<PasswordRecoveryPage />} />
 
-				{/* Rota autenticada do perfil do estudante */}
+				{/* Todas as rotas do produto exigem autenticação */}
 				<Route element={<PrivateRoute />}>
+					<Route path="/" element={<HomeDashboardPage />} />
+					<Route path="/missions" element={<MissionsAndBadgesPage />} />
+					<Route path="/missoes" element={<Navigate to="/missions" replace />} />
+					<Route path="/trails/:slug" element={<TrackDetailsPage />} />
+					<Route path="/trails/new/create" element={<CreateTrackPage />} />
+					<Route path="/trails/new/start" element={<TrailStartPreferencePage />} />
+					<Route path="/trails/new/assessment" element={<TrailLevelAssessmentPage />} />
+					<Route path="/trails/new/generating" element={<TrailGenerationLoadingPage />} />
+					<Route path="/quiz" element={<AssessmentPage />} />
+					<Route path="/quiz-result" element={<QuizResultPage />} />
+					<Route path="/lessons/:id/completion" element={<LessonCompletionRoute />} />
+					<Route path="/lessons/:id/quiz" element={<LessonQuizPage />} />
+					<Route path="/lessons/:id" element={<LessonPage />} />
 					<Route path="/perfil" element={<UserProfilePage />} />
 					<Route path="/ranking" element={<RankingPage />} />
 				</Route>
 
-				<Route path="/" element={<HomeDashboardPage />} />
-				<Route path="/missions" element={<MissionsAndBadgesPage />} />
-				<Route path="/missoes" element={<Navigate to="/missions" replace />} />
-				<Route path="/trails/:slug" element={<TrackDetailsPage />} />
-				<Route path="/trails/new/create" element={<CreateTrackPage />} />
-				<Route path="/trails/new/start" element={<TrailStartPreferencePage />} />
-				<Route path="/trails/new/assessment" element={<TrailLevelAssessmentPage />} />
-				<Route path="/trails/new/generating" element={<TrailGenerationLoadingPage />} />
-				<Route path="/quiz" element={<AssessmentPage />} />
-				<Route path="/quiz-result" element={<QuizResultPage />} />
-				<Route path="/lessons/:id/completion" element={<LessonCompletionRoute />} />
-				<Route path="/lessons/:id/quiz" element={<LessonQuizPage />} />
-				<Route path="/lessons/:id" element={<LessonPage />} />
 				<Route path="*" element={<Navigate to="/" replace />} />
 			</Routes>
 		</BrowserRouter>

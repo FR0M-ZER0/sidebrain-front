@@ -8,6 +8,20 @@ import type {
 } from '../types/userProfile'
 import { useAuth } from './useAuth'
 
+const PROFILE_STORAGE_KEY = 'sidebrain_user_profile'
+
+const getSavedProfilePreferences = (): Partial<Pick<UserProfile, 'avatarUrl'>> => {
+	try {
+		const saved = localStorage.getItem(PROFILE_STORAGE_KEY)
+		if (!saved) return {}
+
+		const parsed = JSON.parse(saved) as { avatarUrl?: unknown }
+		return typeof parsed.avatarUrl === 'string' ? { avatarUrl: parsed.avatarUrl } : {}
+	} catch {
+		return {}
+	}
+}
+
 const INITIAL_USER: UserProfile = {
 	id: 'user-mock-1',
 	name: 'João Silva',
@@ -81,40 +95,26 @@ const INITIAL_SECURITY: AccountSecurityInfo = {
 	activeDevicesCount: 2,
 }
 
-const PROFILE_STORAGE_KEY = 'sidebrain_user_profile'
-
 export const useUserProfile = () => {
-	const { user: authUser } = useAuth()
-
-	const [user, setUser] = useState<UserProfile>(() => {
-		const saved = localStorage.getItem(PROFILE_STORAGE_KEY)
-		if (saved) {
-			try {
-				return JSON.parse(saved)
-			} catch {
-				// fallback para INITIAL_USER
-			}
-		}
-		if (authUser) {
-			return { ...INITIAL_USER, name: authUser.name, email: authUser.email }
-		}
-		return INITIAL_USER
-	})
+	const { user: authUser, updateUser } = useAuth()
+	const [profilePreferences, setProfilePreferences] = useState(getSavedProfilePreferences)
+	const user: UserProfile = {
+		...INITIAL_USER,
+		...profilePreferences,
+		id: authUser?.id ?? '',
+		name: authUser?.name ?? 'Estudante',
+		email: authUser?.email ?? '',
+	}
 
 	const [tracks] = useState<ActiveTrack[]>(INITIAL_TRACKS)
 	const [badges] = useState<ProfileBadge[]>(INITIAL_BADGES)
 	const [security] = useState<AccountSecurityInfo>(INITIAL_SECURITY)
 
-	const updateProfile = (data: EditProfileFormData) => {
-		setUser((prev) => {
-			const updated = {
-				...prev,
-				name: data.name.trim() || prev.name,
-				avatarUrl: data.avatarUrl.trim() || prev.avatarUrl,
-			}
-			localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(updated))
-			return updated
-		})
+	const updateProfile = async (data: EditProfileFormData) => {
+		await updateUser({ name: data.name.trim() })
+		const updatedPreferences = { avatarUrl: data.avatarUrl.trim() || user.avatarUrl }
+		setProfilePreferences(updatedPreferences)
+		localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(updatedPreferences))
 	}
 
 	return {

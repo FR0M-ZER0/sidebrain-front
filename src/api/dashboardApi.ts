@@ -1,8 +1,6 @@
 import { api } from './api'
 import type { DashboardTrack, DashboardTrackStatus } from '../types/dashboard'
 
-export { DASHBOARD_USER_ID } from './auth'
-
 interface ApiLesson {
 	status?: string
 }

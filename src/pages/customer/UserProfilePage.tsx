@@ -27,29 +27,36 @@ export const UserProfilePage = () => {
 			streakCount={14}
 			pageClassName="profile-page-main"
 		>
-			<div className="space-y-8 max-w-7xl mx-auto py-2">
-				{/* Banner Superior com Avatar, Nível e Progresso de XP */}
+			<div className="w-full space-y-5 py-1">
+				<header className="space-y-1">
+					<h1 className="text-3xl font-bold tracking-tight text-slate-900">Meu Perfil</h1>
+					<p className="text-sm text-slate-600">
+						Gerencie suas preferências de aprendizado, estatísticas e dados da conta
+					</p>
+				</header>
+
 				<ProfileHeroBanner
 					user={user}
 					onEditProfile={() => setIsEditModalOpen(true)}
 					onChangePhoto={() => setIsEditModalOpen(true)}
 				/>
 
-				{/* Grid de Conteúdo Principal: Trilhas e Badges à esquerda, Segurança à direita */}
-				<div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
-					<div className="xl:col-span-2 space-y-8">
+				<div className="grid grid-cols-1 items-start gap-5 md:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
+					<div className="min-w-0 space-y-6">
 						<ActiveTracksSection
 							tracks={tracks}
 							onResumeTrack={handleResumeTrack}
+							onExploreCatalog={() => navigate('/trails/new/create')}
 						/>
 
 						<ProfileBadgesSection
 							badges={badges}
 							totalBadgesCount={totalBadgesCount}
+							onViewAllBadges={() => navigate('/missions')}
 						/>
 					</div>
 
-					<div className="xl:col-span-1 sticky top-6">
+					<div className="min-w-0">
 						<AccountSecurityCard
 							security={security}
 							onLogout={logout}

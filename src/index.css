@@ -1,3 +1,5 @@
+@layer theme, base, components, utilities;
+
 @import 'tailwindcss/theme' layer(theme);
 @import 'tailwindcss/utilities' layer(utilities);
 @config '../tailwind.config.js';
@@ -45,11 +47,40 @@ body {
   background: #edf1f5;
 }
 
-button,
-input {
-  font: inherit;
+.auth-page {
+  background-color: #faf8ff;
+  background-image:
+    radial-gradient(ellipse 34rem 29rem at 8% 38%, rgba(197, 216, 255, 0.64), transparent 74%),
+    radial-gradient(ellipse 31rem 27rem at 96% 76%, rgba(255, 222, 190, 0.5), transparent 72%),
+    linear-gradient(130deg, #fbfaff 0%, #f7f7ff 60%, #fffaf7 100%);
 }
 
-button {
-  cursor: pointer;
+@media (min-width: 1024px) and (min-height: 680px) {
+  .register-page {
+    height: 100vh;
+    height: 100svh;
+    overflow: hidden;
+    padding-block: clamp(0.75rem, 2vh, 1.5rem);
+  }
+
+  .register-page > header {
+    margin-bottom: clamp(0.5rem, 1.5vh, 1rem);
+  }
+}
+
+@layer base {
+  button {
+    appearance: none;
+    border: 0;
+    background-color: transparent;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  input:not([type='checkbox']):not([type='radio']) {
+    appearance: none;
+    border: 0;
+    background-color: transparent;
+    font: inherit;
+  }
 }

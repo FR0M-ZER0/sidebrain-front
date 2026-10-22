@@ -117,3 +117,41 @@ export const submitTrackAssessment = async (assessmentId: string, answers: Asses
 	const assessment = parseAssessment(data)
 	return { level: assessment.level ?? 'intermediate' }
 }
+
+export const skipTrackAssessment = async (subject: string): Promise<{ assessmentId: string; level: string }> => {
+	let assessment: ApiAssessment
+	let assessmentId: string | null
+	try {
+		const response = await api.post<unknown>('/api/v1/assessments', {
+			subject,
+			objective: subject,
+			skip: true,
+		})
+		assessment = parseAssessment(response.data)
+		assessmentId = assessment.assessment_id || getLocationId(response.headers)
+	} catch (error) {
+		const response = getRecordValue(error, 'response')
+		const responseData = getRecordValue(response, 'data')
+		assessmentId = getAssessmentId(responseData) ?? getLocationId(getRecordValue(response, 'headers'))
+		if (!assessmentId) throw new Error(getRequestErrorMessage(error), { cause: error })
+		assessment = { assessment_id: assessmentId, status: 'pending' }
+	}
+
+	if (!assessmentId) throw new Error('A API não retornou o identificador do diagnóstico.')
+	const deadline = Date.now() + 60_000
+	const isPending = (status: string) => ['pending', 'queued', 'running', 'in_progress'].includes(status)
+
+	while (isPending(assessment.status)) {
+		if (Date.now() >= deadline) {
+			throw new Error('A confirmação para começar do zero expirou. Tente novamente.')
+		}
+		await delay(1000)
+		const { data: refreshed } = await api.get<unknown>(`/api/v1/assessments/${encodeURIComponent(assessmentId)}`)
+		assessment = parseAssessment(refreshed)
+		if (assessment.status === 'failed') {
+			throw new Error(assessment.error_code || 'Não foi possível registrar o início do zero.')
+		}
+	}
+
+	return { assessmentId, level: assessment.level ?? 'beginner' }
+}

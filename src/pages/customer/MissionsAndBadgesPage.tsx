@@ -30,9 +30,8 @@ export const MissionsAndBadgesPage = () => {
 					notifications={12}
 				/>
 
-				<div className="content-stack py-6 px-4 sm:px-8 max-w-7xl mx-auto flex flex-col gap-10">
-					{/* Cabeçalho Principal: Título + Subtítulo & Cards de Resumo */}
-					<header className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 pt-2">
+				<div className="flex w-full min-w-0 flex-col gap-8 pb-8">
+					<header className="flex min-h-[250px] flex-col items-start justify-between gap-8 overflow-hidden rounded-3xl border border-white/80 bg-gradient-to-br from-white via-orange-50/40 to-indigo-50/70 p-6 shadow-xs sm:p-8 lg:min-h-[270px] lg:flex-row lg:items-center">
 						<div className="max-w-2xl">
 							<h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">
 								Missões & Conquistas
@@ -46,13 +45,11 @@ export const MissionsAndBadgesPage = () => {
 						<MissionsAndBadgesSummary summary={summary} />
 					</header>
 
-					{/* Seção 1: Missões (Grade 2x2) */}
 					<MissionsGrid
 						missions={missions}
 						onActionClick={triggerDemonstrationAction}
 					/>
 
-					{/* Seção 2: Vitrine de Badges (Filtros & Categorias) */}
 					<BadgesShowcase
 						filterOptions={filterOptions}
 						activeFilter={activeFilter}
@@ -61,7 +58,6 @@ export const MissionsAndBadgesPage = () => {
 					/>
 				</div>
 
-				{/* Notificação Toast Flutuante */}
 				<ToastNotification message={toastMessage} onClose={closeToast} />
 			</main>
 		</div>

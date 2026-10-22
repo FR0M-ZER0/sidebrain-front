@@ -13,7 +13,7 @@ export const MissionsGrid = ({ missions, onActionClick }: MissionsGridProps) => 
 				Missões
 			</h2>
 
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+			<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 				{missions.map((mission) => (
 					<MissionCardItem
 						key={mission.id}

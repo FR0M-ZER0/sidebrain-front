@@ -1,4 +1,4 @@
-import { Award, Settings, Zap } from 'lucide-react'
+import { Award, Star, Zap } from 'lucide-react'
 import type { UserGamificationSummary } from '../../../types/missions'
 
 export interface MissionsAndBadgesSummaryProps {
@@ -7,10 +7,10 @@ export interface MissionsAndBadgesSummaryProps {
 
 export const MissionsAndBadgesSummary = ({ summary }: MissionsAndBadgesSummaryProps) => {
 	return (
-		<div className="flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0">
+		<div className="flex shrink-0 flex-col gap-3 md:flex-row lg:flex-col">
 			{/* Card 1: Badges */}
-			<div className="flex items-center gap-3.5 rounded-2xl bg-white px-5 py-3.5 shadow-xs border border-slate-100 min-w-[200px]">
-				<div className="flex size-11 items-center justify-center rounded-xl bg-[#075fc7] text-white shrink-0 shadow-xs">
+			<div className="flex min-w-[180px] items-center gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-2.5 shadow-xs">
+				<div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#075fc7] text-white shadow-xs">
 					<Award size={22} aria-hidden="true" />
 				</div>
 				<div className="flex flex-col">
@@ -24,9 +24,9 @@ export const MissionsAndBadgesSummary = ({ summary }: MissionsAndBadgesSummaryPr
 			</div>
 
 			{/* Card 2: Nível Atual */}
-			<div className="flex items-center gap-3.5 rounded-2xl bg-white px-5 py-3.5 shadow-xs border border-slate-100 min-w-[200px]">
-				<div className="flex size-11 items-center justify-center rounded-xl bg-[#d97706] text-white shrink-0 shadow-xs">
-					<Settings size={22} aria-hidden="true" />
+			<div className="flex min-w-[180px] items-center gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-2.5 shadow-xs">
+				<div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-400 text-amber-950 shadow-xs">
+					<Star size={22} fill="currentColor" aria-hidden="true" />
 				</div>
 				<div className="flex flex-col">
 					<span className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
@@ -39,8 +39,8 @@ export const MissionsAndBadgesSummary = ({ summary }: MissionsAndBadgesSummaryPr
 			</div>
 
 			{/* Card 3: Total XP */}
-			<div className="flex items-center gap-3.5 rounded-2xl bg-white px-5 py-3.5 shadow-xs border border-slate-100 min-w-[200px]">
-				<div className="flex size-11 items-center justify-center rounded-xl bg-[#00783f] text-white shrink-0 shadow-xs">
+			<div className="flex min-w-[180px] items-center gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-2.5 shadow-xs">
+				<div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#00783f] text-white shadow-xs">
 					<Zap size={22} aria-hidden="true" />
 				</div>
 				<div className="flex flex-col">

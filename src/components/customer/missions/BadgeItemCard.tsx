@@ -115,7 +115,7 @@ export const BadgeItemCard = ({ badge }: BadgeItemCardProps) => {
 
 	const getIconContainerStyle = () => {
 		if (badge.id === 'b-10') return 'bg-[#075fc7] text-white' // Mestre de XP
-		if (badge.id === 'b-11') return 'bg-slate-900 text-white' // Poliglota Curioso
+		if (badge.id === 'b-11') return 'bg-indigo-100 text-slate-900' // Poliglota Curioso
 		if (badge.id === 'b-12') return 'bg-emerald-500 text-white' // Geômetra Iniciante
 		if (badge.id === 'b-01') return 'bg-amber-100 text-amber-800' // Fogo Imparável
 		if (badge.id === 'b-03') return 'bg-sky-100 text-sky-700' // Ritual Matinal
@@ -127,7 +127,7 @@ export const BadgeItemCard = ({ badge }: BadgeItemCardProps) => {
 	}
 
 	return (
-		<div className="flex flex-col justify-between rounded-3xl bg-white p-5 shadow-xs border border-slate-100 transition-all hover:shadow-sm">
+		<div className="flex flex-col justify-between rounded-2xl border border-slate-100 bg-white p-5 shadow-xs transition-all hover:shadow-sm">
 			<div>
 				{/* Topo do card: Ícone + Tag de Raridade */}
 				<div className="flex items-start justify-between">

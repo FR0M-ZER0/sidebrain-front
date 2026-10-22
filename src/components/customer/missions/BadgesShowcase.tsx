@@ -34,7 +34,7 @@ export const BadgesShowcase = ({
 			{/* Topo da vitrine: Título/Subtítulo & Tabs de filtro */}
 			<div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
 				<div>
-					<h2 id="showcase-title" className="text-xl font-bold tracking-tight text-slate-900">
+					<h2 id="showcase-title" className="text-2xl font-bold tracking-tight text-slate-900">
 						Vitrine de Badges
 					</h2>
 					<p className="mt-1 text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
@@ -87,7 +87,7 @@ export const BadgesShowcase = ({
 						</div>
 
 						{/* Grid de Badges da Categoria */}
-						<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+						<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
 							{badges.map((badge) => (
 								<BadgeItemCard key={badge.id} badge={badge} />
 							))}

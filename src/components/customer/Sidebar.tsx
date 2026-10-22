@@ -77,9 +77,9 @@ export const Sidebar = ({ activeItem }: SidebarProps = {}) => {
 
 			<div className="sidebar-footer">
 				{user && (
-					<div className="mb-3 min-w-0 px-3">
-						<p className="truncate text-sm font-semibold text-slate-800">{user.name}</p>
-						<p className="truncate text-xs text-slate-500">{user.email}</p>
+					<div className="min-w-0 px-3">
+						<p className="m-0 truncate text-sm font-semibold leading-tight text-slate-800">{user.name}</p>
+						<p className="m-0 truncate text-xs leading-tight text-slate-500">{user.email}</p>
 					</div>
 				)}
 				<button

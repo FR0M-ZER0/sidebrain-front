@@ -5,7 +5,7 @@ import type { TrackGenerationRequest } from '../../types/trackFlow'
 export const TrailOnboardingSummaryPage = () => {
 	const navigate = useNavigate()
 	const location = useLocation()
-	const state = location.state as Partial<TrackGenerationRequest> | null
+	const state = location.state as (Partial<TrackGenerationRequest> & { startMode?: string }) | null
 	const goalDescription = state?.goalDescription ?? ''
 	const handleGenerate = () => {
 		if (!goalDescription.trim()) return
@@ -24,9 +24,11 @@ export const TrailOnboardingSummaryPage = () => {
 				<div className="onboarding-card">
 					<h1>Configuração concluída</h1>
 					<p className="onboarding-subtitle">
-						{state?.assessmentId
-							? `Seu diagnóstico foi concluído. Vamos gerar uma trilha sobre: ${goalDescription}`
-							: `Sua trilha começará pelos fundamentos. Vamos gerar um roteiro para: ${goalDescription}`}
+						{state?.startMode === 'step_by_step'
+							? `Sua trilha começará pelos fundamentos. Vamos gerar um roteiro para: ${goalDescription}`
+							: state?.assessmentId
+								? `Seu diagnóstico foi concluído. Vamos gerar uma trilha sobre: ${goalDescription}`
+								: `Sua trilha começará pelos fundamentos. Vamos gerar um roteiro para: ${goalDescription}`}
 					</p>
 					{!goalDescription && <p className="onboarding-error" role="alert">Não encontramos a meta desta trilha. Volte e descreva o que deseja aprender.</p>}
 					<div className="confirm-row">

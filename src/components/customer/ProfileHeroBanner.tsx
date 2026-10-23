@@ -1,4 +1,4 @@
-import { Calendar, Camera, Pencil, Star, Trophy } from 'lucide-react'
+import { Camera, Pencil, Star, Zap } from 'lucide-react'
 import type { UserProfile } from '../../types/userProfile'
 
 interface ProfileHeroBannerProps {
@@ -12,11 +12,6 @@ export const ProfileHeroBanner = ({
 	onEditProfile,
 	onChangePhoto,
 }: ProfileHeroBannerProps) => {
-	const progressPercent = Math.min(
-		100,
-		Math.round((user.currentXp / user.nextLevelXp) * 100),
-	)
-
 	return (
 		<div className="overflow-hidden rounded-2xl border border-white/80 bg-gradient-to-r from-white via-orange-50/60 to-blue-50/70 p-5 shadow-xs sm:p-6">
 			<div className="flex flex-col justify-between gap-5 md:flex-row md:items-center">
@@ -35,39 +30,23 @@ export const ProfileHeroBanner = ({
 						</div>
 					</div>
 
-					<div className="min-w-0 space-y-2">
+					<div className="min-w-0">
 						<div className="flex flex-wrap items-center gap-2.5">
-							<h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-								{user.name}
-							</h2>
+							<div className="flex min-w-0 flex-col gap-0">
+								<h2 className="text-2xl font-bold leading-tight tracking-tight text-slate-900 sm:text-3xl">
+									{user.name}
+								</h2>
+								{user.memberSince && <span className="text-sm leading-none text-slate-600">Membro desde {user.memberSince}</span>}
+							</div>
 							<span className="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-1 text-xs font-bold tracking-wide text-orange-900">
 								{user.planTier}
 							</span>
 						</div>
 
-						<div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium text-slate-600">
+						<div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium text-slate-600">
 							<div className="inline-flex items-center gap-1.5 rounded-md bg-indigo-100/80 px-2.5 py-1 font-semibold text-indigo-900">
-								<Trophy size={15} />
-								<span>Nível {user.level}</span>
-							</div>
-							<div className="flex items-center gap-1 text-slate-600">
-								<Calendar size={15} />
-								<span>Estudando desde {user.memberSince}</span>
-							</div>
-						</div>
-
-						<div className="w-full max-w-sm pt-1">
-							<div className="mb-1.5 flex items-center justify-between text-xs font-semibold text-slate-700">
-								<span>Progresso para o Nível {user.level + 1}</span>
-								<span className="text-slate-900">
-									{user.currentXp.toLocaleString('pt-BR')} / {user.nextLevelXp.toLocaleString('pt-BR')} XP
-								</span>
-							</div>
-							<div className="h-2 w-full overflow-hidden rounded-full bg-indigo-100">
-								<div
-									className="h-full rounded-full bg-blue-700 transition-all duration-500 ease-out"
-									style={{ width: `${progressPercent}%` }}
-								/>
+								<Zap size={15} />
+								<span>{user.currentXp.toLocaleString('pt-BR')} XP acumulados</span>
 							</div>
 						</div>
 					</div>

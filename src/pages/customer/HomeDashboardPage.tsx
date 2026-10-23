@@ -9,7 +9,7 @@ export const HomeDashboardPage = () => {
 	const { data, tracks, missions, badges } = useDashboard()
 
 	return (
-		<StudentPageLayout xp={data.usuario.xpAtual} coins={data.usuario.moedas} notifications={12}>
+		<StudentPageLayout notifications={12}>
 			<div className="content-stack">
 				<BadgesSection badges={data.badges} loading={badges.loading} error={badges.error} onRetry={badges.retry} />
 				<MissionsSection missions={data.missoes} loading={missions.loading} error={missions.error} onRetry={missions.retry} />

@@ -104,17 +104,15 @@ export const ActiveTracksSection = ({
 								</div>
 
 								<div className="flex items-center justify-between gap-3 rounded-xl bg-indigo-50/80 px-3 py-2.5">
-									<div className="flex min-w-0 items-center gap-2">
-										<Play size={14} className="shrink-0 text-blue-700" />
-										<div className="min-w-0 text-xs leading-snug text-slate-700">
-											<span className="block font-medium text-slate-600">
-												Próxima Lição
-											</span>
-											<span className="block truncate font-semibold text-slate-900">
-												{track.nextLessonTitle}
-											</span>
+									{track.nextLessonTitle && (
+										<div className="flex min-w-0 items-center gap-2">
+											<Play size={14} className="shrink-0 text-blue-700" />
+											<div className="min-w-0 text-xs leading-snug text-slate-700">
+												<span className="block font-medium text-slate-600">Próxima Lição</span>
+												<span className="block truncate font-semibold text-slate-900">{track.nextLessonTitle}</span>
+											</div>
 										</div>
-									</div>
+									)}
 									<button
 										type="button"
 										onClick={() => onResumeTrack(track.targetRoute)}

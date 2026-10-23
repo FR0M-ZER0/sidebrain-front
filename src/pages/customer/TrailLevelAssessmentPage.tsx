@@ -70,8 +70,6 @@ export const TrailLevelAssessmentPage = () => {
 
 	return (
 		<StudentPageLayout
-			xp={320}
-			coins={500}
 			notifications={1}
 			className="track-create-shell"
 			pageClassName="track-create-page track-start-page"

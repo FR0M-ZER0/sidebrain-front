@@ -27,7 +27,7 @@ export const TrailGenerationLoadingPage = () => {
 	}, [job, navigate])
 
 	return (
-		<StudentPageLayout xp={320} coins={500} notifications={1} pageClassName="trail-generation-page">
+		<StudentPageLayout notifications={1} pageClassName="trail-generation-page">
 			<div className="trail-generation-loading" role="status" aria-live="polite">
 				<Loader2 className="spinner trail-generation-spinner" size={42} aria-hidden="true" />
 				<h1>Construindo sua trilha...</h1>

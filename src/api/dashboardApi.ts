@@ -2,12 +2,14 @@ import { api } from './api'
 import type { DashboardTrack, DashboardTrackStatus } from '../types/dashboard'
 
 interface ApiLesson {
-	status?: string
+  status?: string
+  title?: string
 }
 
 interface ApiStep {
-	status?: string
-	lessons?: ApiLesson[] | null
+	title?: string
+  status?: string
+  lessons?: ApiLesson[] | null
 }
 
 interface ApiTrack {
@@ -83,6 +85,8 @@ const getCurrentModule = (steps: ApiStep[]) => {
 const toDashboardTrack = (track: ApiTrack): DashboardTrack => {
 	const steps = track.steps ?? []
 	const progress = getTrackProgress(steps)
+	const nextLesson = steps.flatMap((step) => step.lessons ?? [])
+		.find((lesson) => !isCompleted(lesson.status) && typeof lesson.title === 'string')
 	const status: DashboardTrackStatus = progress === 100
 		? 'concluido'
 		: progress > 0 ? 'ativo' : 'recente'
@@ -97,6 +101,7 @@ const toDashboardTrack = (track: ApiTrack): DashboardTrack => {
 		status,
 		icone: track.icon || '🧭',
 		descricao: track.description || 'Continue sua jornada de aprendizado.',
+		proximaLicao: nextLesson?.title,
 	}
 }
 

@@ -1,5 +1,6 @@
-import { ChevronRight, Flame, Ruler, Zap } from 'lucide-react'
-import type { BadgeRarity, ProfileBadge } from '../../types/userProfile'
+import { Award, BookOpen, BookOpenCheck, CheckCircle, ChevronRight, Flame, Layers, Target, Zap } from 'lucide-react'
+import type { BadgeRarity } from '../../types/missions'
+import type { ProfileBadge } from '../../types/userProfile'
 
 interface ProfileBadgesSectionProps {
 	badges: ProfileBadge[]
@@ -14,46 +15,44 @@ export const ProfileBadgesSection = ({
 }: ProfileBadgesSectionProps) => {
 	const getRarityBadgeStyle = (rarity: BadgeRarity) => {
 		switch (rarity) {
-		case 'ÉPICO':
+		case 'epico':
 			return 'bg-blue-50 text-blue-700'
-		case 'RARO':
+		case 'raro':
 			return 'bg-orange-50 text-orange-800'
-		case 'INCOMUM':
+		case 'incomum':
 			return 'bg-emerald-50 text-emerald-700'
-		case 'COMUM':
+		case 'lendario':
+			return 'bg-amber-100 text-amber-900'
+		case 'comum':
 		default:
 			return 'bg-slate-100 text-slate-700'
 		}
 	}
 
-	const renderBadgeIcon = (iconType: ProfileBadge['iconType']) => {
-		switch (iconType) {
-		case 'flame':
-			return (
-				<div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-orange-700">
-					<Flame size={22} className="fill-orange-300" />
-				</div>
-			)
-		case 'zap':
-			return (
-				<div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-slate-900">
-					<Zap size={22} className="fill-indigo-300" />
-				</div>
-			)
-		case 'torii':
-			return (
-				<div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-2xl">
-					<span aria-hidden="true">⛩️</span>
-				</div>
-			)
-		case 'ruler':
-		default:
-			return (
-				<div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-200 text-emerald-700">
-					<Ruler size={22} />
-				</div>
-			)
-		}
+	const rarityLabels: Record<BadgeRarity, string> = {
+		comum: 'COMUM',
+		incomum: 'INCOMUM',
+		raro: 'RARO',
+		epico: 'ÉPICO',
+		lendario: 'LENDÁRIO',
+	}
+
+	const badgeIcons = { Award, BookOpen, BookOpenCheck, CheckCircle, Flame, Layers, Target, Zap }
+	const renderBadgeIcon = (badge: ProfileBadge) => {
+		const Icon = badgeIcons[badge.iconType as keyof typeof badgeIcons] ?? Award
+		const iconStyle = badge.rarity === 'raro' || badge.rarity === 'lendario'
+			? 'bg-orange-100 text-orange-800'
+			: badge.rarity === 'epico'
+				? 'bg-indigo-100 text-indigo-800'
+				: badge.rarity === 'incomum'
+					? 'bg-emerald-100 text-emerald-800'
+					: 'bg-slate-100 text-slate-700'
+
+		return (
+			<div className={`flex h-12 w-12 items-center justify-center rounded-full ${iconStyle}`}>
+				<Icon size={22} aria-hidden="true" />
+			</div>
+		)
 	}
 
 	return (
@@ -91,16 +90,17 @@ export const ProfileBadgesSection = ({
 							key={badge.id}
 							className="flex min-h-44 flex-col items-center rounded-2xl border border-slate-100 bg-white px-4 py-5 text-center shadow-xs transition hover:border-slate-200"
 						>
-							{renderBadgeIcon(badge.iconType)}
+							{renderBadgeIcon(badge)}
 							<h3 className="mt-3 text-sm font-semibold leading-tight text-slate-900">
 								{badge.title}
 							</h3>
-							<p className="mt-2 line-clamp-3 text-xs leading-relaxed text-slate-600">
+							{badge.description && <p className="mt-2 line-clamp-3 text-xs leading-relaxed text-slate-600">
 								{badge.description}
-							</p>
+							</p>}
 							<span className={`mt-3 rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wide ${rarityStyle}`}>
-								{badge.rarity}
+								{rarityLabels[badge.rarity]}
 							</span>
+							{badge.unlockedAt && <span className="mt-2 text-[10px] text-slate-500">Conquistado em {badge.unlockedAt}</span>}
 						</div>
 					)
 				})}

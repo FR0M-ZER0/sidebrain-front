@@ -7,9 +7,11 @@ import { Link, useSearchParams } from 'react-router'
 import { Sidebar } from '../../components/customer/Sidebar'
 import { useMissionsAndBadges } from '../../hooks/useMissionsAndBadges'
 import { useSectionAnchor } from '../../hooks/useSectionAnchor'
+import { useAuth } from '../../hooks/useAuth'
 
 export const MissionsAndBadgesPage = () => {
 	const [searchParams] = useSearchParams()
+	const { user } = useAuth()
 	const trackId = searchParams.get('track_id') || undefined
 	const {
 		missions,
@@ -27,8 +29,7 @@ export const MissionsAndBadgesPage = () => {
 
 			<main className="page-shell">
 				<HeaderBar
-					xp={320}
-					coins={500}
+					xp={user?.xp ?? 0}
 					notifications={12}
 				/>
 

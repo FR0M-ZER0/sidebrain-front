@@ -98,8 +98,6 @@ export const TrackDetailsPage = () => {
 
 	return (
 		<StudentPageLayout
-			xp={320}
-			coins={500}
 			notifications={1}
 			streakCount={12}
 			className="track-details-shell"

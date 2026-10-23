@@ -2,6 +2,11 @@ import { api } from './api'
 
 export type QuizAnswerRate = 'good' | 'perfect' | 'wrong' | 'almost_got_it'
 
+export interface QuizAnswerEvaluation {
+	rate: QuizAnswerRate
+	reason: string | null
+}
+
 export interface LessonQuiz {
 	id: string
 	lessonId: string
@@ -28,10 +33,13 @@ export const getLessonQuizzes = async (lessonId: string): Promise<LessonQuiz[]> 
 	return items.map(toQuiz).filter((quiz): quiz is LessonQuiz => quiz !== null)
 }
 
-export const submitLessonQuizAnswer = async (quizId: string, text: string): Promise<QuizAnswerRate> => {
+export const submitLessonQuizAnswer = async (quizId: string, text: string): Promise<QuizAnswerEvaluation> => {
 	const { data } = await api.post<unknown>(`/api/v1/quizzes/${encodeURIComponent(quizId)}/answers`, { text })
 	if (!isRecord(data) || !['good', 'perfect', 'wrong', 'almost_got_it'].includes(String(data.rate))) {
 		throw new Error('A resposta foi salva, mas a avaliação da IA veio em um formato inválido.')
 	}
-	return data.rate as QuizAnswerRate
+	return {
+		rate: data.rate as QuizAnswerRate,
+		reason: typeof data.reason === 'string' ? data.reason : null,
+	}
 }

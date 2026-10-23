@@ -5,7 +5,7 @@ import { useLocation, useNavigate, useParams } from 'react-router'
 import { markLessonCompleted, type LessonNavigationContext } from '../../api/lessonsApi'
 import { getLessonQuizzes, submitLessonQuizAnswer } from '../../api/quizApi'
 import { getPendingStepPreparation, hasStepPreparationBeenRequested, prepareNextStep } from '../../api/trackService'
-import type { LessonQuiz, QuizAnswerRate } from '../../api/quizApi'
+import type { LessonQuiz, QuizAnswerEvaluation, QuizAnswerRate } from '../../api/quizApi'
 import { LessonFocusLayout } from '../../components/customer/lesson/LessonFocusLayout'
 import { LessonHeader } from '../../components/customer/lesson/LessonHeader'
 import { useLesson } from '../../hooks/useLesson'
@@ -35,7 +35,7 @@ export const LessonQuizPage = () => {
 	}>(() => ({ lessonId, quizzes: [], loading: Boolean(lessonId), error: null }))
 	const [currentIndex, setCurrentIndex] = useState(0)
 	const [answer, setAnswer] = useState('')
-	const [evaluation, setEvaluation] = useState<QuizAnswerRate | null>(null)
+	const [evaluation, setEvaluation] = useState<QuizAnswerEvaluation | null>(null)
 	const [submitting, setSubmitting] = useState(false)
 	const [preparingNextStep, setPreparingNextStep] = useState(false)
 	const isCurrentLesson = quizState.lessonId === lessonId
@@ -146,7 +146,7 @@ export const LessonQuizPage = () => {
 					<p className="mb-2 mt-0 text-right text-xs font-semibold text-muted sm:text-sm">Questão {currentIndex + 1} de {quizzes.length}</p>
 					<h1 className="mb-8 mt-0 text-center text-4xl font-bold leading-tight tracking-[-0.04em] text-foreground sm:mb-10 sm:text-5xl lg:text-6xl">{currentQuiz.question}</h1>
 					<textarea id="quiz-answer" rows={6} value={answer} disabled={Boolean(evaluation) || submitting} onChange={(event) => setAnswer(event.target.value)} placeholder="Escreva sua resposta..." className="mt-3 w-full resize-y rounded-xl border border-slate-200 p-4 text-lg leading-relaxed text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50" />
-					{evaluation && <div className={`mt-6 rounded-xl border p-4 text-base font-medium ${evaluationFeedback[evaluation].className}`} role="status">{evaluationFeedback[evaluation].title}</div>}
+					{evaluation && <div className={`mt-6 rounded-xl border p-4 text-base ${evaluationFeedback[evaluation.rate].className}`} role="status"><p className="m-0 font-semibold">{evaluationFeedback[evaluation.rate].title}</p>{evaluation.reason && <p className="mb-0 mt-2 font-normal leading-relaxed">{evaluation.reason}</p>}</div>}
 					{error && quizzes.length > 0 && <p className="mt-5 rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert">{error}</p>}
 				</motion.section>}
 				{!isLoading && !pageError && currentQuiz && <footer className="mt-auto flex flex-wrap items-center justify-end gap-4 pt-2">

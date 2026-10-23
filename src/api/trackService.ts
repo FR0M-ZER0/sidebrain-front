@@ -15,6 +15,10 @@ interface ApiMission {
 	title?: string
 	name?: string
 	description?: string
+	difficulty?: string
+	criteria?: string
+	criteria_value?: number
+	progress_percentage?: number
 	status?: string
 	progress?: number
 	current_progress?: number
@@ -22,6 +26,17 @@ interface ApiMission {
 	goal?: number
 	xp_reward?: number
 	reward_xp?: number
+	mission_progresses?: ApiMissionProgress[] | ApiMissionProgress | null
+}
+
+interface ApiMissionProgress {
+	progress?: number
+	current_progress?: number
+	progress_value?: number
+	current_value?: number
+	total_progress?: number
+	progress_percentage?: number
+	percentage?: number
 }
 
 interface ApiStep {
@@ -47,8 +62,8 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 const asText = (value: unknown, fallback = '') =>
 	typeof value === 'string' ? value : fallback
 
-const asNumber = (value: unknown, fallback = 0) =>
-	typeof value === 'number' && Number.isFinite(value) ? value : fallback
+const asOptionalNumber = (value: unknown) =>
+	typeof value === 'number' && Number.isFinite(value) ? value : undefined
 
 const asItems = <T,>(value: unknown, isItem: (item: unknown) => item is T): T[] =>
 	Array.isArray(value) ? value.filter(isItem) : []
@@ -91,16 +106,71 @@ const toLesson = (lesson: ApiLesson, isNextAvailable: boolean): Lesson => {
 	}
 }
 
-const toMission = (mission: ApiMission, index: number): Mission => {
-	const currentProgress = asNumber(mission.current_progress, asNumber(mission.progress))
-	const totalProgress = asNumber(mission.total_progress, asNumber(mission.goal, 1))
+const getProgressUnit = (criteria: string | undefined) => {
+	if (!criteria) return undefined
+
+	const units: Record<string, string> = {
+		number_of_lessons_completed: 'lições',
+		get_all_answer_right_in_a_lesson: 'respostas corretas',
+		complete_a_step: 'etapas',
+		complete_a_track: 'trilhas',
+		number_of_steps_completed: 'etapas',
+		get_all_answers_right: 'respostas corretas',
+	}
+
+	return units[criteria] ?? 'conclusões'
+}
+
+const getMissionProgress = (mission: ApiMission) => {
+	const progressCollection = mission.mission_progresses
+	if (Array.isArray(progressCollection)) {
+		const progressRecords = asItems(progressCollection, isRecord)
+		return {
+			progress: progressRecords[progressRecords.length - 1],
+			empty: progressRecords.length === 0,
+		}
+	}
+
 	return {
-		id: asText(mission.id, `mission-${index + 1}`),
+		progress: isRecord(progressCollection) ? progressCollection : undefined,
+		empty: false,
+	}
+}
+
+const toMission = (mission: ApiMission, index: number, step: ApiStep): Mission => {
+	const { progress, empty } = getMissionProgress(mission)
+	const currentProgress = asOptionalNumber(progress?.current_progress)
+		?? asOptionalNumber(progress?.progress_value)
+		?? asOptionalNumber(progress?.current_value)
+		?? asOptionalNumber(progress?.progress)
+		?? asOptionalNumber(mission.current_progress)
+		?? asOptionalNumber(mission.progress)
+		?? (empty ? 0 : undefined)
+	const totalProgress = asOptionalNumber(mission.criteria_value)
+		?? asOptionalNumber(progress?.total_progress)
+		?? asOptionalNumber(mission.total_progress)
+		?? asOptionalNumber(mission.goal)
+	const suppliedPercentage = asOptionalNumber(progress?.progress_percentage)
+		?? asOptionalNumber(progress?.percentage)
+		?? asOptionalNumber(mission.progress_percentage)
+	const progressPercentage = suppliedPercentage
+		?? (currentProgress !== undefined && totalProgress !== undefined && totalProgress > 0
+			? Math.round((currentProgress / totalProgress) * 100)
+			: undefined)
+	const xpReward = asOptionalNumber(mission.xp_reward) ?? asOptionalNumber(mission.reward_xp)
+	const criteria = asText(mission.criteria) || undefined
+
+	return {
+		id: asText(mission.id, `mission-${step.id}-${index + 1}`),
 		title: asText(mission.title, asText(mission.name, asText(mission.description, 'Missão da trilha'))),
-		xpReward: asNumber(mission.xp_reward, asNumber(mission.reward_xp)),
+		stepTitle: step.title,
+		difficulty: asText(mission.difficulty) || undefined,
+		criteria,
+		xpReward,
+		progressUnit: getProgressUnit(criteria),
 		currentProgress,
 		totalProgress,
-		progressPercentage: totalProgress > 0 ? Math.min(100, Math.round((currentProgress / totalProgress) * 100)) : 0,
+		progressPercentage,
 	}
 }
 
@@ -133,7 +203,9 @@ const toTrackDetails = (track: ApiTrack): TrackDetails => {
 		lessonOffset += apiLessons.length
 		return module
 	})
-	const missions = steps.flatMap((step) => asItems(step.missions, isApiMission)).map(toMission)
+	const missions = steps.flatMap((step) =>
+		asItems(step.missions, isApiMission).map((mission, index) => toMission(mission, index, step)),
+	)
 	const progressUnits = allLessons.length > 0 ? allLessons.length : steps.length
 	const progressDone = allLessons.length > 0 ? completedLessons : steps.filter((step) => isCompleted(step.status)).length
 

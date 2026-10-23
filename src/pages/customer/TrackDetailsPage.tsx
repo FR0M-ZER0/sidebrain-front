@@ -19,6 +19,28 @@ import { useTrackDetails } from '../../hooks/useTrackDetails'
 import type { LessonNavigationContext } from '../../api/lessonsApi'
 import type { Module, TrackDetails } from '../../types/trackDetails'
 
+const missionDifficultyLabels: Record<string, string> = {
+	easy: 'Fácil',
+	medium: 'Média',
+	hard: 'Difícil',
+	very_hard: 'Muito difícil',
+}
+
+const missionCriteriaLabels: Record<string, string> = {
+	number_of_lessons_completed: 'Conclua lições desta etapa',
+	get_all_answer_right_in_a_lesson: 'Acerte todas as respostas de uma lição',
+	complete_a_step: 'Conclua esta etapa',
+	complete_a_track: 'Conclua a trilha',
+	number_of_steps_completed: 'Conclua etapas da trilha',
+	get_all_answers_right: 'Acerte todas as respostas',
+}
+
+const getMissionDifficultyLabel = (difficulty: string) =>
+	missionDifficultyLabels[difficulty] ?? difficulty
+
+const getMissionCriteriaLabel = (criteria: string) =>
+	missionCriteriaLabels[criteria] ?? criteria.replace(/_/g, ' ')
+
 const ModuleCard = ({ module, index, track }: { module: Module; index: number; track: TrackDetails }) => {
 	const navigate = useNavigate()
 	const [isExpanded, setIsExpanded] = useState(module.status !== 'locked')
@@ -115,8 +137,64 @@ export const TrackDetailsPage = () => {
 						<div className="track-progress-card"><h2>Progresso da Trilha</h2><div className="track-progress-bar"><span style={{ width: `${track.progressPercentage}%` }} /></div><div className="track-progress-meta"><span>{track.completedLessons} de {track.totalLessons} lições</span><b>{track.progressPercentage}% Concluído</b></div></div>
 						<div className="track-missions-card">
 							<h2><span>◉</span> Missões da trilha</h2>
-							{track.missions.map((mission) => <article className="track-mission" key={mission.id}><div><strong>{mission.title}</strong><b><Zap size={16} /> +{mission.xpReward} XP</b></div><div className="track-mission-bar"><span style={{ width: `${mission.progressPercentage}%` }} /></div><footer><span>{mission.currentProgress} de {mission.totalProgress} {mission.title.toLowerCase().includes('quiz') ? 'quizzes' : 'concluídas'}</span><b>{mission.progressPercentage}%</b></footer></article>)}
-							<button type="button" className="track-all-missions">Ver todas as missões <ArrowRight size={17} /></button>
+							{track.missions.length === 0 ? (
+								<p className="track-missions-empty">Esta trilha ainda não possui missões.</p>
+							) : track.missions.map((mission) => {
+								const progressPercentage = mission.progressPercentage
+								const visualProgress = progressPercentage === undefined
+									? undefined
+									: Math.min(100, Math.max(0, progressPercentage))
+								const calculatedPercentage = mission.currentProgress !== undefined
+									&& mission.totalProgress !== undefined
+									&& mission.totalProgress > 0
+									? Math.round((mission.currentProgress / mission.totalProgress) * 100)
+									: undefined
+								const hasProgressMismatch = progressPercentage !== undefined
+									&& calculatedPercentage !== undefined
+									&& progressPercentage !== calculatedPercentage
+
+								return (
+									<article className="track-mission" key={mission.id}>
+										{(mission.stepTitle || mission.difficulty) && (
+											<div className="track-mission-context">
+												{mission.stepTitle && <span>{mission.stepTitle}</span>}
+												{mission.difficulty && <span>{getMissionDifficultyLabel(mission.difficulty)}</span>}
+											</div>
+										)}
+										<div className="track-mission-heading">
+											<strong>{mission.title}</strong>
+											{mission.xpReward !== undefined && <b><Zap size={16} /> +{mission.xpReward} XP</b>}
+										</div>
+										{mission.criteria && <p className="track-mission-criteria">{getMissionCriteriaLabel(mission.criteria)}</p>}
+										{visualProgress !== undefined && progressPercentage !== undefined ? (
+											<>
+												<div className="track-mission-bar">
+													<span
+														role="progressbar"
+														aria-label={`Progresso da missão ${mission.title}`}
+														aria-valuenow={visualProgress}
+														aria-valuemin={0}
+														aria-valuemax={100}
+														style={{ width: `${visualProgress}%` }}
+													/>
+												</div>
+												<footer>
+													<span>
+														{mission.currentProgress !== undefined && mission.totalProgress !== undefined
+															? `${mission.currentProgress} de ${mission.totalProgress} ${mission.progressUnit ?? 'progresso'}`
+															: 'Progresso registrado'}
+													</span>
+													<b>{progressPercentage}%</b>
+												</footer>
+												{hasProgressMismatch && <small className="track-mission-warning" role="status">A contagem e o percentual de progresso divergem.</small>}
+											</>
+										) : (
+											<p className="track-mission-no-progress">Progresso ainda não informado.</p>
+										)}
+									</article>
+								)
+							})}
+							<Link to="/#missions" className="track-all-missions">Ver todas as missões <ArrowRight size={17} /></Link>
 						</div>
 					</aside>
 					<div className="track-curriculum">

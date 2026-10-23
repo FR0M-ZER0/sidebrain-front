@@ -2195,12 +2195,17 @@
 .track-missions-card h2 { display: flex; align-items: center; gap: 7px; margin-bottom: 16px; }
 .track-missions-card h2 span { color: #075fc7; }
 .track-mission { margin-top: 10px; padding: 12px; border-radius: 13px; background: white; }
-.track-mission > div:first-child,.track-mission footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.track-mission > div:first-child strong { font-size: .85rem; }
-.track-mission > div:first-child b { display: flex; align-items: center; color: #00783f; }
+.track-mission-context { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 7px; color: #647089; font-size: .72rem; }
+.track-mission-context span:last-child { flex-shrink: 0; font-weight: 700; }
+.track-mission-heading,.track-mission footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.track-mission-heading strong { font-size: .85rem; }
+.track-mission-heading b { display: flex; align-items: center; color: #00783f; white-space: nowrap; }
+.track-mission-criteria { margin: 6px 0 0; color: #647089; font-size: .78rem; line-height: 1.4; }
 .track-mission-bar { height: 7px; margin-top: 7px; }
 .track-mission footer { margin-top: 9px; color: #41495b; font-size: .82rem; }
 .track-mission footer b { color: #075fc7; }
+.track-mission-warning,.track-mission-no-progress,.track-missions-empty { display: block; margin: 8px 0 0; color: #76520a; font-size: .75rem; line-height: 1.4; }
+.track-missions-empty { color: #647089; }
 .track-mission:nth-of-type(3) .track-mission-bar span { background: #936000; }
 .track-all-missions { display: flex; justify-content: center; align-items: center; gap: 6px; width: 100%; margin-top: 12px; padding: 10px; border: 0; border-radius: 11px; background: white; font-weight: 700; color: #172238; }
 .track-curriculum-heading { margin: 0 0 34px; }

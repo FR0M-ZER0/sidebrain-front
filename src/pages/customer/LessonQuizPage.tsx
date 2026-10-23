@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react'
 import { ArrowLeft, ArrowRight, LoaderCircle, Send } from 'lucide-react'
 import { motion, useReducedMotion } from 'motion/react'
 import { useLocation, useNavigate, useParams } from 'react-router'
-import type { LessonNavigationContext } from '../../api/lessonsApi'
+import { markLessonCompleted, type LessonNavigationContext } from '../../api/lessonsApi'
 import { getLessonQuizzes, submitLessonQuizAnswer } from '../../api/quizApi'
+import { getPendingStepPreparation, hasStepPreparationBeenRequested, prepareNextStep } from '../../api/trackService'
 import type { LessonQuiz, QuizAnswerRate } from '../../api/quizApi'
 import { LessonFocusLayout } from '../../components/customer/lesson/LessonFocusLayout'
 import { LessonHeader } from '../../components/customer/lesson/LessonHeader'
@@ -36,6 +37,7 @@ export const LessonQuizPage = () => {
 	const [answer, setAnswer] = useState('')
 	const [evaluation, setEvaluation] = useState<QuizAnswerRate | null>(null)
 	const [submitting, setSubmitting] = useState(false)
+	const [preparingNextStep, setPreparingNextStep] = useState(false)
 	const isCurrentLesson = quizState.lessonId === lessonId
 	const quizzes = isCurrentLesson ? quizState.quizzes : []
 	const loading = lessonId ? !isCurrentLesson || quizState.loading : false
@@ -72,8 +74,47 @@ export const LessonQuizPage = () => {
 		if (!currentQuiz || submitting) return
 		if (evaluation) {
 			if (currentIndex + 1 >= quizzes.length) {
+				const lessonToComplete = lessonState.status === 'success' ? lessonState.lesson : null
+				if (!lessonToComplete) {
+					setQuizState((state) => ({ ...state, error: 'Não foi possível carregar os dados para registrar a conclusão da lição.' }))
+					return
+				}
+
+				setPreparingNextStep(true)
+				setQuizState((state) => ({ ...state, error: null }))
+				let pendingPreparation = lessonContext?.pendingStepPreparation
+					&& lessonContext.pendingStepPreparation.trackId === lessonContext.trackId
+					&& lessonContext.pendingStepPreparation.stepId === lessonContext.stepId
+					? lessonContext.pendingStepPreparation
+					: null
+				if (!pendingPreparation && lessonContext?.trackId) {
+					const storedPreparation = getPendingStepPreparation(lessonContext.trackId)
+					if (storedPreparation?.stepId === lessonContext.stepId) pendingPreparation = storedPreparation
+				}
+				try {
+					await markLessonCompleted(lessonToComplete)
+					if (lessonContext?.trackId && lessonContext.stepId && !pendingPreparation
+						&& !hasStepPreparationBeenRequested(lessonContext.trackId, lessonContext.stepId)) {
+						const result = await prepareNextStep(lessonContext.trackId, lessonContext.stepId)
+						if (result.status === 'accepted') pendingPreparation = result.pending
+					}
+				} catch (completionError) {
+					setQuizState((state) => ({
+						...state,
+						error: completionError instanceof Error
+							? completionError.message
+							: 'Não foi possível registrar a conclusão da lição. Tente novamente.',
+					}))
+					return
+				} finally {
+					setPreparingNextStep(false)
+				}
+
 				const destination = lessonContext?.from ?? returnTo
-				navigate(destination, { replace: true })
+				navigate(destination, {
+					replace: true,
+					state: pendingPreparation ? { pendingStepPreparation: pendingPreparation } : undefined,
+				})
 				return
 			}
 			setCurrentIndex((index) => index + 1)
@@ -109,7 +150,7 @@ export const LessonQuizPage = () => {
 					{error && quizzes.length > 0 && <p className="mt-5 rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert">{error}</p>}
 				</motion.section>}
 				{!isLoading && !pageError && currentQuiz && <footer className="mt-auto flex flex-wrap items-center justify-end gap-4 pt-2">
-					<button type="button" disabled={(!answer.trim() && !evaluation) || submitting} onClick={() => void handleSubmit()} className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-blue-700 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-300">{submitting ? 'Avaliando com IA...' : evaluation ? currentIndex + 1 === quizzes.length ? 'Concluir quiz' : 'Próxima questão' : 'Enviar resposta'}{evaluation && currentIndex + 1 < quizzes.length ? <ArrowRight size={17} aria-hidden="true" /> : <Send size={16} aria-hidden="true" />}</button>
+					<button type="button" disabled={(!answer.trim() && !evaluation) || submitting || preparingNextStep} onClick={() => void handleSubmit()} className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-blue-700 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-300">{preparingNextStep ? 'Finalizando lição...' : submitting ? 'Avaliando com IA...' : evaluation ? currentIndex + 1 === quizzes.length ? 'Concluir quiz' : 'Próxima questão' : 'Enviar resposta'}{evaluation && currentIndex + 1 < quizzes.length ? <ArrowRight size={17} aria-hidden="true" /> : <Send size={16} aria-hidden="true" />}</button>
 				</footer>}
 			</main>
 		</LessonFocusLayout>

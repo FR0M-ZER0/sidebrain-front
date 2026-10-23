@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import {
 	ArrowLeft,
 	ArrowRight,
@@ -13,11 +13,12 @@ import {
 	Signal,
 	Zap,
 } from 'lucide-react'
-import { Link } from 'react-router'
 import { StudentPageLayout } from '../../components/customer/layouts/StudentPageLayout'
 import { useTrackDetails } from '../../hooks/useTrackDetails'
+import { forgetStepPreparation, getPendingStepPreparation, hasStepPreparationBeenRequested, prepareNextStep, waitForPreparedNextStep } from '../../api/trackService'
 import type { LessonNavigationContext } from '../../api/lessonsApi'
 import type { Module, TrackDetails } from '../../types/trackDetails'
+import type { PendingStepPreparation } from '../../types/trackFlow'
 import { missionCriteriaLabels, missionDifficultyLabels } from '../../util/gamification'
 
 const getMissionDifficultyLabel = (difficulty: string) =>
@@ -25,6 +26,13 @@ const getMissionDifficultyLabel = (difficulty: string) =>
 
 const getMissionCriteriaLabel = (criteria: string) =>
 	missionCriteriaLabels[criteria] ?? criteria.replace(/_/g, ' ')
+
+const getEligibleStepForPreparation = (track: TrackDetails) => track.modules.find((module, index) => {
+	if (module.totalLessons === 0) return false
+	const progress = module.completedLessons / module.totalLessons
+	const nextStepPrepared = Boolean(track.modules[index + 1]?.lessons.length)
+	return progress >= 0.8 && !nextStepPrepared
+})
 
 const ModuleCard = ({ module, index, track }: { module: Module; index: number; track: TrackDetails }) => {
 	const navigate = useNavigate()
@@ -37,6 +45,9 @@ const ModuleCard = ({ module, index, track }: { module: Module; index: number; t
 			from: `/trails/${track.id}`,
 			trackTitle: track.title,
 			moduleTitle: module.title,
+			trackId: track.id,
+			stepId: module.id,
+			lessonPosition: lessonIndex + 1,
 			currentLesson: lessonOffset + lessonIndex + 1,
 			totalLessons: track.totalLessons,
 			trailCompletionPercentage: track.progressPercentage,
@@ -93,8 +104,76 @@ const ModuleCard = ({ module, index, track }: { module: Module; index: number; t
 
 export const TrackDetailsPage = () => {
 	const { slug } = useParams()
+	const location = useLocation()
 	const trackState = useTrackDetails(slug)
 	const track = trackState.status === 'success' ? trackState.track : null
+	const initialPendingPreparation = (location.state as { pendingStepPreparation?: PendingStepPreparation } | null)?.pendingStepPreparation ?? null
+	const [pendingPreparation, setPendingPreparation] = useState<PendingStepPreparation | null>(
+		() => initialPendingPreparation ?? (slug ? getPendingStepPreparation(slug) : null),
+	)
+	const [preparationStatus, setPreparationStatus] = useState<'idle' | 'waiting' | 'ready' | 'failed' | 'timed-out'>('idle')
+	const [preparationRetry, setPreparationRetry] = useState(0)
+	const attemptedPreparation = useRef<string | null>(null)
+	const reloadTrack = trackState.reload
+
+	useEffect(() => {
+		if (!track || pendingPreparation) return
+		const step = getEligibleStepForPreparation(track)
+		if (!step) return
+
+		const preparationKey = `${track.id}:${step.id}`
+		if (attemptedPreparation.current === preparationKey) return
+		if (hasStepPreparationBeenRequested(track.id, step.id)) return
+		attemptedPreparation.current = preparationKey
+		let isActive = true
+
+		prepareNextStep(track.id, step.id)
+			.then((result) => {
+				if (!isActive) return
+				if (result.status === 'accepted') {
+					setPendingPreparation(result.pending)
+					setPreparationStatus('waiting')
+				} else {
+					setPreparationStatus('idle')
+				}
+			})
+			.catch(() => {
+				if (isActive) setPreparationStatus('failed')
+			})
+
+		return () => { isActive = false }
+	}, [preparationRetry, pendingPreparation, track])
+
+	useEffect(() => {
+		if (!pendingPreparation) return
+		const controller = new AbortController()
+
+		waitForPreparedNextStep(pendingPreparation, controller.signal).then((isPrepared) => {
+			if (controller.signal.aborted) return
+			attemptedPreparation.current = `${pendingPreparation.trackId}:${pendingPreparation.stepId}`
+			setPendingPreparation(null)
+			if (isPrepared) {
+				setPreparationStatus('ready')
+				reloadTrack()
+			} else {
+				forgetStepPreparation(pendingPreparation.trackId, pendingPreparation.stepId)
+				setPreparationStatus('timed-out')
+			}
+		}).catch(() => {
+			if (!controller.signal.aborted) setPreparationStatus('failed')
+		})
+
+		return () => controller.abort()
+	}, [pendingPreparation, reloadTrack])
+
+	const retryPreparation = () => {
+		if (pendingPreparation) forgetStepPreparation(pendingPreparation.trackId, pendingPreparation.stepId)
+		attemptedPreparation.current = null
+		setPendingPreparation(null)
+		setPreparationStatus('idle')
+		setPreparationRetry((current) => current + 1)
+	}
+	const visiblePreparationStatus = pendingPreparation ? 'waiting' : preparationStatus
 
 	return (
 		<StudentPageLayout
@@ -182,6 +261,14 @@ export const TrackDetailsPage = () => {
 					</aside>
 					<div className="track-curriculum">
 						<div className="track-curriculum-heading"><h2>Roteiro de Aprendizado</h2><p>Siga a ordem guiada ou revise tópicos concluídos para reforço de memória.</p></div>
+						{visiblePreparationStatus === 'waiting' && <p className="track-preparation-status" role="status">Preparando as próximas lições em segundo plano. Elas continuarão bloqueadas até você concluir a lição atual.</p>}
+						{visiblePreparationStatus === 'ready' && <p className="track-preparation-status" role="status">As próximas lições estão prontas.</p>}
+						{(visiblePreparationStatus === 'failed' || visiblePreparationStatus === 'timed-out') && (
+							<div className="track-preparation-status" role="status">
+								<span>Não foi possível confirmar o preparo das próximas lições.</span>
+								<button type="button" onClick={retryPreparation}>Tentar novamente</button>
+							</div>
+						)}
 						<div className="track-module-list">{track.modules.map((module, index) => <ModuleCard key={module.id} module={module} index={index} track={track} />)}</div>
 					</div>
 				</div>

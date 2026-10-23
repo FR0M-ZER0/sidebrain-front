@@ -1,6 +1,73 @@
 import { api } from './api'
 import { readGamificationProgress } from './gamificationApi'
 import type { Lesson, Module, ModuleStatus, Mission, TrackDetails } from '../types/trackDetails'
+import type { PendingStepPreparation, PrepareNextStepResult } from '../types/trackFlow'
+
+const PENDING_STEP_PREPARATIONS_KEY = 'sidebrain:pending-step-preparations'
+
+interface StepPreparationRecord extends PendingStepPreparation {
+	state?: 'pending' | 'ready'
+}
+
+const readPendingPreparations = (): Record<string, StepPreparationRecord> => {
+	if (typeof window === 'undefined') return {}
+	try {
+		const stored = JSON.parse(window.sessionStorage.getItem(PENDING_STEP_PREPARATIONS_KEY) ?? '{}') as unknown
+		return isRecord(stored) ? stored as Record<string, StepPreparationRecord> : {}
+	} catch {
+		return {}
+	}
+}
+
+const savePendingPreparation = (pending: PendingStepPreparation) => {
+	if (typeof window === 'undefined') return
+	try {
+		const stored = readPendingPreparations()
+		window.sessionStorage.setItem(PENDING_STEP_PREPARATIONS_KEY, JSON.stringify({
+			...stored,
+			[pending.trackId]: { ...pending, state: 'pending' },
+		}))
+	} catch {
+		// O acompanhamento continua na tela mesmo se o armazenamento da sessão estiver indisponível.
+	}
+}
+
+export const getPendingStepPreparation = (trackId: string): PendingStepPreparation | null => {
+	const pending = readPendingPreparations()[trackId]
+	return pending && pending.state !== 'ready' && pending.trackId === trackId
+		&& typeof pending.stepId === 'string' && typeof pending.taskId === 'string'
+		? pending
+		: null
+}
+
+export const hasStepPreparationBeenRequested = (trackId: string, stepId: string) => {
+	const record = readPendingPreparations()[trackId]
+	return record?.trackId === trackId && record.stepId === stepId && typeof record.taskId === 'string'
+}
+
+export const forgetStepPreparation = (trackId: string, stepId: string) => {
+	if (typeof window === 'undefined') return
+	try {
+		const stored = readPendingPreparations()
+		if (stored[trackId]?.stepId !== stepId) return
+		delete stored[trackId]
+		window.sessionStorage.setItem(PENDING_STEP_PREPARATIONS_KEY, JSON.stringify(stored))
+	} catch {
+		// A próxima navegação poderá tentar novamente se o estado não puder ser removido.
+	}
+}
+
+const markPreparationReady = (pending: PendingStepPreparation) => {
+	if (typeof window === 'undefined') return
+	try {
+		const stored = readPendingPreparations()
+		if (stored[pending.trackId]?.taskId !== pending.taskId) return
+		stored[pending.trackId] = { ...pending, state: 'ready' }
+		window.sessionStorage.setItem(PENDING_STEP_PREPARATIONS_KEY, JSON.stringify(stored))
+	} catch {
+		// O armazenamento da sessão é apenas uma persistência adicional para a espera.
+	}
+}
 
 interface ApiLesson {
 	id: string
@@ -184,4 +251,60 @@ export const getTrackDetails = async (trackId: string): Promise<TrackDetails> =>
 	if (!trackId) throw new Error('A trilha solicitada não foi encontrada.')
 	const { data } = await api.get<unknown>(`/api/v1/tracks/${encodeURIComponent(trackId)}`)
 	return toTrackDetails(getApiTrack(data))
+}
+
+export const prepareNextStep = async (trackId: string, stepId: string): Promise<PrepareNextStepResult> => {
+	if (!trackId || !stepId) throw new Error('Não foi possível identificar a trilha e a etapa para preparar a próxima.')
+	const { data } = await api.post<unknown>(`/api/v1/tracks/${encodeURIComponent(trackId)}/steps/${encodeURIComponent(stepId)}/prepare-next`)
+	const result = isRecord(data) && isRecord(data.data) ? data.data : data
+	if (!isRecord(result)) throw new Error('A resposta do preparo da próxima etapa está em um formato inválido.')
+
+	if (result.status === 'accepted' && typeof result.task_id === 'string') {
+		const pending: PendingStepPreparation = {
+			trackId,
+			stepId,
+			taskId: result.task_id,
+		}
+		savePendingPreparation(pending)
+		return { status: 'accepted', pending }
+	}
+
+	if (result.status === 'skipped') {
+		return {
+			status: 'skipped',
+			reason: typeof result.reason === 'string' ? result.reason : 'A próxima etapa ainda não está elegível para preparação.',
+		}
+	}
+
+	throw new Error('A API não confirmou o preparo da próxima etapa.')
+}
+
+const hasPreparedNextStep = (track: TrackDetails, stepId: string) => {
+	const currentStepIndex = track.modules.findIndex((module) => module.id === stepId)
+	return currentStepIndex >= 0 && Boolean(track.modules[currentStepIndex + 1]?.lessons.length)
+}
+
+const wait = (milliseconds: number) => new Promise((resolve) => window.setTimeout(resolve, milliseconds))
+
+export const waitForPreparedNextStep = async (
+	pending: PendingStepPreparation,
+	signal?: AbortSignal,
+): Promise<boolean> => {
+	const deadline = Date.now() + 90_000
+
+	while (!signal?.aborted && Date.now() < deadline) {
+		try {
+			const track = await getTrackDetails(pending.trackId)
+			if (hasPreparedNextStep(track, pending.stepId)) {
+				markPreparationReady(pending)
+				return true
+			}
+		} catch {
+			// A falha transitória de leitura não encerra a espera pela preparação.
+		}
+
+		if (!signal?.aborted) await wait(1_500)
+	}
+
+	return false
 }

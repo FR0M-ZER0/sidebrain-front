@@ -67,8 +67,12 @@ const RankingRow = ({ participant, maxScore }: { participant: RankingParticipant
 
 export const RankingTable = ({ dataset, isExpanded, onToggleExpanded }: RankingTableProps) => {
 	const listedParticipants = dataset.participants.filter((participant) => participant.rank > 3)
-	const initialTableRowCount = Math.max(dataset.initialVisibleCount - 3, 0)
-	const visibleParticipants = isExpanded ? listedParticipants : listedParticipants.slice(0, initialTableRowCount)
+	const hasOnlyPodiumParticipants = dataset.participants.length <= 3
+	const tableParticipants = hasOnlyPodiumParticipants ? dataset.participants : listedParticipants
+	const initialTableRowCount = hasOnlyPodiumParticipants
+		? tableParticipants.length
+		: Math.max(dataset.initialVisibleCount - 3, 0)
+	const visibleParticipants = isExpanded ? tableParticipants : tableParticipants.slice(0, initialTableRowCount)
 	const maxScore = Math.max(...dataset.participants.map((participant) => participant.score), 1)
 	const totalDisplayed = isExpanded
 		? dataset.participants.length

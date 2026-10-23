@@ -13,7 +13,7 @@ export const Sidebar = ({ activeItem }: SidebarProps = {}) => {
 	const menuItems = [
 		{ label: 'Início', icon: Home, to: '/' },
 		{ label: 'Criar trilha', icon: Route, to: '/trails/new/create' },
-		{ label: 'Minhas Trilhas', icon: Route, to: '/#tracks' },
+		{ label: 'Minhas Trilhas', icon: Route, to: '/trails' },
 		{ label: 'Missões & Badges', icon: Target, to: '/missions' },
 		{ label: 'Ranking', icon: Trophy, to: '/ranking' },
 		{ label: 'Mentor', icon: Bot, disabled: true },
@@ -30,7 +30,7 @@ export const Sidebar = ({ activeItem }: SidebarProps = {}) => {
 				{menuItems.map((item) => {
 					const Icon = item.icon
 					const isTrackActive = item.label === 'Minhas Trilhas'
-						&& (/^\/trails\/[^/]+$/.test(pathname) || (pathname === '/' && hash === '#tracks'))
+						&& (pathname === '/trails' || /^\/trails\/[^/]+$/.test(pathname) || (pathname === '/' && hash === '#tracks'))
 					const isMissionsActive = item.label === 'Missões & Badges'
 						&& (pathname === '/missions' || (pathname === '/' && (hash === '#missions' || hash === '#badges')))
 					const isRankingActive = item.label === 'Ranking' && pathname === '/ranking'

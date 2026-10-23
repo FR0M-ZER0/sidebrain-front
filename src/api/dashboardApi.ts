@@ -20,6 +20,23 @@ interface ApiTrack {
 	steps?: ApiStep[] | null
 }
 
+export interface DashboardTrackFilters {
+	page: number
+	pageSize: number
+	query?: string
+	level?: string
+	hasMissions?: boolean
+	sort?: 'recent' | 'oldest'
+}
+
+export interface DashboardTrackPage {
+	items: DashboardTrack[]
+	page: number
+	pageSize: number
+	totalItems: number
+	totalPages: number
+}
+
 const isRecord = (value: unknown): value is Record<string, unknown> =>
 	typeof value === 'object' && value !== null
 
@@ -106,13 +123,35 @@ const toDashboardTrack = (track: ApiTrack): DashboardTrack => {
 }
 
 export const getDashboardTracks = async (signal?: AbortSignal): Promise<DashboardTrack[]> => {
+	const result = await getDashboardTracksPage({ page: 1, pageSize: 100 }, signal)
+	return result.items
+}
+
+export const getDashboardTracksPage = async (
+	filters: DashboardTrackFilters,
+	signal?: AbortSignal,
+): Promise<DashboardTrackPage> => {
 	const { data } = await api.get<unknown>('/api/v1/tracks', {
 		signal,
 		params: {
-			page: 1,
-			page_size: 100,
+			page: filters.page,
+			page_size: filters.pageSize,
+			q: filters.query || undefined,
+			level: filters.level || undefined,
+			has_missions: filters.hasMissions,
+			sort: filters.sort,
 		},
 	})
 
-	return getTrackItems(data).map(toDashboardTrack)
+	const tracks = getTrackItems(data)
+	const items = tracks.map(toDashboardTrack)
+	const metadata = isRecord(data) ? data : {}
+	const page = typeof metadata.page === 'number' ? metadata.page : filters.page
+	const pageSize = typeof metadata.page_size === 'number' ? metadata.page_size : filters.pageSize
+	const totalItems = typeof metadata.total_items === 'number' ? metadata.total_items : items.length
+	const totalPages = typeof metadata.total_pages === 'number'
+		? metadata.total_pages
+		: Math.ceil(totalItems / Math.max(pageSize, 1))
+
+	return { items, page, pageSize, totalItems, totalPages }
 }

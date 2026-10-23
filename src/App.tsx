@@ -20,6 +20,7 @@ import { RegisterPage } from './pages/auth/RegisterPage'
 import { PasswordRecoveryPage } from './pages/auth/PasswordRecoveryPage'
 import { UserProfilePage } from './pages/customer/UserProfilePage'
 import { RankingPage } from './pages/customer/RankingPage'
+import { MyTracksPage } from './pages/customer/MyTracksPage'
 import { PrivateRoute } from './components/general/PrivateRoute'
 
 const LessonCompletionRoute = () => {
@@ -55,6 +56,7 @@ const App = () => {
 				{/* Todas as rotas do produto exigem autenticação */}
 				<Route element={<PrivateRoute />}>
 					<Route path="/" element={<HomeDashboardPage />} />
+					<Route path="/trails" element={<MyTracksPage />} />
 					<Route path="/missions" element={<MissionsAndBadgesPage />} />
 					<Route path="/missoes" element={<Navigate to="/missions" replace />} />
 					<Route path="/trails/:slug" element={<TrackDetailsPage />} />

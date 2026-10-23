@@ -104,7 +104,7 @@ export const TrackDetailsPage = () => {
 			pageClassName="track-details-page"
 			breadcrumb={track && (
 				<nav className="track-breadcrumb" aria-label="Navegação estrutural">
-					<Link to="/#tracks"><ArrowLeft size={18} /> Trilhas Ativas</Link>
+					<Link to="/trails"><ArrowLeft size={18} /> Minhas Trilhas</Link>
 					<span aria-hidden="true">/</span>
 					<strong aria-current="page">{track.title}</strong>
 				</nav>

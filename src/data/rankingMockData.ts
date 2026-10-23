@@ -216,8 +216,6 @@ export const globalRanking: RankingDataset = {
 }
 
 export const rankingHeaderIndicators: HeaderIndicators = {
-	xpCurrent: 320,
-	xpTarget: 500,
 	streakDays: 12,
 	notifications: 1,
 }

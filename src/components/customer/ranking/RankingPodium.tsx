@@ -1,4 +1,4 @@
-import { Crown, Flame, Medal, Trophy } from 'lucide-react'
+import { CheckCircle2, Crown, Medal, Trophy } from 'lucide-react'
 import type { RankingParticipant } from '../../../types/ranking'
 
 interface RankingPodiumProps {
@@ -36,9 +36,8 @@ const RankingPodiumCard = ({ participant, scoreLabel }: { participant: RankingPa
 			)}
 			<PodiumAvatar participant={participant} />
 			<h2>{participant.name}</h2>
-			<p className="ranking-podium-level">Nível {participant.level}</p>
-			{typeof participant.streakDays === 'number' && (
-				<p className="ranking-podium-streak"><Flame size={14} aria-hidden="true" /> {participant.streakDays} dias seguidos</p>
+			{typeof participant.missionsCompleted === 'number' && (
+				<p className="ranking-podium-streak"><CheckCircle2 size={14} aria-hidden="true" /> {participant.missionsCompleted} missões concluídas</p>
 			)}
 			<div className="ranking-podium-score">
 				<span>Pontuação<br />acumulada</span>

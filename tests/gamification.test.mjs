@@ -6,7 +6,10 @@ let server
 let api
 let getMissions
 let getBadges
+let getDashboardTracks
+let getGlobalRanking
 let getTrackDetails
+let getCurrentUser
 let collection
 let requests
 let respond
@@ -15,7 +18,10 @@ before(async () => {
 	server = await createServer({ server: { middlewareMode: true }, appType: 'custom' })
 	;({ api } = await server.ssrLoadModule('/src/api/api.ts'))
 	;({ getMissions, getBadges } = await server.ssrLoadModule('/src/api/gamificationApi.ts'))
+	;({ getDashboardTracks } = await server.ssrLoadModule('/src/api/dashboardApi.ts'))
+	;({ getGlobalRanking } = await server.ssrLoadModule('/src/api/rankingApi.ts'))
 	;({ getTrackDetails } = await server.ssrLoadModule('/src/api/trackService.ts'))
+	;({ getCurrentUser } = await server.ssrLoadModule('/src/api/auth.ts'))
 	collection = await server.ssrLoadModule('/src/util/badgeCollection.ts')
 	api.defaults.adapter = async (config) => {
 		requests.push({ url: config.url, params: config.params, method: config.method })
@@ -37,6 +43,67 @@ const mission = (id, stepId, extra = {}) => ({
 })
 const track = (trackId, missions) => ({ trackId, trackTitle: `Trilha ${trackId}`, trackIcon: '📚', missions })
 const badge = (id, extra = {}) => ({ id, name: `Badge ${id}`, rarity: 'common', criteria: 'lessons_completed', criteria_value: 3, ...extra })
+const rankingEntry = (position, extra = {}) => ({
+	position,
+	userId: `u${position}`,
+	name: `Aluno ${position}`,
+	xp: 1000 - position * 100,
+	missionsCompleted: 10 - position,
+	...extra,
+})
+
+test('obtém o XP real e a data de cadastro do usuário autenticado', async () => {
+	respond = () => ({ id: 'u1', name: 'Ada', email: 'ada@example.test', createdAt: '2026-01-01', xp: 4850, missionsCompleted: 7 })
+	const user = await getCurrentUser()
+	assert.equal(requests[0].url, '/api/v1/users/me')
+	assert.equal(user.xp, 4850)
+	assert.equal(user.createdAt, '2026-01-01')
+})
+
+test('carrega ranking paginado e resumo da posição do usuário atual', async () => {
+	respond = ({ url, params }) => {
+		if (url === '/api/v1/rankings/me') return rankingEntry(4, { userId: 'u-current', name: 'Usuário atual', xp: 500, missionsCompleted: 6 })
+		if (params.page === 1) return page([rankingEntry(1), rankingEntry(2)], 1, 2)
+		return page([rankingEntry(3), rankingEntry(4, { userId: 'u-current', name: 'Usuário atual', xp: 500, missionsCompleted: 6 })], 2, 2)
+	}
+	const result = await getGlobalRanking()
+	assert.deepEqual(requests.map((request) => request.url), [
+		'/api/v1/rankings', '/api/v1/rankings', '/api/v1/rankings/me',
+	])
+	assert.equal(result.participants.length, 4)
+	assert.equal(result.podium.length, 3)
+	assert.equal(result.participants.find((participant) => participant.isCurrentUser)?.name, 'Usuário atual')
+	assert.equal(result.userSummary?.missionsCompleted, 6)
+	assert.equal(result.userSummary?.scoreToPodium, 200)
+})
+
+test('mantém o ranking disponível quando o usuário atual não aparece no ranking', async () => {
+	respond = ({ url }) => {
+		if (url === '/api/v1/rankings/me') {
+			throw Object.assign(new Error('Não encontrado'), { isAxiosError: true, response: { status: 404 } })
+		}
+		return page([rankingEntry(1), rankingEntry(2), rankingEntry(3)])
+	}
+	const result = await getGlobalRanking()
+	assert.equal(result.participants.length, 3)
+	assert.equal(result.userSummary, null)
+})
+
+test('carrega trilhas do usuário e identifica a próxima lição para o perfil', async () => {
+	respond = () => page([{
+		id: 'track-uuid',
+		title: 'Trilha real',
+		description: 'Descrição da API',
+		steps: [{ title: 'Etapa 1', lessons: [
+			{ title: 'Lição concluída', status: 'done' },
+			{ title: 'Próxima lição', status: 'idle' },
+		] }],
+	}])
+	const [track] = await getDashboardTracks()
+	assert.equal(requests[0].url, '/api/v1/tracks')
+	assert.equal(track.nome, 'Trilha real')
+	assert.equal(track.proximaLicao, 'Próxima lição')
+})
 
 test('carrega todas as páginas e reúne missões da mesma trilha e etapa sem duplicar', async () => {
 	respond = ({ params }) => params.page === 1

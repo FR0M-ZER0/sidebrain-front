@@ -5,8 +5,6 @@ import { useAuth } from '../../../hooks/useAuth'
 
 interface StudentPageLayoutProps {
 	children: ReactNode
-	xp?: number
-	coins?: number
 	notifications: number
 	streakCount?: number
 	breadcrumb?: ReactNode

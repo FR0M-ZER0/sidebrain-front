@@ -1,4 +1,4 @@
-import { Bot, Home, LogOut, Route, Target, UserRound } from 'lucide-react'
+import { Bot, Home, LogOut, Route, Target, Trophy, UserRound } from 'lucide-react'
 import { NavLink, useLocation } from 'react-router'
 import sidebrainLogo from '../../assets/sidebrain-logo.svg'
 import { useAuth } from '../../hooks/useAuth'
@@ -15,6 +15,7 @@ export const Sidebar = ({ activeItem }: SidebarProps = {}) => {
 		{ label: 'Criar trilha', icon: Route, to: '/trails/new/create' },
 		{ label: 'Minhas Trilhas', icon: Route, to: '/#tracks' },
 		{ label: 'Missões & Badges', icon: Target, to: '/missions' },
+		{ label: 'Ranking', icon: Trophy, to: '/ranking' },
 		{ label: 'Mentor', icon: Bot, disabled: true },
 		{ label: 'Perfil', icon: UserRound, to: '/perfil' },
 	]
@@ -32,6 +33,7 @@ export const Sidebar = ({ activeItem }: SidebarProps = {}) => {
 						&& (/^\/trails\/[^/]+$/.test(pathname) || (pathname === '/' && hash === '#tracks'))
 					const isMissionsActive = item.label === 'Missões & Badges'
 						&& (pathname === '/missions' || (pathname === '/' && (hash === '#missions' || hash === '#badges')))
+					const isRankingActive = item.label === 'Ranking' && pathname === '/ranking'
 					const isHomeActive = item.label === 'Início' && pathname === '/' && !hash
 					const isProfileActive = item.label === 'Perfil' && pathname === '/perfil'
 
@@ -64,6 +66,7 @@ export const Sidebar = ({ activeItem }: SidebarProps = {}) => {
 								if (item.label === 'Início') active = isHomeActive
 								if (item.label === 'Minhas Trilhas') active = isTrackActive
 								if (item.label === 'Missões & Badges') active = isMissionsActive
+								if (item.label === 'Ranking') active = isRankingActive
 								if (item.label === 'Perfil') active = isProfileActive
 								return `nav-item${active ? ' active' : ''}`
 							}}

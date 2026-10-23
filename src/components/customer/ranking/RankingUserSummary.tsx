@@ -26,10 +26,10 @@ export const RankingUserSummary = ({ summary, name, scoreLabel }: RankingUserSum
 				<dt>{scoreLabel}</dt>
 				<dd>{summary.score.toLocaleString('pt-BR')}</dd>
 			</div>
-			{typeof summary.completedLessons === 'number' && (
+			{typeof summary.missionsCompleted === 'number' && (
 				<div>
-					<dt>Lições concluídas</dt>
-					<dd>{summary.completedLessons} módulos</dd>
+					<dt>Missões concluídas</dt>
+					<dd>{summary.missionsCompleted ?? summary.completedLessons}</dd>
 				</div>
 			)}
 			{typeof summary.streakDays === 'number' && (

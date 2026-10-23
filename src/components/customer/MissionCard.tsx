@@ -1,6 +1,7 @@
 import { BookOpenCheck, RotateCcw } from 'lucide-react'
 import type { DashboardMission } from '../../types/dashboard'
 import { ProgressBar } from '../general/ProgressBar'
+import { Link } from 'react-router'
 
 interface MissionCardProps {
   mission: DashboardMission
@@ -16,6 +17,7 @@ export const MissionCard = ({ mission }: MissionCardProps) => {
 				<div className="mission-icon"><MissionIcon size={16} aria-hidden="true" /></div>
 				<div className="mission-copy">
 					<h3>{mission.titulo}</h3>
+					<div className="mission-meta">{mission.trilhaTitulo} · {mission.etapaTitulo}</div>
 					<div className="mission-meta">Progressão: {mission.progresso}% concluído</div>
 				</div>
 			</div>
@@ -24,6 +26,7 @@ export const MissionCard = ({ mission }: MissionCardProps) => {
 			<div className="mission-progress-wrap">
 				<ProgressBar value={mission.progresso} tone={tone} />
 			</div>
+			{mission.trilhaId && <Link to={`/missions?track_id=${encodeURIComponent(mission.trilhaId)}`}>Ver missões da trilha</Link>}
 		</div>
 	)
 }

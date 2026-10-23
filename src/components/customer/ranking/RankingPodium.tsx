@@ -1,4 +1,4 @@
-import { Crown, Flame, Medal, Trophy } from 'lucide-react'
+import { CheckCircle2, Crown, Trophy } from 'lucide-react'
 import type { RankingParticipant } from '../../../types/ranking'
 
 interface RankingPodiumProps {
@@ -18,27 +18,27 @@ const PodiumAvatar = ({ participant }: { participant: RankingParticipant }) => (
 		role="img"
 		aria-label={`Avatar de ${participant.name}`}
 	>
-		{getInitials(participant.name)}
+		{participant.avatar
+			? <img src={participant.avatar} alt="" />
+			: getInitials(participant.name)}
 	</span>
 )
 
 const RankingPodiumCard = ({ participant, scoreLabel }: { participant: RankingParticipant; scoreLabel: string }) => {
-	const PlaceIcon = participant.rank === 1 ? Trophy : Medal
-
 	return (
 		<article className={`ranking-podium-card ranking-podium-card--${participant.rank}`}>
-			<div className="ranking-podium-place" aria-label={`${participant.rank}º lugar`}>
-				<PlaceIcon size={22} aria-hidden="true" />
-				{participant.rank !== 1 && <span>{participant.rank}</span>}
+			<div className="ranking-podium-place" role="img" aria-label={`${participant.rank}º lugar`}>
+				{participant.rank === 1
+					? <Trophy size={25} aria-hidden="true" />
+					: <span>{participant.rank}</span>}
 			</div>
-			{participant.badge && (
-				<span className="ranking-podium-leader"><Crown size={12} aria-hidden="true" /> {participant.badge}</span>
+			{(participant.badge || participant.rank === 1) && (
+				<span className="ranking-podium-leader"><Crown size={12} aria-hidden="true" /> {participant.badge || 'Líder'}</span>
 			)}
 			<PodiumAvatar participant={participant} />
 			<h2>{participant.name}</h2>
-			<p className="ranking-podium-level">Nível {participant.level}</p>
-			{typeof participant.streakDays === 'number' && (
-				<p className="ranking-podium-streak"><Flame size={14} aria-hidden="true" /> {participant.streakDays} dias seguidos</p>
+			{typeof participant.missionsCompleted === 'number' && (
+				<p className="ranking-podium-streak"><CheckCircle2 size={14} aria-hidden="true" /> {participant.missionsCompleted} missões concluídas</p>
 			)}
 			<div className="ranking-podium-score">
 				<span>Pontuação<br />acumulada</span>

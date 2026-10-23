@@ -2,22 +2,26 @@ import { HeaderBar } from '../../components/customer/HeaderBar'
 import { BadgesShowcase } from '../../components/customer/missions/BadgesShowcase'
 import { MissionsAndBadgesSummary } from '../../components/customer/missions/MissionsAndBadgesSummary'
 import { MissionsGrid } from '../../components/customer/missions/MissionsGrid'
-import { ToastNotification } from '../../components/customer/missions/ToastNotification'
+import { DataRequestStatus } from '../../components/general/DataRequestStatus'
+import { Link, useSearchParams } from 'react-router'
 import { Sidebar } from '../../components/customer/Sidebar'
 import { useMissionsAndBadges } from '../../hooks/useMissionsAndBadges'
+import { useSectionAnchor } from '../../hooks/useSectionAnchor'
+import { useAuth } from '../../hooks/useAuth'
 
 export const MissionsAndBadgesPage = () => {
+	const [searchParams] = useSearchParams()
+	const { user } = useAuth()
+	const trackId = searchParams.get('track_id') || undefined
 	const {
-		summary,
 		missions,
+		badges,
 		activeFilter,
 		setActiveFilter,
 		filterOptions,
 		filteredCategoriesWithBadges,
-		toastMessage,
-		triggerDemonstrationAction,
-		closeToast,
-	} = useMissionsAndBadges()
+	} = useMissionsAndBadges(trackId)
+	useSectionAnchor(Boolean(badges.data) && !missions.loading)
 
 	return (
 		<div className="app-shell">
@@ -25,44 +29,47 @@ export const MissionsAndBadgesPage = () => {
 
 			<main className="page-shell">
 				<HeaderBar
-					xp={summary.sessionXp}
-					coins={summary.sessionXpTarget}
+					xp={user?.xp ?? 0}
 					notifications={12}
 				/>
 
-				<div className="content-stack py-6 px-4 sm:px-8 max-w-7xl mx-auto flex flex-col gap-10">
-					{/* Cabeçalho Principal: Título + Subtítulo & Cards de Resumo */}
-					<header className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 pt-2">
+				<div className="flex w-full min-w-0 flex-col gap-8 pb-8">
+					<header className="flex min-h-[250px] flex-col items-start justify-between gap-8 overflow-hidden rounded-3xl border border-white/80 bg-gradient-to-br from-white via-orange-50/40 to-indigo-50/70 p-6 shadow-xs sm:p-8 lg:min-h-[270px] lg:flex-row lg:items-center">
 						<div className="max-w-2xl">
 							<h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">
 								Missões & Conquistas
 							</h1>
 							<p className="mt-3 text-sm sm:text-base text-slate-700 leading-relaxed font-normal">
-								Complete desafios semanais, acumule XP e desbloqueie insígnias exclusivas
+								Complete as missões das suas trilhas, acumule XP e desbloqueie insígnias exclusivas
 								para acelerar sua retenção cognitiva e consistência de aprendizado.
 							</p>
 						</div>
 
-						<MissionsAndBadgesSummary summary={summary} />
+						<MissionsAndBadgesSummary badges={badges.data} groups={missions.data} />
 					</header>
 
-					{/* Seção 1: Missões (Grade 2x2) */}
-					<MissionsGrid
-						missions={missions}
-						onActionClick={triggerDemonstrationAction}
-					/>
+					<section id="missions" className="flex flex-col gap-4" aria-labelledby="missions-title">
+						<h2 id="missions-title" className="m-0 text-xl font-bold text-slate-900">{trackId ? 'Missões desta trilha' : 'Todas as missões'}</h2>
+						{trackId && (
+							<div className="flex flex-wrap gap-4">
+								<Link to={`/trails/${trackId}`}>Voltar à trilha</Link>
+								<Link to="/missions">Ver missões de todas as trilhas</Link>
+							</div>
+						)}
+						<DataRequestStatus loading={missions.loading} error={missions.error} onRetry={missions.retry} label="missões" />
+						{missions.data && <MissionsGrid groups={missions.data} />}
+					</section>
 
-					{/* Seção 2: Vitrine de Badges (Filtros & Categorias) */}
-					<BadgesShowcase
-						filterOptions={filterOptions}
-						activeFilter={activeFilter}
-						onSelectFilter={setActiveFilter}
-						categoriesWithBadges={filteredCategoriesWithBadges}
-					/>
+					<DataRequestStatus loading={badges.loading} error={badges.error} onRetry={badges.retry} label="badges" />
+					{badges.data && (
+						<BadgesShowcase
+							filterOptions={filterOptions}
+							activeFilter={activeFilter}
+							onSelectFilter={setActiveFilter}
+							categoriesWithBadges={filteredCategoriesWithBadges}
+						/>
+					)}
 				</div>
-
-				{/* Notificação Toast Flutuante */}
-				<ToastNotification message={toastMessage} onClose={closeToast} />
 			</main>
 		</div>
 	)

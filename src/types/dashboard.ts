@@ -7,8 +7,6 @@ export interface DashboardUser {
   nome: string
   nivel: number
   xpAtual: number
-  xpMeta: number
-  moedas: number
   avatarUrl?: string
   programa: string
 }
@@ -21,6 +19,7 @@ export interface DashboardBadge {
   estado: DashboardBadgeState
   progresso: number
   icone: string
+  conquistadoEm?: string
 }
 
 export interface DashboardMission {
@@ -30,6 +29,9 @@ export interface DashboardMission {
   recompensaXp: number
   estado: DashboardMissionState
   tipo: string
+  trilhaId?: string
+  trilhaTitulo?: string
+  etapaTitulo?: string
 }
 
 export interface DashboardTrack {
@@ -42,6 +44,7 @@ export interface DashboardTrack {
   status: DashboardTrackStatus
   icone: string
   descricao: string
+  proximaLicao?: string
 }
 
 export interface DashboardData {

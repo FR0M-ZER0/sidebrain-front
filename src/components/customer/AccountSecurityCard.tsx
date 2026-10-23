@@ -16,12 +16,15 @@ export const AccountSecurityCard = ({
 	onManage2FA,
 	onViewDevices,
 }: AccountSecurityCardProps) => {
+	const twoFactorStatus = security.twoFactorEnabled
+		? `Ativada (${security.twoFactorMethod.includes('Authenticator') ? 'App Authenticator' : security.twoFactorMethod})`
+		: 'Desativada'
+
 	return (
-		<div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-xs flex flex-col justify-between">
-			<div className="space-y-5">
-				{/* Header do Card */}
-				<div className="flex items-center gap-2.5 pb-4 border-b border-slate-100">
-					<div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+		<div className="flex h-full flex-col justify-between rounded-2xl border border-slate-100 bg-white p-5 shadow-xs sm:p-6">
+			<div>
+				<div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+					<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-slate-800">
 						<ShieldCheck size={18} />
 					</div>
 					<div>
@@ -34,89 +37,79 @@ export const AccountSecurityCard = ({
 					</div>
 				</div>
 
-				{/* Lista de configurações de segurança */}
-				<div className="space-y-3">
-					{/* Alteração de Senha */}
+				<div className="space-y-2 pt-4">
 					<button
 						type="button"
 						onClick={onChangePassword}
-						className="w-full text-left p-3 rounded-xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50/70 transition flex items-center justify-between group cursor-pointer"
+						className="group flex w-full items-center justify-between rounded-xl px-2 py-2.5 text-left transition hover:bg-slate-50"
 					>
-						<div className="flex items-center gap-3">
-							<div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
+						<div className="flex min-w-0 items-center gap-3">
+							<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-700">
 								<KeyRound size={16} />
 							</div>
 							<div>
-								<span className="text-xs font-semibold text-slate-900 block">
+								<span className="block text-sm font-semibold text-slate-900">
 									Alterar Senha
 								</span>
-								<span className="text-[11px] text-slate-500">
+								<span className="text-xs text-slate-500">
 									{security.passwordLastUpdated}
 								</span>
 							</div>
 						</div>
-						<ChevronRight size={15} className="text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+						<ChevronRight size={16} className="shrink-0 text-slate-500 transition-transform group-hover:translate-x-0.5" />
 					</button>
 
-					{/* 2FA */}
 					<button
 						type="button"
 						onClick={onManage2FA}
-						className="w-full text-left p-3 rounded-xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50/70 transition flex items-center justify-between group cursor-pointer"
+						className="group flex w-full items-center justify-between rounded-xl px-2 py-2.5 text-left transition hover:bg-slate-50"
 					>
-						<div className="flex items-center gap-3">
-							<div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+						<div className="flex min-w-0 items-center gap-3">
+							<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
 								<Smartphone size={16} />
 							</div>
 							<div>
-								<div className="flex items-center gap-2">
-									<span className="text-xs font-semibold text-slate-900">
-										2FA em Duas Etapas
-									</span>
-									<span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">
-										Ativada
-									</span>
-								</div>
-								<span className="text-[11px] text-slate-500">
-									{security.twoFactorMethod}
+								<span className="block text-sm font-semibold text-slate-900">
+									Autenticação em 2 Etapas
+								</span>
+								<span className={`text-xs ${security.twoFactorEnabled ? 'text-emerald-700' : 'text-slate-500'}`}>
+									{twoFactorStatus}
 								</span>
 							</div>
 						</div>
-						<ChevronRight size={15} className="text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+						<ChevronRight size={16} className="shrink-0 text-slate-500 transition-transform group-hover:translate-x-0.5" />
 					</button>
 
-					{/* Dispositivos Conectados */}
 					<button
 						type="button"
 						onClick={onViewDevices}
-						className="w-full text-left p-3 rounded-xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50/70 transition flex items-center justify-between group cursor-pointer"
+						className="group flex w-full items-center justify-between rounded-xl px-2 py-2.5 text-left transition hover:bg-slate-50"
 					>
-						<div className="flex items-center gap-3">
-							<div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+						<div className="flex min-w-0 items-center gap-3">
+							<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
 								<Laptop size={16} />
 							</div>
 							<div>
-								<span className="text-xs font-semibold text-slate-900 block">
-									Dispositivos Ativos
+								<span className="block text-sm font-semibold text-slate-900">
+									Dispositivos Conectados
 								</span>
-								<span className="text-[11px] text-slate-500">
-									{security.activeDevicesCount} sessões conectadas
+								<span className="text-xs text-slate-500">
+									{security.activeDevicesCount} ativos agora
 								</span>
 							</div>
 						</div>
-						<ChevronRight size={15} className="text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+						<ChevronRight size={16} className="shrink-0 text-slate-500 transition-transform group-hover:translate-x-0.5" />
 					</button>
 				</div>
 			</div>
 
-			{/* Botão de Encerrar Sessão */}
-			<div className="mt-6 pt-4 border-t border-slate-100">
+			<div className="mt-3 border-t border-slate-100 pt-3">
 				<button
 					type="button"
 					onClick={onLogout}
-					className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 border border-red-200/80 text-xs font-semibold transition cursor-pointer shadow-2xs"
+					className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs font-semibold text-red-700 transition hover:bg-red-100"
 				>
-					<LogOut size={15} />
+					<LogOut size={16} />
 					<span>Encerrar Sessão</span>
 				</button>
 			</div>

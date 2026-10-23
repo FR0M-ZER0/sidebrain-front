@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import type { LessonContentBlock, LessonProgressData } from '../../../api/lessonsApi'
 import { LessonProgress } from './LessonProgress'
@@ -7,6 +7,7 @@ interface LessonContentProps {
 	title: string
 	blocks: LessonContentBlock[]
 	progress: LessonProgressData
+	onProgressChange?: (progressPercent: number) => void
 }
 
 interface LessonImageProps {
@@ -41,28 +42,47 @@ export const LessonImage = ({ url, altText, caption }: LessonImageProps) => {
 	)
 }
 
-export const LessonContent = ({ title, blocks, progress }: LessonContentProps) => (
-	<article className="mx-auto min-h-0 w-full max-w-none flex-1 overflow-y-auto overscroll-contain rounded-[28px] bg-white px-5 py-8 shadow-sm sm:px-10 sm:py-12 lg:px-12">
-		<LessonProgress progress={progress} />
-		<h1 className="mb-8 text-center text-4xl font-bold leading-tight tracking-[-0.04em] text-foreground sm:mb-10 sm:text-5xl lg:text-6xl">
-			{title}
-		</h1>
-		<div className="mx-auto max-w-5xl">
-			{blocks.map((block) => {
-				if (block.type === 'image') {
-					return <LessonImage key={block.id} url={block.url} altText={block.altText} caption={block.caption} />
-				}
+export const LessonContent = ({ title, blocks, progress, onProgressChange }: LessonContentProps) => {
+	const articleRef = useRef<HTMLElement>(null)
+	const reportProgress = useCallback((article: HTMLElement) => {
+		const scrollableHeight = article.scrollHeight - article.clientHeight
+		const progressPercent = scrollableHeight <= 0
+			? 100
+			: Math.min(100, Math.round((article.scrollTop / scrollableHeight) * 100))
+		onProgressChange?.(progressPercent)
+	}, [onProgressChange])
 
-				if (!block.text.trim()) {
-					return null
-				}
+	useEffect(() => {
+		if (articleRef.current) reportProgress(articleRef.current)
+	}, [blocks, reportProgress, title])
 
-				return (
-					<p key={block.id} className="mb-5 text-lg leading-[1.8] text-foreground sm:text-xl">
-						{block.text}
-					</p>
-				)
-			})}
-		</div>
-	</article>
-)
+	return (
+		<article
+			ref={articleRef}
+			onScroll={(event) => reportProgress(event.currentTarget)}
+			className="mx-auto min-h-0 w-full max-w-none flex-1 overflow-y-auto overscroll-contain rounded-[28px] bg-white px-5 py-8 shadow-sm sm:px-10 sm:py-12 lg:px-12"
+		>
+			<LessonProgress progress={progress} />
+			<h1 className="mb-8 text-center text-4xl font-bold leading-tight tracking-[-0.04em] text-foreground sm:mb-10 sm:text-5xl lg:text-6xl">
+				{title}
+			</h1>
+			<div className="mx-auto max-w-5xl">
+				{blocks.map((block) => {
+					if (block.type === 'image') {
+						return <LessonImage key={block.id} url={block.url} altText={block.altText} caption={block.caption} />
+					}
+
+					if (!block.text.trim()) {
+						return null
+					}
+
+					return (
+						<p key={block.id} className="mb-5 text-lg leading-[1.8] text-foreground sm:text-xl">
+							{block.text}
+						</p>
+					)
+				})}
+			</div>
+		</article>
+	)
+}

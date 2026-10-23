@@ -18,12 +18,12 @@ export const mockUserGamificationSummary: UserGamificationSummary = {
 export const mockMissions: Mission[] = [
 	{
 		id: 'm-01',
-		icon: 'Home',
+		icon: 'Flame',
 		category: 'HÁBITO CONTÍNUO',
 		categoryTone: 'warning',
-		xpReward: 100,
+		xpReward: 150,
 		title: 'Consistência de Ferro',
-		description: 'Estude pelo menos 15 minutos por dia durante 5 dias consecutivos esta semana.',
+		description: 'Estude pelo menos 1 lição por dia durante 5 dias consecutivos esta semana.',
 		currentProgress: 5,
 		targetProgress: 5,
 		progressUnit: 'dias',
@@ -39,7 +39,7 @@ export const mockMissions: Mission[] = [
 		categoryTone: 'info',
 		xpReward: 100,
 		title: 'Mestre da Retenção',
-		description: 'Realize 40 revisões de espaçamento programadas mantendo retenção acima de 85%+.',
+		description: 'Revise 40 flashcards espaçados com precisão máxima sem errar mais de 3 itens.',
 		currentProgress: 32,
 		targetProgress: 40,
 		progressUnit: 'cards',
@@ -50,12 +50,12 @@ export const mockMissions: Mission[] = [
 	},
 	{
 		id: 'm-03',
-		icon: 'Home',
+		icon: 'Flame',
 		category: 'HÁBITO CONTÍNUO',
 		categoryTone: 'warning',
-		xpReward: 100,
+		xpReward: 150,
 		title: 'Consistência de Ferro',
-		description: 'Estude pelo menos 15 minutos por dia durante 5 dias consecutivos esta semana.',
+		description: 'Estude pelo menos 1 lição por dia durante 5 dias consecutivos esta semana.',
 		currentProgress: 5,
 		targetProgress: 5,
 		progressUnit: 'dias',
@@ -71,7 +71,7 @@ export const mockMissions: Mission[] = [
 		categoryTone: 'info',
 		xpReward: 100,
 		title: 'Mestre da Retenção',
-		description: 'Realize 40 revisões de espaçamento programadas mantendo retenção acima de 85%+.',
+		description: 'Revise 40 flashcards espaçados com precisão máxima sem errar mais de 3 itens.',
 		currentProgress: 32,
 		targetProgress: 40,
 		progressUnit: 'cards',
@@ -90,7 +90,7 @@ export const mockBadgeCategories: BadgeCategory[] = [
 		unlockedCount: 4,
 		inProgressCount: 1,
 		lockedCount: 4,
-		subtitle: '(4 desbloqueados / 1 em progresso)',
+		subtitle: '(1 desbloqueado / 1 em progresso)',
 	},
 	{
 		id: 'cat-mastery',
@@ -108,7 +108,7 @@ export const mockBadgeCategories: BadgeCategory[] = [
 		unlockedCount: 3,
 		inProgressCount: 1,
 		lockedCount: 6,
-		subtitle: '(3 desbloqueados / 1 lendário bloqueado)',
+		subtitle: '(1 desbloqueado / 1 lendário bloqueado)',
 	},
 ]
 
@@ -127,7 +127,7 @@ export const mockBadges: Badge[] = [
 	{
 		id: 'b-02',
 		name: 'Centurião do Hábito',
-		description: 'Atingir a marca de 100 dias contínuos sem congelar o objetivo.',
+		description: 'Atingir a marca de 100 dias contínuos sem congelar a ofensiva.',
 		icon: 'Shield',
 		rarity: 'epico',
 		status: 'in_progress',
@@ -155,7 +155,7 @@ export const mockBadges: Badge[] = [
 		rarity: 'incomum',
 		status: 'unlocked',
 		categoryId: 'cat-discipline',
-		unlockedAt: '10 de Jan, 2025',
+		unlockedAt: '18 de Jan, 2025',
 	},
 	{
 		id: 'b-05',
@@ -220,7 +220,7 @@ export const mockBadges: Badge[] = [
 		rarity: 'epico',
 		status: 'unlocked',
 		categoryId: 'cat-mastery',
-		unlockedAt: '14 de Jan, 2025',
+		unlockedAt: '24 de Jan, 2025',
 	},
 	{
 		id: 'b-11',
@@ -230,7 +230,7 @@ export const mockBadges: Badge[] = [
 		rarity: 'comum',
 		status: 'unlocked',
 		categoryId: 'cat-mastery',
-		unlockedAt: '12 de Jan, 2025',
+		unlockedAt: '19 de Jan, 2025',
 	},
 	{
 		id: 'b-12',
@@ -245,7 +245,7 @@ export const mockBadges: Badge[] = [
 	{
 		id: 'b-13',
 		name: 'Arquiteto de Algoritmos',
-		description: 'Resolva 5 problemas de busca / ordenação complexos em árvore ou grafo.',
+		description: 'Resolva 5 problemas de lógica computacional e estruturas de dados em grafos.',
 		icon: 'Grid',
 		rarity: 'raro',
 		status: 'in_progress',
@@ -312,8 +312,8 @@ export const mockBadges: Badge[] = [
 	// --- Categoria: Mentor & Inteligência Artificial (10 badges: 4 desbloqueados, 2 em progresso, 4 bloqueados) ---
 	{
 		id: 'b-19',
-		name: 'Sintoria Cognitiva',
-		description: 'Siga 10 recomendações personalizadas do Mentor Sidebrain sem rejeitar tópicos.',
+		name: 'Sintonia Cognitiva',
+		description: 'Siga 10 recomendações personalizadas do Mentor Sidebrain para fechar lacunas.',
 		icon: 'Network',
 		rarity: 'raro',
 		status: 'unlocked',
@@ -322,8 +322,8 @@ export const mockBadges: Badge[] = [
 	},
 	{
 		id: 'b-20',
-		name: 'A Mente Inquebrável',
-		description: 'Mantenha o índice de retenção FSRS acima de 95% em 30 dias com 1h diária de estudo.',
+		name: 'Mente Inquebrável',
+		description: 'Mantenha taxa de retenção FSRS acima de 98% por 30 dias contínuos de revisões.',
 		icon: 'Diamond',
 		rarity: 'lendario',
 		status: 'locked',
@@ -333,7 +333,7 @@ export const mockBadges: Badge[] = [
 	{
 		id: 'b-21',
 		name: 'Debate Socrático',
-		description: 'Faça mais de 20 perguntas ao Mentor de IA aprofundando um tema de vanguarda.',
+		description: 'Peça contra-argumentos ao Mentor IA para aprofundar uma tese.',
 		icon: 'MessageSquare',
 		rarity: 'comum',
 		status: 'unlocked',
@@ -343,7 +343,7 @@ export const mockBadges: Badge[] = [
 	{
 		id: 'b-22',
 		name: 'Arquiteto de Cards',
-		description: 'Gere e aproveite 50 cards autorais a partir de anotações com o assistente.',
+		description: 'Gere ou valide 50 cards autorais a partir de anotações com o assistente.',
 		icon: 'Layers',
 		rarity: 'incomum',
 		status: 'in_progress',

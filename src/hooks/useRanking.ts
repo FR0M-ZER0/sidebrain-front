@@ -1,19 +1,11 @@
-import { useState } from 'react'
-import { globalRanking, weeklyRanking } from '../data/rankingMockData'
-import type { RankingDataset, RankingMode } from '../types/ranking'
+import { useCallback, useState } from 'react'
+import { getGlobalRanking } from '../api/rankingApi'
+import { useAsyncData } from './useAsyncData'
 
 export const useRanking = () => {
-	const [selectedMode, setSelectedMode] = useState<RankingMode>('weekly')
 	const [isExpanded, setIsExpanded] = useState(false)
-
-	const dataset: RankingDataset = selectedMode === 'weekly' ? weeklyRanking : globalRanking
-
-	const selectMode = (mode: RankingMode) => {
-		setSelectedMode(mode)
-		setIsExpanded(false)
-	}
-
+	const loadRanking = useCallback((signal: AbortSignal) => getGlobalRanking(signal), [])
+	const ranking = useAsyncData(loadRanking)
 	const toggleExpanded = () => setIsExpanded((expanded) => !expanded)
-
-	return { dataset, selectedMode, selectMode, isExpanded, toggleExpanded }
+	return { ...ranking, isExpanded, toggleExpanded }
 }

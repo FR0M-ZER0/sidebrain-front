@@ -1,3 +1,5 @@
+import type { BadgeRarity as MissionBadgeRarity } from './missions'
+
 export type PlanTier = 'MEMBRO PRO' | 'GRATUITO'
 
 export interface UserProfile {
@@ -6,13 +8,11 @@ export interface UserProfile {
 	email: string
 	avatarUrl: string
 	planTier: PlanTier
-	level: number
 	currentXp: number
-	nextLevelXp: number
-	memberSince: string
+	memberSince?: string
 }
 
-export type TrackCategory = 'Idiomas' | 'Exatas' | 'Tecnologia' | 'Humanas'
+export type TrackCategory = 'Idiomas' | 'Exatas' | 'Tecnologia' | 'Humanas' | 'Personalizada'
 
 export interface ActiveTrack {
 	id: string
@@ -21,19 +21,20 @@ export interface ActiveTrack {
 	categoryColor: string
 	progressPercent: number
 	description: string
-	nextLessonTitle: string
+	nextLessonTitle?: string
 	targetRoute: string
 }
 
-export type BadgeRarity = 'COMUM' | 'INCOMUM' | 'RARO' | 'ÉPICO'
+export type BadgeRarity = MissionBadgeRarity
 
 export interface ProfileBadge {
 	id: string
 	title: string
-	description: string
+	description?: string
 	rarity: BadgeRarity
-	iconType: 'flame' | 'zap' | 'torii' | 'ruler'
+	iconType: string
 	badgeProgress?: number
+	unlockedAt?: string
 }
 
 export interface AccountSecurityInfo {

@@ -4,6 +4,15 @@ export interface LoginCredentials {
 	rememberMe: boolean
 }
 
+export interface AuthUser {
+	id: string
+	name: string
+	email: string
+	createdAt?: string
+	xp?: number
+	missionsCompleted?: number
+}
+
 export interface LoginFormValidationErrors {
 	email?: string
 	password?: string

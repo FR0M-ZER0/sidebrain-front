@@ -1,117 +1,110 @@
-import { useCallback, useEffect, useState } from 'react'
-import type { LoginCredentials, RegisterFormData } from '../types/auth'
-import type { UserProfile } from '../types/userProfile'
-
-const SESSION_STORAGE_KEY = 'sidebrain_auth_session'
-
-export const DEFAULT_USER: UserProfile = {
-	id: 'u-01',
-	name: 'João Silva',
-	email: 'joao@exemplo.com',
-	avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
-	planTier: 'MEMBRO PRO',
-	level: 8,
-	currentXp: 850,
-	nextLevelXp: 1000,
-	memberSince: 'Jan 2025',
-}
-
-interface StoredSession {
-	user: UserProfile
-	isAuthenticated: boolean
-}
+import axios from 'axios'
+import { useCallback } from 'react'
+import { getCurrentUser, loginUser, registerUser, updateCurrentUser } from '../api/auth'
+import { getApiErrorMessage } from '../util/apiError'
+import type { AuthUser, LoginCredentials, RegisterFormData } from '../types/auth'
+import {
+	clearCredentials,
+	clearError,
+	requestFailed,
+	requestStarted,
+	setCredentials,
+	setUser,
+} from '../store/slices/authSlice'
+import { useAppDispatch, useAppSelector } from './redux'
 
 export const useAuth = () => {
-	const [user, setUser] = useState<UserProfile | null>(() => {
+	const dispatch = useAppDispatch()
+	const { accessToken, user, isLoading, isInitialized, error, rememberMe } = useAppSelector((state) => state.auth)
+
+	const completeAuthentication = useCallback(async (
+		session: { accessToken: string; user: AuthUser },
+		shouldRemember: boolean,
+	) => {
+		dispatch(setCredentials({
+			accessToken: session.accessToken,
+			user: session.user,
+			rememberMe: shouldRemember,
+		}))
+
 		try {
-			const saved = localStorage.getItem(SESSION_STORAGE_KEY)
-			if (saved) {
-				const parsed = JSON.parse(saved) as StoredSession
-				return parsed.isAuthenticated ? parsed.user : null
-			}
-			// Sessão mockada ativa por padrão conforme clarificação da SDB-82
-			localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({ user: DEFAULT_USER, isAuthenticated: true }))
-			return DEFAULT_USER
-		} catch {
-			return DEFAULT_USER
-		}
-	})
-
-	const [isLoading, setIsLoading] = useState(false)
-
-	const isAuthenticated = Boolean(user)
-
-	useEffect(() => {
-		const handleStorage = (event: StorageEvent) => {
-			if (event.key === SESSION_STORAGE_KEY) {
-				try {
-					if (event.newValue) {
-						const parsed = JSON.parse(event.newValue) as StoredSession
-						setUser(parsed.isAuthenticated ? parsed.user : null)
-					} else {
-						setUser(null)
-					}
-				} catch {
-					setUser(null)
-				}
+			dispatch(setUser(await getCurrentUser()))
+		} catch (requestError) {
+			if (axios.isAxiosError(requestError) && [401, 403].includes(requestError.response?.status ?? 0)) {
+				dispatch(clearCredentials())
+				dispatch(requestFailed(getApiErrorMessage(requestError, 'Não foi possível validar sua sessão.')))
+				return false
 			}
 		}
 
-		window.addEventListener('storage', handleStorage)
-		return () => window.removeEventListener('storage', handleStorage)
-	}, [])
+		return true
+	}, [dispatch])
 
 	const login = useCallback(async (credentials: LoginCredentials) => {
-		setIsLoading(true)
-		await new Promise((resolve) => setTimeout(resolve, 300))
-
-		const authenticatedUser: UserProfile = {
-			...DEFAULT_USER,
-			email: credentials.email || DEFAULT_USER.email,
+		dispatch(requestStarted())
+		try {
+			const session = await loginUser(credentials)
+			return await completeAuthentication(session, credentials.rememberMe)
+		} catch (requestError) {
+			dispatch(requestFailed(getApiErrorMessage(requestError, 'Não foi possível entrar. Tente novamente.')))
+			return false
 		}
+	}, [completeAuthentication, dispatch])
 
-		setUser(authenticatedUser)
-		localStorage.setItem(
-			SESSION_STORAGE_KEY,
-			JSON.stringify({ user: authenticatedUser, isAuthenticated: true }),
-		)
-		setIsLoading(false)
-		return true
-	}, [])
-
-	const register = useCallback(async (data: RegisterFormData) => {
-		setIsLoading(true)
-		await new Promise((resolve) => setTimeout(resolve, 300))
-
-		const newUser: UserProfile = {
-			...DEFAULT_USER,
-			name: data.name || DEFAULT_USER.name,
-			email: data.email || DEFAULT_USER.email,
+	const register = useCallback(async (formData: RegisterFormData) => {
+		dispatch(requestStarted())
+		try {
+			const session = await registerUser(formData)
+			return await completeAuthentication(session, false)
+		} catch (requestError) {
+			dispatch(requestFailed(getApiErrorMessage(requestError, 'Não foi possível criar sua conta. Tente novamente.')))
+			return false
 		}
+	}, [completeAuthentication, dispatch])
 
-		setUser(newUser)
-		localStorage.setItem(
-			SESSION_STORAGE_KEY,
-			JSON.stringify({ user: newUser, isAuthenticated: true }),
-		)
-		setIsLoading(false)
-		return true
-	}, [])
+	const restoreSession = useCallback(async () => {
+		if (!accessToken || isInitialized) return
+
+		dispatch(requestStarted())
+		try {
+			const currentUser = await getCurrentUser()
+			dispatch(setUser(currentUser))
+		} catch (requestError) {
+			if (axios.isAxiosError(requestError) && [401, 403].includes(requestError.response?.status ?? 0)) {
+				dispatch(clearCredentials())
+				return
+			}
+			dispatch(requestFailed(getApiErrorMessage(requestError, 'Não foi possível carregar sua conta.')))
+		}
+	}, [accessToken, dispatch, isInitialized])
+
+	const updateUser = useCallback(async (data: { name?: string; email?: string }) => {
+		const updatedUser = await updateCurrentUser(data)
+		dispatch(setUser(updatedUser))
+		return updatedUser
+	}, [dispatch])
 
 	const logout = useCallback(() => {
-		setUser(null)
-		localStorage.setItem(
-			SESSION_STORAGE_KEY,
-			JSON.stringify({ user: null, isAuthenticated: false }),
-		)
-	}, [])
+		dispatch(clearCredentials())
+	}, [dispatch])
+
+	const clearAuthError = useCallback(() => {
+		dispatch(clearError())
+	}, [dispatch])
 
 	return {
 		user,
-		isAuthenticated,
+		accessToken,
+		isAuthenticated: Boolean(accessToken),
 		isLoading,
+		isInitialized,
+		error,
+		rememberMe,
 		login,
 		register,
 		logout,
+		restoreSession,
+		updateUser,
+		clearAuthError,
 	}
 }

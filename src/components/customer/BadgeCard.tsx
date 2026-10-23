@@ -26,6 +26,7 @@ export const BadgeCard = ({ badge }: BadgeCardProps) => {
 				<div className="badge-icon"><Icon size={22} aria-hidden="true" /></div>
 				<div className="badge-body">
 					<div className="badge-description">{badge.descricao}</div>
+					{badge.conquistadoEm && <div className="badge-description">Conquistado em {badge.conquistadoEm}</div>}
 					<div className="badge-meta">
 						<ProgressBar value={badge.progresso} tone={badge.estado === 'pendente' ? 'warning' : 'success'} />
 						<span>{badge.progresso}%</span>

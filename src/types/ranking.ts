@@ -11,7 +11,8 @@ export interface RankingParticipant {
   rank: number
   name: string
   avatar?: string | null
-  level: number
+	level?: number
+	missionsCompleted?: number
   activeTrack?: string | null
   streakDays?: number | null
   consistencyPercent?: number | null
@@ -26,15 +27,14 @@ export interface RankingUserSummary {
   rank: number
   score: number
   scoreToPodium?: number | null
-  completedLessons?: number | null
+	missionsCompleted?: number | null
+	completedLessons?: number | null
   streakDays?: number | null
 }
 
 export interface HeaderIndicators {
-  xpCurrent: number
-  xpTarget: number
-  streakDays: number
-  notifications: number
+	streakDays: number
+	notifications: number
 }
 
 export interface RankingDataset {
@@ -44,8 +44,9 @@ export interface RankingDataset {
   cycle: RankingCycle | null
   division: string | null
   podium: RankingParticipant[]
-  participants: RankingParticipant[]
-  userSummary: RankingUserSummary
+	participants: RankingParticipant[]
+	userSummary: RankingUserSummary | null
+	currentUserName?: string
   initialVisibleCount: number
 }
 

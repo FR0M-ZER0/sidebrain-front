@@ -3,18 +3,18 @@ import { MissionsSection } from '../../components/customer/MissionsSection'
 import { StudentPageLayout } from '../../components/customer/layouts/StudentPageLayout'
 import { TracksSection } from '../../components/customer/TracksSection'
 import { useDashboard } from '../../hooks/useDashboard'
+import { DataRequestStatus } from '../../components/general/DataRequestStatus'
 
 export const HomeDashboardPage = () => {
-	const { data, loading, error } = useDashboard()
+	const { data, tracks, missions, badges } = useDashboard()
 
 	return (
-		<StudentPageLayout xp={data.usuario.xpAtual} coins={data.usuario.moedas} notifications={12}>
+		<StudentPageLayout notifications={12}>
 			<div className="content-stack">
-				{loading && <p role="status">Carregando trilhas...</p>}
-				{error && <p role="status">{error}</p>}
-				<BadgesSection badges={data.badges} />
-				<MissionsSection missions={data.missoes} />
-				<TracksSection tracks={data.trilhas} />
+				<BadgesSection badges={data.badges} loading={badges.loading} error={badges.error} onRetry={badges.retry} />
+				<MissionsSection missions={data.missoes} loading={missions.loading} error={missions.error} onRetry={missions.retry} />
+				<DataRequestStatus loading={tracks.loading} error={tracks.error} onRetry={tracks.retry} label="trilhas" />
+				{tracks.data && <TracksSection tracks={data.trilhas} />}
 			</div>
 		</StudentPageLayout>
 	)

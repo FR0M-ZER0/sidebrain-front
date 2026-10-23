@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { getTrackDetails } from '../api/trackService'
 import type { TrackDetails } from '../types/trackDetails'
 
@@ -8,6 +8,8 @@ type TrackDetailsState =
 
 export const useTrackDetails = (slug: string | undefined) => {
 	const [state, setState] = useState<TrackDetailsState | null>(null)
+	const [attempt, setAttempt] = useState(0)
+	const reload = useCallback(() => setAttempt((current) => current + 1), [])
 
 	useEffect(() => {
 		let isActive = true
@@ -33,10 +35,10 @@ export const useTrackDetails = (slug: string | undefined) => {
 		return () => {
 			isActive = false
 		}
-	}, [slug])
+	}, [slug, attempt])
 
-	if (!slug) return { status: 'error' as const, message: 'A trilha solicitada não foi encontrada.' }
-	if (state?.slug !== slug) return { status: 'loading' as const }
+	if (!slug) return { status: 'error' as const, message: 'A trilha solicitada não foi encontrada.', reload }
+	if (state?.slug !== slug) return { status: 'loading' as const, reload }
 
-	return state
+	return { ...state, reload }
 }

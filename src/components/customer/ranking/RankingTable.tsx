@@ -51,25 +51,15 @@ const RankingRow = ({ participant, maxScore }: { participant: RankingParticipant
 						{participant.isCurrentUser && <span className="ranking-you-badge">Você</span>}
 						{participant.badge && <span className="ranking-participant-badge">{participant.badge}</span>}
 					</strong>
-					<small>Nível {participant.level}</small>
+					<small>{participant.missionsCompleted ?? 0} missões concluídas</small>
 				</span>
 			</div>
 		</td>
-		<td>
-			<span className="ranking-track-name">{participant.activeTrack ?? 'Trilha não informada'}</span>
-			{typeof participant.streakDays === 'number' && (
-				<small className="ranking-track-streak">🔥 {participant.streakDays} dias de sequência</small>
-			)}
-		</td>
-		<td>
-			{typeof participant.consistencyPercent === 'number'
-				? <span className="ranking-consistency">{participant.consistencyPercent}%</span>
-				: <span aria-label="Consistência não informada">—</span>}
-		</td>
+		<td>{participant.missionsCompleted ?? 0}</td>
 		<td>
 			<div className="ranking-score-cell">
 				<strong>{participant.score.toLocaleString('pt-BR')} <small>XP</small></strong>
-				<progress value={participant.score} max={maxScore} aria-label={`${participant.score.toLocaleString('pt-BR')} ${participant.isCurrentUser ? 'XP semanal' : 'XP'}`} />
+				<progress value={participant.score} max={maxScore} aria-label={`${participant.score.toLocaleString('pt-BR')} XP total`} />
 			</div>
 		</td>
 	</tr>
@@ -77,8 +67,12 @@ const RankingRow = ({ participant, maxScore }: { participant: RankingParticipant
 
 export const RankingTable = ({ dataset, isExpanded, onToggleExpanded }: RankingTableProps) => {
 	const listedParticipants = dataset.participants.filter((participant) => participant.rank > 3)
-	const initialTableRowCount = Math.max(dataset.initialVisibleCount - 3, 0)
-	const visibleParticipants = isExpanded ? listedParticipants : listedParticipants.slice(0, initialTableRowCount)
+	const hasOnlyPodiumParticipants = dataset.participants.length <= 3
+	const tableParticipants = hasOnlyPodiumParticipants ? dataset.participants : listedParticipants
+	const initialTableRowCount = hasOnlyPodiumParticipants
+		? tableParticipants.length
+		: Math.max(dataset.initialVisibleCount - 3, 0)
+	const visibleParticipants = isExpanded ? tableParticipants : tableParticipants.slice(0, initialTableRowCount)
 	const maxScore = Math.max(...dataset.participants.map((participant) => participant.score), 1)
 	const totalDisplayed = isExpanded
 		? dataset.participants.length
@@ -104,8 +98,7 @@ export const RankingTable = ({ dataset, isExpanded, onToggleExpanded }: RankingT
 						<tr>
 							<th scope="col">Pos.</th>
 							<th scope="col">Estudante</th>
-							<th scope="col">Trilha ativa</th>
-							<th scope="col">Consistência</th>
+							<th scope="col">Missões concluídas</th>
 							<th scope="col">{dataset.scoreLabel}</th>
 						</tr>
 					</thead>
@@ -115,7 +108,7 @@ export const RankingTable = ({ dataset, isExpanded, onToggleExpanded }: RankingT
 								<RankingRow participant={participant} maxScore={maxScore} />
 								{participant.rank === PODIUM_CUTOFF_RANK && (
 									<tr key={`${participant.id}-cutoff`} className="ranking-cutoff-row">
-										<td colSpan={5}>
+										<td colSpan={4}>
 											<span aria-hidden="true">↑</span>
 											<strong>Linha de Corte do pódio</strong>
 										</td>

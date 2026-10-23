@@ -11,7 +11,7 @@ import { PasswordStrengthIndicator } from './PasswordStrengthIndicator'
 
 export const RegisterForm = () => {
 	const navigate = useNavigate()
-	const { register, isLoading } = useAuth()
+	const { register, isLoading, error, clearAuthError } = useAuth()
 
 	const [formData, setFormData] = useState<RegisterFormData>({
 		name: '',
@@ -57,6 +57,7 @@ export const RegisterForm = () => {
 
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault()
+		clearAuthError()
 		if (!validate()) return
 
 		const success = await register(formData)
@@ -72,12 +73,12 @@ export const RegisterForm = () => {
 	}
 
 	return (
-		<div className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 p-7 sm:p-10 relative">
+		<div className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 p-6 sm:p-7 relative">
 			<div>
-				<h2 className="text-2xl sm:text-[28px] font-extrabold text-slate-900 tracking-tight">
+				<h2 className="text-xl sm:text-[22px] font-extrabold text-slate-900 tracking-tight">
 					Crie sua conta no Sidebrain
 				</h2>
-				<p className="text-xs sm:text-sm text-slate-500 mt-2 leading-relaxed">
+				<p className="text-xs text-slate-500 mt-1 leading-relaxed">
 					Aprenda qualquer assunto com trilhas estruturadas e feedback do Mentor de IA
 				</p>
 			</div>
@@ -88,12 +89,14 @@ export const RegisterForm = () => {
 				</div>
 			)}
 
+			{error && <p role="alert" className="mt-4 text-sm font-medium text-rose-600">{error}</p>}
+
 			{/* Botões sociais no topo */}
-			<div className="grid grid-cols-2 gap-3 mt-6">
+			<div className="grid grid-cols-2 gap-2 mt-5">
 				<button
 					type="button"
 					onClick={() => handleInfoLink('Google')}
-					className="py-2.5 px-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100/80 text-xs font-semibold text-slate-700 flex items-center justify-center gap-2 cursor-pointer transition-all"
+					className="py-2 px-3 rounded-lg bg-[#f1f2ff] hover:bg-[#e9ebff] text-xs font-semibold text-slate-700 flex items-center justify-center gap-2 cursor-pointer transition-all"
 				>
 					<svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
 						<path
@@ -119,7 +122,7 @@ export const RegisterForm = () => {
 				<button
 					type="button"
 					onClick={() => handleInfoLink('GitHub')}
-					className="py-2.5 px-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100/80 text-xs font-semibold text-slate-700 flex items-center justify-center gap-2 cursor-pointer transition-all"
+					className="py-2 px-3 rounded-lg bg-[#f1f2ff] hover:bg-[#e9ebff] text-xs font-semibold text-slate-700 flex items-center justify-center gap-2 cursor-pointer transition-all"
 				>
 					<svg className="w-4 h-4 shrink-0 fill-slate-900" viewBox="0 0 24 24" aria-hidden="true">
 						<path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
@@ -129,7 +132,7 @@ export const RegisterForm = () => {
 			</div>
 
 			{/* Divisor */}
-			<div className="relative my-6 text-center">
+			<div className="relative my-4 text-center">
 				<div className="absolute inset-0 flex items-center">
 					<div className="w-full border-t border-slate-200" />
 				</div>
@@ -145,8 +148,8 @@ export const RegisterForm = () => {
 						Nome Completo
 					</label>
 					<div
-						className={`relative rounded-xl bg-slate-50 border transition-all ${
-							errors.name ? 'border-rose-400 bg-rose-50/20' : 'border-slate-200 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-100'
+						className={`relative rounded-lg transition-all ${
+							errors.name ? 'bg-rose-50/50 ring-1 ring-rose-400' : 'bg-[#f1f2ff] focus-within:ring-2 focus-within:ring-blue-200'
 						}`}
 					>
 						<User size={16} className="text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -159,7 +162,7 @@ export const RegisterForm = () => {
 								if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }))
 							}}
 							placeholder="João Silva"
-							className="w-full pl-10 pr-4 py-3 bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-none"
+							className="w-full pl-10 pr-4 py-2 bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-none"
 						/>
 					</div>
 					{errors.name && <p className="text-xs text-rose-500 mt-1 font-medium">{errors.name}</p>}
@@ -171,8 +174,8 @@ export const RegisterForm = () => {
 						E-mail
 					</label>
 					<div
-						className={`relative rounded-xl bg-slate-50 border transition-all ${
-							errors.email ? 'border-rose-400 bg-rose-50/20' : 'border-slate-200 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-100'
+						className={`relative rounded-lg transition-all ${
+							errors.email ? 'bg-rose-50/50 ring-1 ring-rose-400' : 'bg-[#f1f2ff] focus-within:ring-2 focus-within:ring-blue-200'
 						}`}
 					>
 						<AtSign size={16} className="text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -185,7 +188,7 @@ export const RegisterForm = () => {
 								if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }))
 							}}
 							placeholder="joao@exemplo.com"
-							className="w-full pl-10 pr-4 py-3 bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-none"
+							className="w-full pl-10 pr-4 py-2 bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-none"
 						/>
 					</div>
 					{errors.email && <p className="text-xs text-rose-500 mt-1 font-medium">{errors.email}</p>}
@@ -208,8 +211,8 @@ export const RegisterForm = () => {
 						)}
 					</div>
 					<div
-						className={`relative rounded-xl bg-slate-50 border transition-all ${
-							errors.password ? 'border-rose-400 bg-rose-50/20' : 'border-slate-200 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-100'
+						className={`relative rounded-lg transition-all ${
+							errors.password ? 'bg-rose-50/50 ring-1 ring-rose-400' : 'bg-[#f1f2ff] focus-within:ring-2 focus-within:ring-blue-200'
 						}`}
 					>
 						<Lock size={16} className="text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -222,12 +225,12 @@ export const RegisterForm = () => {
 								if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }))
 							}}
 							placeholder="••••••••"
-							className="w-full pl-10 pr-11 py-3 bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-none"
+							className="w-full pl-10 pr-11 py-2 bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-none"
 						/>
 						<button
 							type="button"
 							onClick={() => setShowPassword((prev) => !prev)}
-							className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
+							className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors p-1"
 							title={showPassword ? 'Ocultar senha' : 'Exibir senha'}
 						>
 							{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -278,7 +281,7 @@ export const RegisterForm = () => {
 				<button
 					type="submit"
 					disabled={isLoading}
-					className="w-full mt-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-70 text-white font-semibold py-3.5 px-4 rounded-xl shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 transition-all flex items-center justify-center gap-2 text-sm cursor-pointer"
+					className="w-full mt-3 bg-blue-700 hover:bg-blue-800 disabled:opacity-70 text-white font-semibold py-2.5 px-4 rounded-lg shadow-sm shadow-blue-700/20 transition-all flex items-center justify-center gap-2 text-sm cursor-pointer"
 				>
 					{isLoading ? (
 						<span>Criando conta...</span>

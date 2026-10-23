@@ -1,5 +1,4 @@
-import { ChevronDown, ChevronUp, PlusCircle, Sparkles } from 'lucide-react'
-import { useState } from 'react'
+import { ArrowRight, PlusCircle, Sparkles } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import type { DashboardTrack } from '../../types/dashboard'
 import { TrackCard } from './TrackCard'
@@ -12,9 +11,8 @@ interface TracksSectionProps {
 
 export const TracksSection = ({ tracks }: TracksSectionProps) => {
 	const navigate = useNavigate()
-	const [isExpanded, setIsExpanded] = useState(false)
 	const hasHiddenTracks = tracks.length > VISIBLE_TRACKS_LIMIT
-	const visibleTracks = isExpanded ? tracks : tracks.slice(0, VISIBLE_TRACKS_LIMIT)
+	const visibleTracks = tracks.slice(0, VISIBLE_TRACKS_LIMIT)
 
 	return (
 		<section id="tracks" className="panel tracks-panel">
@@ -24,13 +22,9 @@ export const TracksSection = ({ tracks }: TracksSectionProps) => {
 					<button
 						type="button"
 						className="link-button"
-						aria-expanded={isExpanded}
-						onClick={() => setIsExpanded((expanded) => !expanded)}
+						onClick={() => navigate('/trails')}
 					>
-						{isExpanded ? 'Ver menos' : 'Ver todas'} ({tracks.length})
-						{isExpanded
-							? <ChevronUp size={14} aria-hidden="true" />
-							: <ChevronDown size={14} aria-hidden="true" />}
+						Ver todas ({tracks.length}) <ArrowRight size={14} aria-hidden="true" />
 					</button>
 				)}
 			</div>

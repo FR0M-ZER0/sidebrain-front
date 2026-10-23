@@ -21,6 +21,7 @@ export interface DashboardBadge {
   estado: DashboardBadgeState
   progresso: number
   icone: string
+  conquistadoEm?: string
 }
 
 export interface DashboardMission {
@@ -30,6 +31,9 @@ export interface DashboardMission {
   recompensaXp: number
   estado: DashboardMissionState
   tipo: string
+  trilhaId?: string
+  trilhaTitulo?: string
+  etapaTitulo?: string
 }
 
 export interface DashboardTrack {

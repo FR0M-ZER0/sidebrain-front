@@ -1,6 +1,5 @@
 import { BookOpen, Globe, Zap } from 'lucide-react'
-import type { CategoryWithBadges } from '../../../hooks/useMissionsAndBadges'
-import type { BadgeFilterOption, BadgeFilterType } from '../../../types/missions'
+import type { BadgeFilterOption, BadgeFilterType, CategoryWithBadges } from '../../../types/missions'
 import { BadgeItemCard } from './BadgeItemCard'
 
 export interface BadgesShowcaseProps {
@@ -30,7 +29,7 @@ export const BadgesShowcase = ({
 	}
 
 	return (
-		<section className="flex flex-col gap-6" aria-labelledby="showcase-title">
+		<section id="badges" className="flex flex-col gap-6" aria-labelledby="showcase-title">
 			{/* Topo da vitrine: Título/Subtítulo & Tabs de filtro */}
 			<div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
 				<div>
@@ -45,7 +44,7 @@ export const BadgesShowcase = ({
 				{/* Tabs de Filtro */}
 				<div
 					className="inline-flex max-w-full overflow-x-auto rounded-xl bg-[#eef2f8] p-1 gap-1 shrink-0"
-					role="tablist"
+					role="group"
 					aria-label="Filtro de badges"
 				>
 					{filterOptions.map((tab) => {
@@ -55,8 +54,7 @@ export const BadgesShowcase = ({
 							<button
 								key={tab.key}
 								type="button"
-								role="tab"
-								aria-selected={isActive}
+								aria-pressed={isActive}
 								onClick={() => onSelectFilter(tab.key)}
 								className={`whitespace-nowrap rounded-lg px-3.5 py-1.5 text-xs transition-all ${
 									isActive

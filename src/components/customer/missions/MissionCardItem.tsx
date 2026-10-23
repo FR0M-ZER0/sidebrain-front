@@ -4,17 +4,17 @@ import {
 	Flame,
 	Home,
 	Layers,
-	RotateCcw,
+	ArrowRight,
 	Target,
 } from 'lucide-react'
 import type { Mission } from '../../../types/missions'
+import { Link } from 'react-router'
 
 export interface MissionCardItemProps {
 	mission: Mission
-	onActionClick: (actionType: 'continue_track' | 'review_cards', missionTitle: string) => void
 }
 
-export const MissionCardItem = ({ mission, onActionClick }: MissionCardItemProps) => {
+export const MissionCardItem = ({ mission }: MissionCardItemProps) => {
 	const iconMap = {
 		Home,
 		Brain,
@@ -52,9 +52,9 @@ export const MissionCardItem = ({ mission, onActionClick }: MissionCardItemProps
 							>
 								{mission.category}
 							</span>
-							<h3 className="text-base font-bold text-slate-900 leading-snug">
+							<h5 className="my-2 text-base font-bold text-slate-900 leading-snug">
 								{mission.title}
-							</h3>
+							</h5>
 						</div>
 					</div>
 
@@ -66,6 +66,7 @@ export const MissionCardItem = ({ mission, onActionClick }: MissionCardItemProps
 				{/* Descrição */}
 				<p className="mt-3.5 text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
 					{mission.description}
+					{mission.targetProgress > 0 && <span> · Meta: {mission.targetProgress}</span>}
 				</p>
 			</div>
 
@@ -76,7 +77,7 @@ export const MissionCardItem = ({ mission, onActionClick }: MissionCardItemProps
 					<div className="flex items-center justify-between text-xs font-medium text-slate-600 mb-2">
 						<span>Progresso</span>
 						<span className="font-semibold text-slate-700">
-							{mission.currentProgress} / {mission.targetProgress} {mission.progressUnit} ({mission.percent}%)
+							{mission.percent}%
 						</span>
 					</div>
 
@@ -85,6 +86,7 @@ export const MissionCardItem = ({ mission, onActionClick }: MissionCardItemProps
 							className="h-full rounded-full bg-[#075fc7] transition-all duration-300"
 							style={{ width: `${mission.percent}%` }}
 							role="progressbar"
+							aria-label={`Progresso de ${mission.title}`}
 							aria-valuenow={mission.percent}
 							aria-valuemin={0}
 							aria-valuemax={100}
@@ -102,26 +104,16 @@ export const MissionCardItem = ({ mission, onActionClick }: MissionCardItemProps
 							<span>Concluído</span>
 						</div>
 					) : (
-						<div />
+						<span className="text-xs text-slate-600">{mission.status === 'idle' ? 'Não iniciada' : 'Em progresso'}</span>
 					)}
 
-					{isCompleted ? (
-						<button
-							type="button"
-							onClick={() => onActionClick(mission.actionType, mission.title)}
+					{mission.trackId && (
+						<Link
+							to={`/trails/${mission.trackId}`}
 							className="inline-flex items-center justify-center rounded-xl bg-[#075fc7] px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-xs transition-colors hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
 						>
-							{mission.actionLabel}
-						</button>
-					) : (
-						<button
-							type="button"
-							onClick={() => onActionClick(mission.actionType, mission.title)}
-							className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-xs sm:text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200 focus:outline-hidden focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
-						>
-							<RotateCcw size={14} className="text-slate-500" aria-hidden="true" />
-							<span>{mission.actionLabel}</span>
-						</button>
+							Abrir trilha <ArrowRight size={16} aria-hidden="true" />
+						</Link>
 					)}
 				</div>
 			</div>

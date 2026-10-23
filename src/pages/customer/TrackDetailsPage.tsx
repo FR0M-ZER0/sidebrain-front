@@ -18,22 +18,7 @@ import { StudentPageLayout } from '../../components/customer/layouts/StudentPage
 import { useTrackDetails } from '../../hooks/useTrackDetails'
 import type { LessonNavigationContext } from '../../api/lessonsApi'
 import type { Module, TrackDetails } from '../../types/trackDetails'
-
-const missionDifficultyLabels: Record<string, string> = {
-	easy: 'Fácil',
-	medium: 'Média',
-	hard: 'Difícil',
-	very_hard: 'Muito difícil',
-}
-
-const missionCriteriaLabels: Record<string, string> = {
-	number_of_lessons_completed: 'Conclua lições desta etapa',
-	get_all_answer_right_in_a_lesson: 'Acerte todas as respostas de uma lição',
-	complete_a_step: 'Conclua esta etapa',
-	complete_a_track: 'Conclua a trilha',
-	number_of_steps_completed: 'Conclua etapas da trilha',
-	get_all_answers_right: 'Acerte todas as respostas',
-}
+import { missionCriteriaLabels, missionDifficultyLabels } from '../../util/gamification'
 
 const getMissionDifficultyLabel = (difficulty: string) =>
 	missionDifficultyLabels[difficulty] ?? difficulty
@@ -182,7 +167,7 @@ export const TrackDetailsPage = () => {
 													<span>
 														{mission.currentProgress !== undefined && mission.totalProgress !== undefined
 															? `${mission.currentProgress} de ${mission.totalProgress} ${mission.progressUnit ?? 'progresso'}`
-															: 'Progresso registrado'}
+															: mission.totalProgress !== undefined ? `Meta: ${mission.totalProgress} ${mission.progressUnit ?? ''}` : 'Progresso registrado'}
 													</span>
 													<b>{progressPercentage}%</b>
 												</footer>
@@ -194,7 +179,7 @@ export const TrackDetailsPage = () => {
 									</article>
 								)
 							})}
-							<Link to="/#missions" className="track-all-missions">Ver todas as missões <ArrowRight size={17} /></Link>
+							<Link to={`/missions?track_id=${encodeURIComponent(track.id)}`} className="track-all-missions">Ver todas as missões <ArrowRight size={17} /></Link>
 						</div>
 					</aside>
 					<div className="track-curriculum">

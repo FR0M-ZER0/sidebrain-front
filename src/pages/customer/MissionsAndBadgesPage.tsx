@@ -2,22 +2,24 @@ import { HeaderBar } from '../../components/customer/HeaderBar'
 import { BadgesShowcase } from '../../components/customer/missions/BadgesShowcase'
 import { MissionsAndBadgesSummary } from '../../components/customer/missions/MissionsAndBadgesSummary'
 import { MissionsGrid } from '../../components/customer/missions/MissionsGrid'
-import { ToastNotification } from '../../components/customer/missions/ToastNotification'
+import { DataRequestStatus } from '../../components/general/DataRequestStatus'
+import { Link, useSearchParams } from 'react-router'
 import { Sidebar } from '../../components/customer/Sidebar'
 import { useMissionsAndBadges } from '../../hooks/useMissionsAndBadges'
+import { useSectionAnchor } from '../../hooks/useSectionAnchor'
 
 export const MissionsAndBadgesPage = () => {
+	const [searchParams] = useSearchParams()
+	const trackId = searchParams.get('track_id') || undefined
 	const {
-		summary,
 		missions,
+		badges,
 		activeFilter,
 		setActiveFilter,
 		filterOptions,
 		filteredCategoriesWithBadges,
-		toastMessage,
-		triggerDemonstrationAction,
-		closeToast,
-	} = useMissionsAndBadges()
+	} = useMissionsAndBadges(trackId)
+	useSectionAnchor(Boolean(badges.data) && !missions.loading)
 
 	return (
 		<div className="app-shell">
@@ -25,8 +27,8 @@ export const MissionsAndBadgesPage = () => {
 
 			<main className="page-shell">
 				<HeaderBar
-					xp={summary.sessionXp}
-					coins={summary.sessionXpTarget}
+					xp={320}
+					coins={500}
 					notifications={12}
 				/>
 
@@ -37,28 +39,36 @@ export const MissionsAndBadgesPage = () => {
 								Missões & Conquistas
 							</h1>
 							<p className="mt-3 text-sm sm:text-base text-slate-700 leading-relaxed font-normal">
-								Complete desafios semanais, acumule XP e desbloqueie insígnias exclusivas
+								Complete as missões das suas trilhas, acumule XP e desbloqueie insígnias exclusivas
 								para acelerar sua retenção cognitiva e consistência de aprendizado.
 							</p>
 						</div>
 
-						<MissionsAndBadgesSummary summary={summary} />
+						<MissionsAndBadgesSummary badges={badges.data} groups={missions.data} />
 					</header>
 
-					<MissionsGrid
-						missions={missions}
-						onActionClick={triggerDemonstrationAction}
-					/>
+					<section id="missions" className="flex flex-col gap-4" aria-labelledby="missions-title">
+						<h2 id="missions-title" className="m-0 text-xl font-bold text-slate-900">{trackId ? 'Missões desta trilha' : 'Todas as missões'}</h2>
+						{trackId && (
+							<div className="flex flex-wrap gap-4">
+								<Link to={`/trails/${trackId}`}>Voltar à trilha</Link>
+								<Link to="/missions">Ver missões de todas as trilhas</Link>
+							</div>
+						)}
+						<DataRequestStatus loading={missions.loading} error={missions.error} onRetry={missions.retry} label="missões" />
+						{missions.data && <MissionsGrid groups={missions.data} />}
+					</section>
 
-					<BadgesShowcase
-						filterOptions={filterOptions}
-						activeFilter={activeFilter}
-						onSelectFilter={setActiveFilter}
-						categoriesWithBadges={filteredCategoriesWithBadges}
-					/>
+					<DataRequestStatus loading={badges.loading} error={badges.error} onRetry={badges.retry} label="badges" />
+					{badges.data && (
+						<BadgesShowcase
+							filterOptions={filterOptions}
+							activeFilter={activeFilter}
+							onSelectFilter={setActiveFilter}
+							categoriesWithBadges={filteredCategoriesWithBadges}
+						/>
+					)}
 				</div>
-
-				<ToastNotification message={toastMessage} onClose={closeToast} />
 			</main>
 		</div>
 	)

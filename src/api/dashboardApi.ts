@@ -100,8 +100,9 @@ const toDashboardTrack = (track: ApiTrack): DashboardTrack => {
 	}
 }
 
-export const getDashboardTracks = async (): Promise<DashboardTrack[]> => {
+export const getDashboardTracks = async (signal?: AbortSignal): Promise<DashboardTrack[]> => {
 	const { data } = await api.get<unknown>('/api/v1/tracks', {
+		signal,
 		params: {
 			page: 1,
 			page_size: 100,

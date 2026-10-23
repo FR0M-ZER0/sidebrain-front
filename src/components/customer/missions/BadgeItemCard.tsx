@@ -114,14 +114,9 @@ export const BadgeItemCard = ({ badge }: BadgeItemCardProps) => {
 	const rarityConfig = rarityStyles[badge.rarity]
 
 	const getIconContainerStyle = () => {
-		if (badge.id === 'b-10') return 'bg-[#075fc7] text-white' // Mestre de XP
-		if (badge.id === 'b-11') return 'bg-indigo-100 text-slate-900' // Poliglota Curioso
-		if (badge.id === 'b-12') return 'bg-emerald-500 text-white' // Geômetra Iniciante
-		if (badge.id === 'b-01') return 'bg-amber-100 text-amber-800' // Fogo Imparável
-		if (badge.id === 'b-03') return 'bg-sky-100 text-sky-700' // Ritual Matinal
-		if (badge.id === 'b-04') return 'bg-emerald-100 text-emerald-700' // Zona de Imersão
-		if (badge.id === 'b-19') return 'bg-sky-100 text-sky-700' // Sintoria Cognitiva
-		if (badge.id === 'b-21') return 'bg-slate-100 text-slate-700' // Debate Socrático
+		if (!isUnlocked) return 'bg-slate-100 text-slate-500'
+		if (badge.rarity === 'lendario' || badge.rarity === 'raro') return 'bg-amber-100 text-amber-800'
+		if (badge.rarity === 'epico') return 'bg-[#075fc7] text-white'
 		if (isUnlocked) return 'bg-blue-50 text-blue-700'
 		return 'bg-slate-100 text-slate-500'
 	}
@@ -183,6 +178,11 @@ export const BadgeItemCard = ({ badge }: BadgeItemCardProps) => {
 							<div
 								className="h-full rounded-full bg-[#075fc7] transition-all duration-300"
 								style={{ width: `${badge.progressPercent ?? 0}%` }}
+								role="progressbar"
+								aria-label={`Progresso de ${badge.name}`}
+								aria-valuenow={badge.progressPercent ?? 0}
+								aria-valuemin={0}
+								aria-valuemax={100}
 							/>
 						</div>
 					</div>

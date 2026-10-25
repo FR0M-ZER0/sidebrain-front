@@ -35,7 +35,7 @@ export const useDashboard = () => {
 			progresso: mission.percent,
 			recompensaXp: mission.xpReward,
 			estado: 'em_andamento',
-			tipo: 'missao',
+			criterio: mission.criterion ?? '',
 			trilhaId: mission.trackId,
 			trilhaTitulo: mission.trackTitle,
 			etapaTitulo: mission.stepTitle,

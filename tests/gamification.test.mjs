@@ -135,6 +135,22 @@ test('envia track_id e limita a consulta do dashboard a duas missões em progres
 	assert.equal(result[0].steps.flatMap((s) => s.missions).length, 2)
 })
 
+test('associa o ícone de cada missão ao critério retornado pela API', async () => {
+	const expectedIcons = [
+		['number_of_lessons_completed', 'BookOpen'],
+		['get_all_answer_right_in_a_lesson', 'BadgeCheck'],
+		['complete_a_step', 'Flag'],
+		['complete_a_track', 'Route'],
+		['number_of_steps_completed', 'Layers'],
+		['get_all_answers_right', 'CheckCircle'],
+	]
+	respond = () => page([track('t1', expectedIcons.map(([criteria], index) =>
+		mission(`m${index}`, 's1', { criteria }),
+	))])
+	const missions = (await getMissions()).flatMap((group) => group.steps.flatMap((step) => step.missions))
+	assert.deepEqual(missions.map(({ criterion, icon }) => [criterion, icon]), expectedIcons)
+})
+
 test('lê score/status do usuário sem converter percentual em contagens inventadas', async () => {
 	respond = () => page([track('t1', [
 		mission('idle', 's1', { mission_progresses: [] }),

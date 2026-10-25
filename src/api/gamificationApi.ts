@@ -1,6 +1,6 @@
 import { api } from './api'
 import type { Badge, BadgeRarity, Mission, MissionTrackGroup, ProgressStatus } from '../types/missions'
-import { badgeCriteriaIcons, badgeCriteriaLabels, missionCriteriaLabels, missionDifficultyLabels } from '../util/gamification'
+import { badgeCriteriaIcons, badgeCriteriaLabels, missionCriteriaIcons, missionCriteriaLabels, missionDifficultyLabels } from '../util/gamification'
 
 type ApiRecord = Record<string, unknown>
 
@@ -97,7 +97,8 @@ export const getMissions = async (options: ListOptions = {}, signal?: AbortSigna
 				trackTitle: group.trackTitle,
 				stepId,
 				stepTitle,
-				icon: 'Target',
+				criterion: criteria,
+				icon: missionCriteriaIcons[criteria] ?? 'Target',
 				category: missionDifficultyLabels[difficulty] ?? difficulty,
 				categoryTone: difficulty === 'hard' || difficulty === 'very_hard' ? 'warning' : 'info',
 				description: missionCriteriaLabels[criteria] ?? criteria.replace(/_/g, ' '),

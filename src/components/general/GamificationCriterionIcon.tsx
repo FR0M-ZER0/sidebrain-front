@@ -16,6 +16,7 @@ import {
 	Crown,
 	Diamond,
 	Eye,
+	Flag,
 	Flame,
 	GitFork,
 	Globe,
@@ -29,6 +30,7 @@ import {
 	Network,
 	Percent,
 	Ruler,
+	Route,
 	Shield,
 	Sigma,
 	Sparkles,
@@ -38,10 +40,10 @@ import {
 	TrendingUp,
 	Zap,
 } from 'lucide-react'
-import { badgeCriteriaIcons } from '../../util/gamification'
+import { badgeCriteriaIcons, missionCriteriaIcons } from '../../util/gamification'
 
 interface GamificationCriterionIconProps {
-	kind: 'badge'
+	kind: 'badge' | 'mission'
 	criterion: string
 	fallbackIcon?: string
 	size?: number
@@ -66,6 +68,7 @@ const gamificationIcons = {
 	Crown,
 	Diamond,
 	Eye,
+	Flag,
 	Flame,
 	GitFork,
 	Globe,
@@ -79,6 +82,7 @@ const gamificationIcons = {
 	Network,
 	Percent,
 	Ruler,
+	Route,
 	Shield,
 	Sigma,
 	Sparkles,
@@ -89,8 +93,10 @@ const gamificationIcons = {
 	Zap,
 }
 
+const iconsByKind = { badge: badgeCriteriaIcons, mission: missionCriteriaIcons }
+
 export const GamificationCriterionIcon = ({ kind, criterion, fallbackIcon, size = 22, className }: GamificationCriterionIconProps) => {
-	const iconName = kind === 'badge' ? badgeCriteriaIcons[criterion] ?? fallbackIcon : fallbackIcon
+	const iconName = iconsByKind[kind][criterion] ?? fallbackIcon
 	const Icon = iconName ? gamificationIcons[iconName as keyof typeof gamificationIcons] ?? Award : Award
 
 	return <Icon size={size} className={className} aria-hidden="true" />

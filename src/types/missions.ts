@@ -26,6 +26,7 @@ export interface UserGamificationSummary {
 export interface Mission {
 	id: string
 	icon: string
+	criterion?: string
 	category: string
 	categoryTone: 'warning' | 'info'
 	xpReward: number

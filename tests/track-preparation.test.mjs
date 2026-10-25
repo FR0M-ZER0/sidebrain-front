@@ -6,13 +6,14 @@ let server
 let api
 let getTrackDetails
 let prepareEligibleNextStep
+let waitForPreparedNextStep
 let requests
 let respond
 
 before(async () => {
 	server = await createServer({ server: { middlewareMode: true }, appType: 'custom' })
 	;({ api } = await server.ssrLoadModule('/src/api/api.ts'))
-	;({ getTrackDetails, prepareEligibleNextStep } = await server.ssrLoadModule('/src/api/trackService.ts'))
+	;({ getTrackDetails, prepareEligibleNextStep, waitForPreparedNextStep } = await server.ssrLoadModule('/src/api/trackService.ts'))
 	api.defaults.adapter = async (config) => {
 		requests.push({ url: config.url, method: config.method })
 		return { data: await respond(config), status: 200, statusText: 'OK', headers: {}, config }
@@ -74,6 +75,48 @@ test('prepara a próxima etapa para progresso preexistente de 80% na primeira et
 		{ url: '/api/v1/tracks/track-1', method: 'get' },
 		{ url: '/api/v1/tracks/track-1/steps/step-1/prepare-next', method: 'post' },
 	])
+})
+
+test('consulta o preparo da próxima etapa a cada 15 segundos até o conteúdo ficar pronto', async () => {
+	const trackBeforePreparation = {
+		id: 'track-1',
+		title: 'Trilha de teste',
+		steps: [step('step-1', 4, 5), step('step-2', 0, 0)],
+	}
+	const preparedTrack = {
+		...trackBeforePreparation,
+		steps: [step('step-1', 4, 5), step('step-2', 0, 1)],
+	}
+	respond = () => requests.length === 1 ? trackBeforePreparation : preparedTrack
+	const originalWindow = globalThis.window
+	const pollIntervals = []
+	Object.defineProperty(globalThis, 'window', {
+		configurable: true,
+		value: {
+			setTimeout: (callback, milliseconds) => {
+				pollIntervals.push(milliseconds)
+				queueMicrotask(callback)
+				return 1
+			},
+		},
+	})
+
+	try {
+		const isPrepared = await waitForPreparedNextStep({
+			trackId: 'track-1',
+			stepId: 'step-1',
+			taskId: 'task-1',
+		}, new AbortController().signal)
+		assert.equal(isPrepared, true)
+		assert.deepEqual(pollIntervals, [15_000])
+		assert.equal(requests.length, 2)
+	} finally {
+		if (originalWindow === undefined) {
+			delete globalThis.window
+		} else {
+			Object.defineProperty(globalThis, 'window', { configurable: true, value: originalWindow })
+		}
+	}
 })
 
 test('ordena os níveis conhecidos e mantém etapas sem nível estáveis no final', async () => {

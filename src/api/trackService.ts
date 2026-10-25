@@ -315,6 +315,7 @@ const hasPreparedNextStep = (track: TrackDetails, stepId: string) => {
 	return currentStepIndex >= 0 && Boolean(track.modules[currentStepIndex + 1]?.lessons.length)
 }
 
+const STEP_PREPARATION_POLL_INTERVAL = 15_000
 const wait = (milliseconds: number) => new Promise((resolve) => window.setTimeout(resolve, milliseconds))
 
 export const waitForPreparedNextStep = async (
@@ -334,7 +335,7 @@ export const waitForPreparedNextStep = async (
 			// A falha transitória de leitura não encerra a espera pela preparação.
 		}
 
-		if (!signal?.aborted) await wait(1_500)
+		if (!signal?.aborted) await wait(STEP_PREPARATION_POLL_INTERVAL)
 	}
 
 	return false

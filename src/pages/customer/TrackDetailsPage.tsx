@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import { StudentPageLayout } from '../../components/customer/layouts/StudentPageLayout'
 import { useTrackDetails } from '../../hooks/useTrackDetails'
-import { forgetStepPreparation, getPendingStepPreparation, hasStepPreparationBeenRequested, prepareNextStep, waitForPreparedNextStep } from '../../api/trackService'
+import { forgetStepPreparation, getEligibleStepForPreparation, getPendingStepPreparation, hasStepPreparationBeenRequested, prepareEligibleNextStep, waitForPreparedNextStep } from '../../api/trackService'
 import type { LessonNavigationContext } from '../../api/lessonsApi'
 import type { Module, TrackDetails } from '../../types/trackDetails'
 import type { PendingStepPreparation } from '../../types/trackFlow'
@@ -26,13 +26,6 @@ const getMissionDifficultyLabel = (difficulty: string) =>
 
 const getMissionCriteriaLabel = (criteria: string) =>
 	missionCriteriaLabels[criteria] ?? criteria.replace(/_/g, ' ')
-
-const getEligibleStepForPreparation = (track: TrackDetails) => track.modules.find((module, index) => {
-	if (module.totalLessons === 0) return false
-	const progress = module.completedLessons / module.totalLessons
-	const nextStepPrepared = Boolean(track.modules[index + 1]?.lessons.length)
-	return progress >= 0.8 && !nextStepPrepared
-})
 
 const ModuleCard = ({ module, index, track }: { module: Module; index: number; track: TrackDetails }) => {
 	const navigate = useNavigate()
@@ -128,11 +121,15 @@ export const TrackDetailsPage = () => {
 		attemptedPreparation.current = preparationKey
 		let isActive = true
 
-		prepareNextStep(track.id, step.id)
-			.then((result) => {
+		prepareEligibleNextStep(track)
+			.then((preparation) => {
 				if (!isActive) return
-				if (result.status === 'accepted') {
-					setPendingPreparation(result.pending)
+				if (!preparation) {
+					setPreparationStatus('idle')
+					return
+				}
+				if (preparation.result.status === 'accepted') {
+					setPendingPreparation(preparation.result.pending)
 					setPreparationStatus('waiting')
 				} else {
 					setPreparationStatus('idle')

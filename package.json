@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "test:gamification": "node --test tests/gamification.test.mjs",
+    "test:track-preparation": "node --test tests/track-preparation.test.mjs",
     "preview": "vite preview",
     "prepare": "husky"
   },

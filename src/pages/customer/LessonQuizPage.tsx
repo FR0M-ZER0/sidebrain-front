@@ -93,11 +93,6 @@ export const LessonQuizPage = () => {
 				}
 				try {
 					await markLessonCompleted(lessonToComplete)
-					if (lessonContext?.trackId && lessonContext.stepId && !pendingPreparation
-						&& !hasStepPreparationBeenRequested(lessonContext.trackId, lessonContext.stepId)) {
-						const result = await prepareNextStep(lessonContext.trackId, lessonContext.stepId)
-						if (result.status === 'accepted') pendingPreparation = result.pending
-					}
 				} catch (completionError) {
 					setQuizState((state) => ({
 						...state,
@@ -105,10 +100,20 @@ export const LessonQuizPage = () => {
 							? completionError.message
 							: 'Não foi possível registrar a conclusão da lição. Tente novamente.',
 					}))
-					return
-				} finally {
 					setPreparingNextStep(false)
+					return
 				}
+
+				if (lessonContext?.trackId && lessonContext.stepId && !pendingPreparation
+					&& !hasStepPreparationBeenRequested(lessonContext.trackId, lessonContext.stepId)) {
+					try {
+						const result = await prepareNextStep(lessonContext.trackId, lessonContext.stepId)
+						if (result.status === 'accepted') pendingPreparation = result.pending
+					} catch {
+						// A tela da trilha reavalia a elegibilidade e oferece nova tentativa.
+					}
+				}
+				setPreparingNextStep(false)
 
 				const destination = lessonContext?.from ?? returnTo
 				if (lessonContext?.trackId && lessonContext.stepId

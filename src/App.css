@@ -642,6 +642,44 @@
   margin-top: 34px;
 }
 
+.quiz-result-stage-summary {
+  margin-top: 28px;
+  padding: 24px;
+  border: 1px solid #e6e8f6;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 3px 8px rgba(27, 39, 69, 0.04);
+  color: #25344d;
+}
+
+.quiz-result-stage-summary h2 {
+  margin: 0 0 14px;
+  font-size: 1.2rem;
+  letter-spacing: -0.03em;
+}
+
+.quiz-result-stage-summary__loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #596f8d;
+  font-size: 0.9rem;
+}
+
+.quiz-result-stage-summary__text {
+  margin: 0;
+  color: #424b5e;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.quiz-result-stage-summary__error p {
+  margin: 0 0 12px;
+  color: #8d3a3a;
+  line-height: 1.55;
+}
+
 .quiz-result-metrics {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

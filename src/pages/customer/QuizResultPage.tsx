@@ -33,6 +33,10 @@ export const QuizResultPage = () => {
 		status,
 		message,
 		canRetry,
+		summaryStatus,
+		stageSummary,
+		summaryMessage,
+		canRetrySummary,
 		result,
 		expandedMap,
 		allExpanded,
@@ -42,6 +46,7 @@ export const QuizResultPage = () => {
 		toggleAllQuestions,
 		handleAction,
 		retry,
+		retrySummary,
 	} = resultState
 	const hasReturned = useRef(false)
 	const requestedReturnTo = typeof routeState.returnTo === 'string' ? routeState.returnTo : null
@@ -89,7 +94,7 @@ export const QuizResultPage = () => {
 					{status === 'loading' && (
 						<section className="quiz-result-state" role="status">
 							<LoaderCircle className="quiz-result-state__spinner" aria-hidden="true" size={24} />
-							<p>Carregando o resultado de todos os quizzes da etapa...</p>
+							<p>Carregando os quizzes e preparando o sumário da etapa...</p>
 						</section>
 					)}
 
@@ -112,6 +117,25 @@ export const QuizResultPage = () => {
 
 							<section className="quiz-result-metrics-row" aria-label="Resumo do desempenho da etapa">
 								<QuizResultMetricGrid metrics={result.metrics} />
+							</section>
+
+							<section className="quiz-result-stage-summary" aria-labelledby="quiz-result-stage-summary-title">
+								<h2 id="quiz-result-stage-summary-title">Sumário da etapa</h2>
+								{summaryStatus === 'loading' && (
+									<div className="quiz-result-stage-summary__loading" role="status" aria-live="polite">
+										<LoaderCircle className="quiz-result-state__spinner" aria-hidden="true" size={21} />
+										<span>Estamos gerando o sumário da etapa. Isso pode levar alguns instantes.</span>
+									</div>
+								)}
+								{summaryStatus === 'success' && stageSummary && (
+									<p className="quiz-result-stage-summary__text">{stageSummary}</p>
+								)}
+								{summaryStatus === 'error' && (
+									<div className="quiz-result-stage-summary__error" role="alert">
+										<p>{summaryMessage}</p>
+										{canRetrySummary && <button type="button" className="quiz-result-action-bar__button is-outline" onClick={retrySummary}>Tentar gerar novamente</button>}
+									</div>
+								)}
 							</section>
 
 							<section className="quiz-result-review" aria-labelledby="quiz-result-review-title">

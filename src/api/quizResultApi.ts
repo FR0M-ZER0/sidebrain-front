@@ -20,6 +20,9 @@ export interface StepQuizResultData {
 	questions: StepQuizQuestionResult[]
 }
 
+const STEP_SUMMARY_TIMEOUT_MS = 90_000
+const STEP_SUMMARY_POLL_INTERVAL_MS = 1_500
+
 interface ApiAnswer {
 	text?: unknown
 	user_id?: unknown
@@ -138,4 +141,52 @@ export const getStepQuizResults = async (
 		completedLessonCount: lessons.filter(({ lesson }) => isCompleted(lesson.status)).length,
 		questions: questions.map((question, index) => ({ ...question, number: index + 1 })),
 	}
+}
+
+const summaryEndpoint = (trackId: string, stepId: string) =>
+	`/api/v1/tracks/${encodeURIComponent(trackId)}/steps/${encodeURIComponent(stepId)}/summary`
+
+const unwrapStepSummary = (response: unknown, stepId: string): string | null => {
+	let payload = response
+	while (isRecord(payload) && !('summary' in payload) && isRecord(payload.data)) {
+		payload = payload.data
+	}
+
+	if (!isRecord(payload) || payload.step_id !== stepId) {
+		throw new Error('A resposta do sumário da etapa está em um formato inválido.')
+	}
+	if (payload.summary === null || typeof payload.summary === 'string') return payload.summary
+	throw new Error('A API retornou um sumário da etapa em um formato inválido.')
+}
+
+export const generateStepSummary = async (trackId: string, stepId: string, signal?: AbortSignal) => {
+	await api.post<unknown>(summaryEndpoint(trackId, stepId), undefined, { signal, timeout: STEP_SUMMARY_TIMEOUT_MS })
+}
+
+export const getStepSummary = async (trackId: string, stepId: string, signal?: AbortSignal) => {
+	const { data } = await api.get<unknown>(summaryEndpoint(trackId, stepId), { signal, timeout: 15_000 })
+	return unwrapStepSummary(data, stepId)
+}
+
+export const generateAndPollStepSummary = async (
+	trackId: string,
+	stepId: string,
+	signal?: AbortSignal,
+): Promise<string> => {
+	const timeoutAt = Date.now() + STEP_SUMMARY_TIMEOUT_MS
+	await generateStepSummary(trackId, stepId, signal)
+
+	while (Date.now() < timeoutAt) {
+		if (signal?.aborted) {
+			const abortError = new Error('A busca do sumário foi cancelada.')
+			abortError.name = 'AbortError'
+			throw abortError
+		}
+
+		const summary = await getStepSummary(trackId, stepId, signal)
+		if (summary?.trim()) return summary
+		await new Promise((resolve) => setTimeout(resolve, STEP_SUMMARY_POLL_INTERVAL_MS))
+	}
+
+	throw new Error('O sumário da etapa ainda não ficou pronto. Tente novamente.')
 }

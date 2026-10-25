@@ -151,6 +151,33 @@ test('associa o ícone de cada missão ao critério retornado pela API', async (
 	assert.deepEqual(missions.map(({ criterion, icon }) => [criterion, icon]), expectedIcons)
 })
 
+test('aplica filtros no endpoint e reúne todas as páginas antes de agrupar as trilhas', async () => {
+	respond = ({ params }) => params.page === 1
+		? page([track('t1', [mission('m1', 's1')])], 1, 2)
+		: page([track('t1', [mission('m2', 's2')])], 2, 2)
+	const result = await getMissions({
+		trackId: 't1',
+		status: 'in_progress',
+		difficulty: 'hard',
+		criteria: 'complete_a_track',
+		q: 'SQL',
+		sort: 'oldest',
+	})
+	assert.equal(requests.length, 2)
+	assert.deepEqual(requests.map(({ params }) => params), [1, 2].map((pageNumber) => ({
+		status: 'in_progress',
+		track_id: 't1',
+		difficulty: 'hard',
+		criteria: 'complete_a_track',
+		q: 'SQL',
+		page_size: 100,
+		sort: 'oldest',
+		page: pageNumber,
+	})))
+	assert.deepEqual(result.map((group) => group.trackId), ['t1'])
+	assert.deepEqual(result[0].steps.flatMap((step) => step.missions.map((item) => item.id)), ['m1', 'm2'])
+})
+
 test('lê score/status do usuário sem converter percentual em contagens inventadas', async () => {
 	respond = () => page([track('t1', [
 		mission('idle', 's1', { mission_progresses: [] }),

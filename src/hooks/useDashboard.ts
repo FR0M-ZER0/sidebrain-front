@@ -12,7 +12,7 @@ export const useDashboard = () => {
 	const { user } = useAuth()
 	const loadTracks = useCallback((signal: AbortSignal) => getDashboardTracks(signal), [])
 	const tracks = useAsyncData(loadTracks)
-	const missions = useMissions(undefined, 'in_progress', 2)
+	const missions = useMissions({ status: 'in_progress', limit: 2 })
 	const badges = useBadges('done')
 	const recentBadges: DashboardBadge[] = getRecentBadges(badges.data ?? [])
 		.map((badge) => ({

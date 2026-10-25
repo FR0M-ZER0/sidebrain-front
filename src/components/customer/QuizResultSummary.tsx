@@ -6,18 +6,16 @@ interface QuizResultSummaryProps {
 }
 
 export const QuizResultSummary = ({ summary }: QuizResultSummaryProps) => {
-	const title = summary.scorePercent >= 90 ? 'Desempenho Impecável!' : summary.scorePercent >= 70 ? 'Muito bom trabalho!' : 'Parabéns por concluir!'
-	const subtitle = summary.scorePercent >= 90
-		? 'Você dominou todos os conceitos avaliados nesta sessão de microaprendizagem.'
-		: 'Seu desempenho foi sólido e você já tem uma base forte para continuar evoluindo.'
+	const title = summary.scorePercent === 100 ? 'Desempenho impecável!' : summary.scorePercent > 0 ? 'Bom trabalho!' : 'Etapa concluída!'
+	const subtitle = `${summary.stepName} · ${summary.trackName}`
 	const ringProgress = `${Math.min(summary.scorePercent, 100)}%`
 	const percentageText = `${summary.correctAnswers} de ${summary.totalQuestions} corretas`
 
 	return (
-		<section className="quiz-result-summary" aria-label="Resumo do resultado do quiz">
+		<section className="quiz-result-summary" aria-label="Resumo do resultado da etapa">
 			<div className="quiz-result-summary__badge">
 				<Trophy aria-hidden="true" size={17} />
-				Módulo Concluído com Sucesso
+				Etapa concluída
 			</div>
 			<h1>{title} <span aria-hidden="true">🌟</span></h1>
 			<p>{subtitle}</p>

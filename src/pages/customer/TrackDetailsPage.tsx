@@ -48,6 +48,7 @@ const ModuleCard = ({ module, index, track }: { module: Module; index: number; t
 			trackId: track.id,
 			stepId: module.id,
 			lessonPosition: lessonIndex + 1,
+			stepLessonCount: module.totalLessons,
 			currentLesson: lessonOffset + lessonIndex + 1,
 			totalLessons: track.totalLessons,
 			trailCompletionPercentage: track.progressPercentage,

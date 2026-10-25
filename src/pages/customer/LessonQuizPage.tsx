@@ -111,6 +111,19 @@ export const LessonQuizPage = () => {
 				}
 
 				const destination = lessonContext?.from ?? returnTo
+				if (lessonContext?.trackId && lessonContext.stepId
+					&& lessonContext.stepLessonCount === lessonContext.lessonPosition) {
+					const searchParams = new URLSearchParams({
+						trackId: lessonContext.trackId,
+						stepId: lessonContext.stepId,
+					})
+					navigate(`/quiz-result?${searchParams.toString()}`, {
+						replace: true,
+						state: { returnTo: destination, pendingStepPreparation: pendingPreparation ?? undefined },
+					})
+					return
+				}
+
 				navigate(destination, {
 					replace: true,
 					state: pendingPreparation ? { pendingStepPreparation: pendingPreparation } : undefined,

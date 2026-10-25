@@ -1,130 +1,208 @@
-import { useMemo, useState } from 'react'
-import type { ContinuationActionId, QuizResultViewModel } from '../types/quizResult'
+import { useCallback, useEffect, useState } from 'react'
+import { getStepQuizResults, type QuizResultAnswerRate, type StepQuizResultData } from '../api/quizResultApi'
+import { useAuth } from './useAuth'
+import type { ContinuationActionId, QuizQuestionReview, QuizResultViewModel } from '../types/quizResult'
 
-const buildMockQuizResult = (): QuizResultViewModel => ({
-	moduleName: 'Microaprendizagem em Finanças Corporativas',
-	attemptLabel: 'Sessão concluída',
-	scorePercent: 100,
-	correctAnswers: 5,
-	totalQuestions: 5,
-	xpEarned: 80,
-	precision: 100,
-	elapsedTime: '2m 15s',
-	studyStreakDays: 12,
-	status: 'success',
-	metrics: [
-		{ id: 'xp', label: 'XP ganho', value: '+80 XP', detail: 'Bônus de precisão incluso', tone: 'warning' },
-		{ id: 'precision', label: 'Precisão', value: '100%', detail: 'Meta do módulo: 80%', tone: 'success' },
-		{ id: 'time', label: 'Tempo gasto', value: '2m 15s', detail: '42s mais rápido que a média', tone: 'info' },
-	],
-	questions: [
-		{
-			id: 'question-1',
-			number: 1,
-			title: 'Cálculo de Margem Operacional',
-			category: 'Finanças Corporativas',
-			duration: '18 segundos',
-			status: 'correct',
-			prompt: 'Uma empresa registrou receita líquida de R$ 500 mil e lucro operacional de R$ 75 mil. Qual foi sua margem operacional?',
-			userAnswer: '15% (R$ 75 mil ÷ R$ 500 mil)',
-			correctAnswer: '15%',
-			explanation: 'A margem operacional é o lucro operacional dividido pela receita líquida: R$ 75 mil ÷ R$ 500 mil = 15%.',
-		},
-		{
-			id: 'question-2',
-			number: 2,
-			title: 'Interpretação do EBITDA / LAJIDA',
-			category: 'Demonstrações Contábeis',
-			duration: '31 segundos',
-			status: 'correct',
-			prompt: 'O que o EBITDA, também chamado de LAJIDA, procura representar na análise de uma empresa?',
-			userAnswer: 'O resultado antes de juros, impostos, depreciação e amortização',
-			correctAnswer: 'O resultado antes de juros, impostos, depreciação e amortização',
-			explanation: 'O EBITDA/LAJIDA evidencia o resultado antes desses efeitos financeiros, tributários e de depreciação e amortização.',
-		},
-		{
-			id: 'question-3',
-			number: 3,
-			title: 'Ciclo Financeiro e Capital de Giro',
-			category: 'Gestão de Tesouraria',
-			duration: '25 segundos',
-			status: 'correct',
-			prompt: 'Como o ciclo financeiro se relaciona com a necessidade de capital de giro de uma empresa?',
-			userAnswer: 'Ele mede o intervalo entre o pagamento a fornecedores e o recebimento das vendas',
-			correctAnswer: 'Ele mede o intervalo entre o pagamento a fornecedores e o recebimento das vendas',
-			explanation: 'Quanto maior o intervalo em que os recursos ficam comprometidos no ciclo, maior tende a ser a necessidade de financiar o capital de giro.',
-		},
-		{
-			id: 'question-4',
-			number: 4,
-			title: 'Análise DuPont: Decomposição do ROE',
-			category: 'Estrutura de Capital',
-			duration: '39 segundos',
-			status: 'correct',
-			prompt: 'Quais componentes são combinados na análise DuPont tradicional para decompor o ROE?',
-			userAnswer: 'Margem líquida × giro dos ativos × multiplicador de capital próprio',
-			correctAnswer: 'Margem líquida × giro dos ativos × multiplicador de capital próprio',
-			explanation: 'A decomposição evidencia como rentabilidade, eficiência no uso dos ativos e alavancagem se combinam para formar o retorno sobre o patrimônio líquido.',
-		},
-		{
-			id: 'question-5',
-			number: 5,
-			title: 'WACC e Custo Médio Ponderado',
-			category: 'Valuation & Risco',
-			duration: '22 segundos',
-			status: 'correct',
-			prompt: 'Como o WACC considera as diferentes fontes de financiamento de uma empresa?',
-			userAnswer: 'Pondera o custo de cada fonte pela sua participação na estrutura de capital',
-			correctAnswer: 'Pondera o custo de cada fonte pela sua participação na estrutura de capital',
-			explanation: 'O custo médio ponderado combina os custos de capital próprio e de terceiros segundo seus pesos na estrutura de financiamento.',
-		},
-	],
-	actions: [
-		{ id: 'retry', label: 'Refazer Quiz' },
-		{ id: 'feedback', label: 'Ver Feedback Detalhado da IA' },
-	],
-	feedback: {
-		highlight: '100% de acertos na sessão.',
-		positivePoint: 'Boa compreensão dos conceitos avaliados.',
-		recommendation: 'Avance para o próximo módulo ou revise os conceitos em alguns dias.',
-	},
-})
+type QuizResultLoadState =
+	| { requestKey: string; status: 'error'; message: string }
+	| { requestKey: string; status: 'success'; result: QuizResultViewModel }
 
-export const useQuizResult = () => {
-	const result = useMemo(() => buildMockQuizResult(), [])
-	const [expandedMap, setExpandedMap] = useState<Record<string, boolean>>(() =>
-		Object.fromEntries(result.questions.map((question) => [question.id, false])),
-	)
-	const [showFeedback, setShowFeedback] = useState(false)
-	const [showRetryConfirmation, setShowRetryConfirmation] = useState(false)
-	const allExpanded = result.questions.length > 0 && result.questions.every((question) => expandedMap[question.id] ?? false)
+interface QuizResultInteractionState {
+	requestKey: string
+	expandedMap: Record<string, boolean>
+	showFeedback: boolean
+	showRetryConfirmation: boolean
+}
+
+const evaluationLabels: Record<QuizResultAnswerRate, string> = {
+	perfect: 'Resposta perfeita',
+	good: 'Boa resposta',
+	almost_got_it: 'Quase lá',
+	wrong: 'Precisa revisar',
+}
+
+const getQuestionTitle = (question: string) =>
+	question.length > 110 ? `${question.slice(0, 107).trimEnd()}…` : question
+
+const toQuestionReview = (question: StepQuizResultData['questions'][number]): QuizQuestionReview => {
+	const isCorrect = question.rate === 'perfect' || question.rate === 'good'
+	const status = question.answerText === undefined
+		? 'unanswered'
+		: question.rate === undefined
+			? 'ungraded'
+			: isCorrect ? 'correct' : 'incorrect'
+
+	return {
+		id: question.id,
+		number: question.number,
+		title: getQuestionTitle(question.question),
+		category: question.lessonTitle,
+		status,
+		prompt: question.question,
+		userAnswer: question.answerText ?? 'Nenhuma resposta registrada.',
+		evaluation: question.rate ? evaluationLabels[question.rate] : 'Avaliação indisponível',
+		explanation: question.reason
+			?? (question.answerText === undefined
+				? 'A API não retornou uma resposta para este quiz.'
+				: 'A API não retornou a justificativa desta avaliação.'),
+	}
+}
+
+const toQuizResultViewModel = (data: StepQuizResultData): QuizResultViewModel => {
+	const questions = data.questions.map(toQuestionReview)
+	const totalQuestions = questions.length
+	const correctAnswers = questions.filter((question) => question.status === 'correct').length
+	const answeredQuestions = questions.filter((question) => question.status !== 'unanswered').length
+	const unansweredQuestions = totalQuestions - answeredQuestions
+	const scorePercent = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0
+	const needsReview = questions.filter((question) => question.status === 'incorrect' || question.status === 'ungraded').length
+	const pluralize = (count: number, singular: string, plural: string) => `${count} ${count === 1 ? singular : plural}`
+
+	return {
+		trackName: data.trackTitle,
+		stepName: data.stepTitle,
+		scorePercent,
+		correctAnswers,
+		totalQuestions,
+		answeredQuestions,
+		completedLessons: data.completedLessonCount,
+		totalLessons: data.lessonCount,
+		metrics: [
+			{
+				id: 'accuracy',
+				label: 'Aproveitamento da etapa',
+				value: `${scorePercent}%`,
+				detail: `${correctAnswers} de ${totalQuestions} questões corretas`,
+				tone: scorePercent === 100 ? 'success' : scorePercent > 0 ? 'warning' : 'neutral',
+			},
+			{
+				id: 'answered',
+				label: 'Quizzes respondidos',
+				value: `${answeredQuestions} / ${totalQuestions}`,
+				detail: `${Math.max(totalQuestions - answeredQuestions, 0)} sem resposta`,
+				tone: 'info',
+			},
+			{
+				id: 'lessons',
+				label: 'Lições concluídas',
+				value: `${data.completedLessonCount} / ${data.lessonCount}`,
+				detail: 'Progresso registrado na etapa',
+				tone: data.completedLessonCount === data.lessonCount ? 'success' : 'warning',
+			},
+		],
+		questions,
+		actions: [
+			{ id: 'retry', label: 'Refazer Quiz' },
+			{ id: 'feedback', label: 'Ver Feedback da Etapa' },
+		],
+		feedback: {
+			highlight: `${correctAnswers} de ${totalQuestions} quizzes foram avaliados como respostas corretas (${scorePercent}%).`,
+			positivePoint: `${data.completedLessonCount} de ${data.lessonCount} lições da etapa estão concluídas.`,
+			recommendation: totalQuestions === 0
+				? 'Esta etapa ainda não possui quizzes ativos para revisar.'
+				: unansweredQuestions > 0
+					? `Ainda há ${pluralize(unansweredQuestions, 'quiz sem resposta registrada', 'quizzes sem resposta registrada')} nesta etapa.`
+					: needsReview > 0
+						? `Revise as justificativas das ${pluralize(needsReview, 'questão que precisa de revisão', 'questões que precisam de revisão')}.`
+						: 'Continue avançando; todas as respostas avaliadas nesta etapa estão corretas.',
+		},
+	}
+}
+
+export const useQuizResult = ({ trackId, stepId }: { trackId: string | null; stepId: string | null }) => {
+	const { user } = useAuth()
+	const userId = user?.id ?? null
+	const [attempt, setAttempt] = useState(0)
+	const [loadedState, setLoadedState] = useState<QuizResultLoadState | null>(null)
+	const [interactionState, setInteractionState] = useState<QuizResultInteractionState | null>(null)
+	const requestKey = `${trackId ?? ''}:${stepId ?? ''}:${userId ?? ''}:${attempt}`
+
+	useEffect(() => {
+		if (!trackId || !stepId || !userId) return
+		let isActive = true
+		getStepQuizResults(trackId, stepId, userId)
+			.then((data) => {
+				if (isActive) setLoadedState({ requestKey, status: 'success', result: toQuizResultViewModel(data) })
+			})
+			.catch((error: unknown) => {
+				if (isActive) {
+					setLoadedState({
+						requestKey,
+						status: 'error',
+						message: error instanceof Error ? error.message : 'Não foi possível carregar o resultado da etapa.',
+					})
+				}
+			})
+
+		return () => { isActive = false }
+	}, [requestKey, stepId, trackId, userId])
+
+	const loadState = !trackId || !stepId
+		? { requestKey, status: 'error' as const, message: 'Não foi possível identificar a etapa que você concluiu.' }
+		: !userId
+			? { requestKey, status: 'error' as const, message: 'Não foi possível identificar sua conta para carregar o resultado.' }
+			: loadedState?.requestKey === requestKey
+				? loadedState
+				: { requestKey, status: 'loading' as const }
+	const result = loadState.status === 'success' ? loadState.result : null
+	const defaultInteractionState: QuizResultInteractionState = {
+		requestKey,
+		expandedMap: Object.fromEntries(result?.questions.map((question) => [question.id, false]) ?? []),
+		showFeedback: false,
+		showRetryConfirmation: false,
+	}
+	const interactions = interactionState?.requestKey === requestKey ? interactionState : defaultInteractionState
+	const { expandedMap, showFeedback, showRetryConfirmation } = interactions
+	const allExpanded = Boolean(result && result.questions.length > 0
+		&& result.questions.every((question) => expandedMap[question.id] ?? false))
 
 	const toggleQuestion = (questionId: string) => {
-		setExpandedMap((current) => ({
-			...current,
-			[questionId]: !(current[questionId] ?? false),
-		}))
+		setInteractionState((current) => {
+			const currentInteractions = current?.requestKey === requestKey ? current : defaultInteractionState
+			return {
+				...currentInteractions,
+				expandedMap: {
+					...currentInteractions.expandedMap,
+					[questionId]: !(currentInteractions.expandedMap[questionId] ?? false),
+				},
+			}
+		})
 	}
 
 	const toggleAllQuestions = () => {
+		if (!result) return
 		const nextState = !allExpanded
-		setExpandedMap(Object.fromEntries(result.questions.map((question) => [question.id, nextState])))
+		setInteractionState((current) => ({
+			...(current?.requestKey === requestKey ? current : defaultInteractionState),
+			expandedMap: Object.fromEntries(result.questions.map((question) => [question.id, nextState])),
+		}))
 	}
 
 	const handleAction = (actionId: ContinuationActionId) => {
 		if (actionId === 'retry') {
-			setShowRetryConfirmation(true)
-			setShowFeedback(false)
+			setInteractionState((current) => ({
+				...(current?.requestKey === requestKey ? current : defaultInteractionState),
+				showRetryConfirmation: true,
+				showFeedback: false,
+			}))
 			return
 		}
 
 		if (actionId === 'feedback') {
-			setShowFeedback(true)
-			setShowRetryConfirmation(false)
+			setInteractionState((current) => ({
+				...(current?.requestKey === requestKey ? current : defaultInteractionState),
+				showFeedback: true,
+				showRetryConfirmation: false,
+			}))
 		}
 	}
 
+	const retry = useCallback(() => setAttempt((current) => current + 1), [])
+
 	return {
+		status: loadState.status,
+		message: loadState.status === 'error' ? loadState.message : null,
+		canRetry: Boolean(trackId && stepId && userId),
 		result,
 		expandedMap,
 		allExpanded,
@@ -133,5 +211,6 @@ export const useQuizResult = () => {
 		toggleQuestion,
 		toggleAllQuestions,
 		handleAction,
+		retry,
 	}
 }

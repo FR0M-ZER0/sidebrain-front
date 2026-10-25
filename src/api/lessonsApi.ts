@@ -50,6 +50,7 @@ export interface LessonNavigationContext {
 	trackId?: string
 	stepId?: string
 	lessonPosition?: number
+	stepLessonCount?: number
 	pendingStepPreparation?: PendingStepPreparation
 	currentLesson: number
 	totalLessons: number

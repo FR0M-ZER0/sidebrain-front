@@ -9,8 +9,9 @@ interface QuizResultQuestionItemProps {
 
 const questionStatusLabel: Record<QuizQuestionReview['status'], string> = {
 	correct: 'Acertou',
-	incorrect: 'Errou',
+	incorrect: 'Precisa revisar',
 	unanswered: 'Sem resposta',
+	ungraded: 'Sem avaliação',
 }
 
 export const QuizResultQuestionItem = ({ question, isExpanded, onToggle }: QuizResultQuestionItemProps) => {
@@ -27,7 +28,7 @@ export const QuizResultQuestionItem = ({ question, isExpanded, onToggle }: QuizR
 					<div className="quiz-result-question__details">
 						<span>{question.category ?? 'Sem categoria'}</span>
 						<span>•</span>
-						<span>{question.duration ?? 'Sem tempo'}</span>
+						<span>{question.duration ?? 'Tempo não informado'}</span>
 					</div>
 				</div>
 				<div className="quiz-result-question__right">
@@ -59,8 +60,8 @@ export const QuizResultQuestionItem = ({ question, isExpanded, onToggle }: QuizR
 						<strong>{question.userAnswer}</strong>
 					</div>
 					<div className="quiz-result-question__row">
-						<span className="quiz-result-question__label">Resposta correta</span>
-						<strong>{question.correctAnswer}</strong>
+						<span className="quiz-result-question__label">Avaliação recebida</span>
+						<strong>{question.evaluation}</strong>
 					</div>
 					<div className="quiz-result-question__row">
 						<span className="quiz-result-question__label">Explicação</span>

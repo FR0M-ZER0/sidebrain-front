@@ -1,90 +1,12 @@
-import {
-	Award,
-	BarChart,
-	Binary,
-	BookOpen,
-	BookOpenCheck,
-	Bot,
-	BrainCircuit,
-	Calendar,
-	Check,
-	CheckCircle,
-	Clock,
-	Code,
-	Compass,
-	Cpu,
-	Crown,
-	Diamond,
-	Eye,
-	Flame,
-	GitFork,
-	Grid,
-	HelpCircle,
-	Hourglass,
-	Landmark,
-	Layers,
-	Lock,
-	MessageSquare,
-	Moon,
-	Network,
-	Percent,
-	Ruler,
-	Shield,
-	Sigma,
-	Sparkles,
-	Sunrise,
-	Target,
-	Timer,
-	TrendingUp,
-	Zap,
-} from 'lucide-react'
+import { Check, Lock } from 'lucide-react'
 import type { Badge, BadgeRarity } from '../../../types/missions'
+import { GamificationCriterionIcon } from '../../general/GamificationCriterionIcon'
 
 export interface BadgeItemCardProps {
 	badge: Badge
 }
 
 export const BadgeItemCard = ({ badge }: BadgeItemCardProps) => {
-	const iconMap = {
-		TrendingUp,
-		Shield,
-		Sunrise,
-		Timer,
-		Clock,
-		Flame,
-		Calendar,
-		Hourglass,
-		Moon,
-		Zap,
-		Landmark,
-		Ruler,
-		Grid,
-		BookOpenCheck,
-		CheckCircle,
-		BarChart,
-		Network,
-		Code,
-		Diamond,
-		MessageSquare,
-		Layers,
-		Sparkles,
-		Cpu,
-		Bot,
-		Target,
-		BrainCircuit,
-		Crown,
-		Award,
-		BookOpen,
-		Binary,
-		GitFork,
-		Sigma,
-		Compass,
-		Percent,
-		Eye,
-		HelpCircle,
-	}
-
-	const Icon = iconMap[badge.icon as keyof typeof iconMap] ?? Award
 	const isUnlocked = badge.status === 'unlocked'
 	const isInProgress = badge.status === 'in_progress'
 
@@ -130,7 +52,7 @@ export const BadgeItemCard = ({ badge }: BadgeItemCardProps) => {
 						<div
 							className={`flex size-12 items-center justify-center rounded-2xl ${getIconContainerStyle()}`}
 						>
-							<Icon size={22} aria-hidden="true" />
+							<GamificationCriterionIcon kind="badge" criterion={badge.categoryId} fallbackIcon={badge.icon} size={22} />
 						</div>
 
 						{/* Selo verde de verificação quando desbloqueado */}

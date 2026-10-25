@@ -68,6 +68,7 @@ export const useUserProfile = () => {
 		title: badge.name,
 		description: badge.description,
 		rarity: badge.rarity,
+		criterion: badge.categoryId,
 		iconType: badge.icon,
 		badgeProgress: badge.progressPercent,
 		unlockedAt: badge.unlockedAt,

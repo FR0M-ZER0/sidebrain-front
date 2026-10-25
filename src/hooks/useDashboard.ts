@@ -22,7 +22,7 @@ export const useDashboard = () => {
 			descricao: badge.description,
 			estado: 'desbloqueado',
 			progresso: badge.progressPercent ?? 100,
-			icone: badge.icon.toLowerCase(),
+			criterio: badge.categoryId,
 			conquistadoEm: badge.unlockedAt,
 		}))
 	const currentMissions: DashboardMission[] = (missions.data ?? [])

@@ -18,7 +18,7 @@ export interface DashboardBadge {
   descricao?: string
   estado: DashboardBadgeState
   progresso: number
-  icone: string
+  criterio: string
   conquistadoEm?: string
 }
 

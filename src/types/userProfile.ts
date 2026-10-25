@@ -32,6 +32,7 @@ export interface ProfileBadge {
 	title: string
 	description?: string
 	rarity: BadgeRarity
+	criterion: string
 	iconType: string
 	badgeProgress?: number
 	unlockedAt?: string

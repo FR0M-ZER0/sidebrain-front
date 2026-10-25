@@ -1,5 +1,5 @@
-import { BookOpen, Globe, Zap } from 'lucide-react'
 import type { BadgeFilterOption, BadgeFilterType, CategoryWithBadges } from '../../../types/missions'
+import { GamificationCriterionIcon } from '../../general/GamificationCriterionIcon'
 import { BadgeItemCard } from './BadgeItemCard'
 
 export interface BadgesShowcaseProps {
@@ -15,19 +15,6 @@ export const BadgesShowcase = ({
 	onSelectFilter,
 	categoriesWithBadges,
 }: BadgesShowcaseProps) => {
-	const getCategoryIcon = (iconName: string) => {
-		if (iconName === 'Zap') {
-			return <Zap size={16} className="text-amber-500 shrink-0" aria-hidden="true" />
-		}
-		if (iconName === 'BookOpen') {
-			return <BookOpen size={16} className="text-[#075fc7] shrink-0" aria-hidden="true" />
-		}
-		if (iconName === 'Globe') {
-			return <Globe size={16} className="text-sky-500 shrink-0" aria-hidden="true" />
-		}
-		return <Zap size={16} className="text-amber-500 shrink-0" aria-hidden="true" />
-	}
-
 	return (
 		<section id="badges" className="flex flex-col gap-6" aria-labelledby="showcase-title">
 			{/* Topo da vitrine: Título/Subtítulo & Tabs de filtro */}
@@ -75,7 +62,7 @@ export const BadgesShowcase = ({
 					<div key={category.id} className="flex flex-col gap-3.5">
 						{/* Cabeçalho da Categoria */}
 						<div className="flex items-center gap-2">
-							{getCategoryIcon(category.icon)}
+							<GamificationCriterionIcon kind="badge" criterion={category.id} fallbackIcon={category.icon} size={16} className="shrink-0" />
 							<h3 className="text-sm font-bold text-slate-900">
 								{category.title}
 							</h3>

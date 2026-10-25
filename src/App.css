@@ -473,6 +473,7 @@
 
 .quiz-result-page {
   flex: 1;
+  min-height: 0;
   width: 100%;
   background: #faf8ff;
   color: #151d31;

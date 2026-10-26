@@ -1,5 +1,6 @@
 import { Check, ChevronDown, ChevronUp } from 'lucide-react'
 import type { QuizQuestionReview } from '../../types/quizResult'
+import { MarkdownContent } from '../general/MarkdownContent'
 
 interface QuizResultQuestionItemProps {
 	question: QuizQuestionReview
@@ -57,7 +58,7 @@ export const QuizResultQuestionItem = ({ question, isExpanded, onToggle }: QuizR
 					</div>
 					<div className="quiz-result-question__row">
 						<span className="quiz-result-question__label">Resposta selecionada</span>
-						<strong>{question.userAnswer}</strong>
+						<MarkdownContent content={question.userAnswer} className="quiz-result-question__answer-markdown" />
 					</div>
 					<div className="quiz-result-question__row">
 						<span className="quiz-result-question__label">Avaliação recebida</span>

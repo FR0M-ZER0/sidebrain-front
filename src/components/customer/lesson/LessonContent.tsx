@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import type { LessonContentBlock, LessonProgressData } from '../../../api/lessonsApi'
+import { MarkdownContent } from '../../general/MarkdownContent'
 import { LessonProgress } from './LessonProgress'
 
 interface LessonContentProps {
@@ -44,6 +45,9 @@ export const LessonImage = ({ url, altText, caption }: LessonImageProps) => {
 
 export const LessonContent = ({ title, blocks, progress, onProgressChange }: LessonContentProps) => {
 	const articleRef = useRef<HTMLElement>(null)
+	const contentRef = useRef<HTMLDivElement>(null)
+	const [markdownRendered, setMarkdownRendered] = useState(false)
+	const hasMarkdown = blocks.some((block) => block.type === 'paragraph' && Boolean(block.text.trim()))
 	const reportProgress = useCallback((article: HTMLElement) => {
 		const scrollableHeight = article.scrollHeight - article.clientHeight
 		const progressPercent = scrollableHeight <= 0
@@ -51,10 +55,19 @@ export const LessonContent = ({ title, blocks, progress, onProgressChange }: Les
 			: Math.min(100, Math.round((article.scrollTop / scrollableHeight) * 100))
 		onProgressChange?.(progressPercent)
 	}, [onProgressChange])
+	const markMarkdownRendered = useCallback(() => setMarkdownRendered(true), [])
 
 	useEffect(() => {
-		if (articleRef.current) reportProgress(articleRef.current)
-	}, [blocks, reportProgress, title])
+		if (hasMarkdown && !markdownRendered) return
+		const article = articleRef.current
+		const content = contentRef.current
+		if (!article || !content) return
+
+		reportProgress(article)
+		const observer = new ResizeObserver(() => reportProgress(article))
+		observer.observe(content)
+		return () => observer.disconnect()
+	}, [blocks, hasMarkdown, markdownRendered, reportProgress, title])
 
 	return (
 		<article
@@ -66,7 +79,7 @@ export const LessonContent = ({ title, blocks, progress, onProgressChange }: Les
 			<h1 className="mb-8 text-center text-4xl font-bold leading-tight tracking-[-0.04em] text-foreground sm:mb-10 sm:text-5xl lg:text-6xl">
 				{title}
 			</h1>
-			<div className="mx-auto max-w-5xl">
+			<div ref={contentRef} className="mx-auto max-w-5xl">
 				{blocks.map((block) => {
 					if (block.type === 'image') {
 						return <LessonImage key={block.id} url={block.url} altText={block.altText} caption={block.caption} />
@@ -76,11 +89,7 @@ export const LessonContent = ({ title, blocks, progress, onProgressChange }: Les
 						return null
 					}
 
-					return (
-						<p key={block.id} className="mb-5 text-lg leading-[1.8] text-foreground sm:text-xl">
-							{block.text}
-						</p>
-					)
+					return <MarkdownContent key={block.id} content={block.text} className="lesson-markdown text-lg leading-[1.8] text-foreground sm:text-xl" onRender={markMarkdownRendered} />
 				})}
 			</div>
 		</article>

@@ -16,7 +16,6 @@ type StepSummaryState = StepSummaryLoadState | { requestKey: string; status: 'lo
 interface QuizResultInteractionState {
 	requestKey: string
 	expandedMap: Record<string, boolean>
-	showFeedback: boolean
 	showRetryConfirmation: boolean
 }
 
@@ -59,10 +58,7 @@ const toQuizResultViewModel = (data: StepQuizResultData): QuizResultViewModel =>
 	const totalQuestions = questions.length
 	const correctAnswers = questions.filter((question) => question.status === 'correct').length
 	const answeredQuestions = questions.filter((question) => question.status !== 'unanswered').length
-	const unansweredQuestions = totalQuestions - answeredQuestions
 	const scorePercent = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0
-	const needsReview = questions.filter((question) => question.status === 'incorrect' || question.status === 'ungraded').length
-	const pluralize = (count: number, singular: string, plural: string) => `${count} ${count === 1 ? singular : plural}`
 
 	return {
 		trackName: data.trackTitle,
@@ -99,19 +95,8 @@ const toQuizResultViewModel = (data: StepQuizResultData): QuizResultViewModel =>
 		questions,
 		actions: [
 			{ id: 'retry', label: 'Refazer Quiz' },
-			{ id: 'feedback', label: 'Ver Feedback da Etapa' },
+			{ id: 'complete_step', label: 'Concluir etapa' },
 		],
-		feedback: {
-			highlight: `${correctAnswers} de ${totalQuestions} quizzes foram avaliados como respostas corretas (${scorePercent}%).`,
-			positivePoint: `${data.completedLessonCount} de ${data.lessonCount} lições da etapa estão concluídas.`,
-			recommendation: totalQuestions === 0
-				? 'Esta etapa ainda não possui quizzes ativos para revisar.'
-				: unansweredQuestions > 0
-					? `Ainda há ${pluralize(unansweredQuestions, 'quiz sem resposta registrada', 'quizzes sem resposta registrada')} nesta etapa.`
-					: needsReview > 0
-						? `Revise as justificativas das ${pluralize(needsReview, 'questão que precisa de revisão', 'questões que precisam de revisão')}.`
-						: 'Continue avançando; todas as respostas avaliadas nesta etapa estão corretas.',
-		},
 	}
 }
 
@@ -199,11 +184,10 @@ export const useQuizResult = ({ trackId, stepId }: { trackId: string | null; ste
 	const defaultInteractionState: QuizResultInteractionState = {
 		requestKey,
 		expandedMap: Object.fromEntries(result?.questions.map((question) => [question.id, false]) ?? []),
-		showFeedback: false,
 		showRetryConfirmation: false,
 	}
 	const interactions = interactionState?.requestKey === requestKey ? interactionState : defaultInteractionState
-	const { expandedMap, showFeedback, showRetryConfirmation } = interactions
+	const { expandedMap, showRetryConfirmation } = interactions
 	const allExpanded = Boolean(result && result.questions.length > 0
 		&& result.questions.every((question) => expandedMap[question.id] ?? false))
 
@@ -234,16 +218,6 @@ export const useQuizResult = ({ trackId, stepId }: { trackId: string | null; ste
 			setInteractionState((current) => ({
 				...(current?.requestKey === requestKey ? current : defaultInteractionState),
 				showRetryConfirmation: true,
-				showFeedback: false,
-			}))
-			return
-		}
-
-		if (actionId === 'feedback') {
-			setInteractionState((current) => ({
-				...(current?.requestKey === requestKey ? current : defaultInteractionState),
-				showFeedback: true,
-				showRetryConfirmation: false,
 			}))
 		}
 	}
@@ -261,7 +235,6 @@ export const useQuizResult = ({ trackId, stepId }: { trackId: string | null; ste
 		result,
 		expandedMap,
 		allExpanded,
-		showFeedback,
 		showRetryConfirmation,
 		toggleQuestion,
 		toggleAllQuestions,

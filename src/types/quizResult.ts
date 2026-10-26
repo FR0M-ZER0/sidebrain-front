@@ -2,7 +2,7 @@ export type MetricTone = 'neutral' | 'success' | 'warning' | 'info'
 
 export type QuestionStatus = 'correct' | 'incorrect' | 'unanswered' | 'ungraded'
 
-export type ContinuationActionId = 'retry' | 'feedback'
+export type ContinuationActionId = 'retry' | 'complete_step'
 
 export interface MetricCard {
 	id: string
@@ -31,12 +31,6 @@ export interface ContinuationAction {
 	label: string
 }
 
-export interface DetailedFeedback {
-	highlight: string
-	positivePoint: string
-	recommendation: string
-}
-
 export interface QuizResultViewModel {
 	trackName: string
 	stepName: string
@@ -49,5 +43,4 @@ export interface QuizResultViewModel {
 	metrics: MetricCard[]
 	questions: QuizQuestionReview[]
 	actions: ContinuationAction[]
-	feedback: DetailedFeedback
 }

@@ -40,7 +40,6 @@ export const QuizResultPage = () => {
 		result,
 		expandedMap,
 		allExpanded,
-		showFeedback,
 		showRetryConfirmation,
 		toggleQuestion,
 		toggleAllQuestions,
@@ -74,6 +73,25 @@ export const QuizResultPage = () => {
 
 		navigate('/', { replace: true })
 	}, [location.key, navigate, pendingPreparation, returnTo])
+	const completeStep = useCallback(() => {
+		if (!trackId) {
+			returnToPreviousPage()
+			return
+		}
+		if (hasReturned.current) return
+		hasReturned.current = true
+		navigate(`/trails/${encodeURIComponent(trackId)}`, {
+			replace: true,
+			state: pendingPreparation ? { pendingStepPreparation: pendingPreparation } : undefined,
+		})
+	}, [navigate, pendingPreparation, returnToPreviousPage, trackId])
+	const handleContinuationAction = useCallback((actionId: Parameters<typeof handleAction>[0]) => {
+		if (actionId === 'complete_step') {
+			completeStep()
+			return
+		}
+		handleAction(actionId)
+	}, [completeStep, handleAction])
 
 	useEffect(() => {
 		const handleEscape = (event: KeyboardEvent) => {
@@ -102,10 +120,9 @@ export const QuizResultPage = () => {
 						<section className="quiz-result-state" role="alert">
 							<h1>Não foi possível carregar o resultado</h1>
 							<p>{message}</p>
-							<div className="quiz-result-state__actions">
-								{canRetry && <button type="button" className="quiz-result-action-bar__button is-primary" onClick={retry}>Tentar novamente</button>}
-								<button type="button" className="quiz-result-action-bar__button is-secondary" onClick={returnToPreviousPage}>Voltar para a trilha</button>
-							</div>
+							{canRetry && <div className="quiz-result-state__actions">
+								<button type="button" className="quiz-result-action-bar__button is-primary" onClick={retry}>Tentar novamente</button>
+							</div>}
 						</section>
 					)}
 
@@ -168,17 +185,8 @@ export const QuizResultPage = () => {
 							</section>
 
 							<div className="quiz-result-actions-footer">
-								<QuizResultActionBar actions={result.actions} onAction={handleAction} onBack={returnToPreviousPage} />
+								<QuizResultActionBar actions={result.actions} onAction={handleContinuationAction} />
 							</div>
-
-							{showFeedback && (
-								<section className="quiz-result-feedback" aria-labelledby="quiz-result-feedback-title" role="status">
-									<h2 id="quiz-result-feedback-title">Feedback da etapa</h2>
-									<p><strong>Desempenho:</strong> {result.feedback.highlight}</p>
-									<p><strong>Conclusão:</strong> {result.feedback.positivePoint}</p>
-									<p><strong>Recomendação:</strong> {result.feedback.recommendation}</p>
-								</section>
-							)}
 
 							{showRetryConfirmation && (
 								<p className="quiz-result-retry-confirmation" role="status">

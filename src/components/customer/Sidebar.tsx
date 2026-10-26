@@ -1,4 +1,4 @@
-import { Home, LogOut, Route, Target, Trophy, UserRound } from 'lucide-react'
+import { Home, LogOut, Plus, Route, Target, Trophy, UserRound } from 'lucide-react'
 import { NavLink, useLocation } from 'react-router'
 import sidebrainLogo from '../../assets/sidebrain-logo.svg'
 import { useAuth } from '../../hooks/useAuth'
@@ -12,7 +12,7 @@ export const Sidebar = ({ activeItem }: SidebarProps = {}) => {
 	const { logout, user } = useAuth()
 	const menuItems = [
 		{ label: 'Início', icon: Home, to: '/' },
-		{ label: 'Criar trilha', icon: Route, to: '/trails/new/create' },
+		{ label: 'Criar trilha', icon: Plus, to: '/trails/new/create' },
 		{ label: 'Minhas Trilhas', icon: Route, to: '/trails' },
 		{ label: 'Missões & Badges', icon: Target, to: '/missions' },
 		{ label: 'Ranking', icon: Trophy, to: '/ranking' },

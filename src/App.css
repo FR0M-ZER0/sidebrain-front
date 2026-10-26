@@ -2385,6 +2385,9 @@
 .track-review-button,.track-start-button,.track-locked-label { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 17px; border: 0; border-radius: 12px; background: white; color: #151d32; font-weight: 700; white-space: nowrap; box-shadow: 0 2px 4px rgba(24,32,67,.08); }
 .track-start-button { padding: 13px 19px; background: #075fc7; color: white; font-size: 1rem; }
 .track-locked-label { padding: 7px 11px; background: #edf0ff; color: #969dac; }
+.track-step-results-button { display: inline-flex; align-items: center; justify-self: start; gap: 8px; margin-top: 4px; padding: 10px 16px; border: 1px solid #cbd5e1; border-radius: 12px; background: #f8faff; color: #075fc7; font-weight: 700; text-decoration: none; transition: background-color .18s ease; }
+.track-step-results-button:hover { background: #eef2ff; }
+.track-step-results-button:focus-visible { outline: 2px solid #075fc7; outline-offset: 2px; }
 .track-state { padding: 60px; text-align: center; }
 .track-state-error { color: #a73535; }
 

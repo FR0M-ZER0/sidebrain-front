@@ -36,21 +36,6 @@ export const Sidebar = ({ activeItem }: SidebarProps = {}) => {
 					const isHomeActive = item.label === 'Início' && pathname === '/' && !hash
 					const isProfileActive = item.label === 'Perfil' && pathname === '/perfil'
 
-					if (item.disabled) {
-						return (
-							<button
-								key={item.label}
-								type="button"
-								className="nav-item nav-item-disabled"
-								disabled
-								title="Disponível em breve"
-							>
-								<Icon className="nav-icon" size={18} aria-hidden="true" />
-								<span>{item.label}</span>
-							</button>
-						)
-					}
-
 					return (
 						<NavLink
 							key={item.label}

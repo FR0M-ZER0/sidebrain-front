@@ -21,6 +21,8 @@ import type { Module, TrackDetails } from '../../types/trackDetails'
 import type { PendingStepPreparation } from '../../types/trackFlow'
 import { missionCriteriaLabels, missionDifficultyLabels } from '../../util/gamification'
 
+const MAX_VISIBLE_TRACK_MISSIONS = 3
+
 const getMissionDifficultyLabel = (difficulty: string) =>
 	missionDifficultyLabels[difficulty] ?? difficulty
 
@@ -199,7 +201,7 @@ export const TrackDetailsPage = () => {
 							<h2><span>◉</span> Missões da trilha</h2>
 							{track.missions.length === 0 ? (
 								<p className="track-missions-empty">Esta trilha ainda não possui missões.</p>
-							) : track.missions.map((mission) => {
+							) : track.missions.slice(0, MAX_VISIBLE_TRACK_MISSIONS).map((mission) => {
 								const progressPercentage = mission.progressPercentage
 								const visualProgress = progressPercentage === undefined
 									? undefined

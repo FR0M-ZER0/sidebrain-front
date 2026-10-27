@@ -205,8 +205,26 @@ const getModuleStatus = (step: ApiStep, lessons: Lesson[], isNextModule: boolean
 	return 'locked'
 }
 
+const stepLevelOrder = new Map<string, number>([
+	['beginner', 0],
+	['intermediate', 1],
+	['advanced', 2],
+	['avanced', 2],
+	['pro', 3],
+])
+
+const orderApiSteps = (steps: ApiStep[]) => {
+	return steps
+		.map((step, index) => {
+			const level = step.level?.trim().toLowerCase() ?? ''
+			return { step, index, order: stepLevelOrder.get(level) ?? Number.POSITIVE_INFINITY }
+		})
+		.sort((first, second) => first.order - second.order || first.index - second.index)
+		.map(({ step }) => step)
+}
+
 const toTrackDetails = (track: ApiTrack): TrackDetails => {
-	const steps = asItems(track.steps, isApiStep)
+	const steps = orderApiSteps(asItems(track.steps, isApiStep))
 	const apiLessonsByStep = steps.map(getLessonsInPositionOrder)
 	const allLessons = apiLessonsByStep.flat()
 	const completedLessons = allLessons.filter((lesson) => isCompleted(lesson.status)).length
@@ -279,11 +297,25 @@ export const prepareNextStep = async (trackId: string, stepId: string): Promise<
 	throw new Error('A API não confirmou o preparo da próxima etapa.')
 }
 
+export const getEligibleStepForPreparation = (track: TrackDetails) => track.modules.find((module, index) => {
+	if (module.totalLessons === 0) return false
+	const progress = module.completedLessons / module.totalLessons
+	const nextStepPrepared = Boolean(track.modules[index + 1]?.lessons.length)
+	return progress >= 0.8 && !nextStepPrepared
+})
+
+export const prepareEligibleNextStep = async (track: TrackDetails) => {
+	const step = getEligibleStepForPreparation(track)
+	if (!step) return null
+	return { step, result: await prepareNextStep(track.id, step.id) }
+}
+
 const hasPreparedNextStep = (track: TrackDetails, stepId: string) => {
 	const currentStepIndex = track.modules.findIndex((module) => module.id === stepId)
 	return currentStepIndex >= 0 && Boolean(track.modules[currentStepIndex + 1]?.lessons.length)
 }
 
+const STEP_PREPARATION_POLL_INTERVAL = 15_000
 const wait = (milliseconds: number) => new Promise((resolve) => window.setTimeout(resolve, milliseconds))
 
 export const waitForPreparedNextStep = async (
@@ -303,7 +335,7 @@ export const waitForPreparedNextStep = async (
 			// A falha transitória de leitura não encerra a espera pela preparação.
 		}
 
-		if (!signal?.aborted) await wait(1_500)
+		if (!signal?.aborted) await wait(STEP_PREPARATION_POLL_INTERVAL)
 	}
 
 	return false

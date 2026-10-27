@@ -1,29 +1,13 @@
-import {
-	Brain,
-	Check,
-	Flame,
-	Home,
-	Layers,
-	ArrowRight,
-	Target,
-} from 'lucide-react'
+import { ArrowRight, Check } from 'lucide-react'
 import type { Mission } from '../../../types/missions'
 import { Link } from 'react-router'
+import { GamificationCriterionIcon } from '../../general/GamificationCriterionIcon'
 
 export interface MissionCardItemProps {
 	mission: Mission
 }
 
 export const MissionCardItem = ({ mission }: MissionCardItemProps) => {
-	const iconMap = {
-		Home,
-		Brain,
-		Flame,
-		Target,
-		Layers,
-	}
-
-	const Icon = iconMap[mission.icon as keyof typeof iconMap] ?? Flame
 	const isCompleted = mission.status === 'completed'
 
 	return (
@@ -39,7 +23,7 @@ export const MissionCardItem = ({ mission }: MissionCardItemProps) => {
 									: 'bg-blue-50 text-blue-600'
 							}`}
 						>
-							<Icon size={22} aria-hidden="true" />
+							<GamificationCriterionIcon kind="mission" criterion={mission.criterion ?? ''} fallbackIcon={mission.icon} size={22} />
 						</div>
 
 						<div className="flex flex-col">

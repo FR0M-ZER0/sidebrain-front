@@ -1,5 +1,5 @@
-import { Award, BadgeCheck, Flame, Zap } from 'lucide-react'
 import type { DashboardBadge } from '../../types/dashboard'
+import { GamificationCriterionIcon } from '../general/GamificationCriterionIcon'
 import { ProgressBar } from '../general/ProgressBar'
 
 interface BadgeCardProps {
@@ -7,12 +7,6 @@ interface BadgeCardProps {
 }
 
 export const BadgeCard = ({ badge }: BadgeCardProps) => {
-	const badgeIcons = {
-		flame: Flame,
-		zap: Zap,
-		'badge-check': BadgeCheck,
-	}
-	const Icon = badgeIcons[badge.icone as keyof typeof badgeIcons] ?? Award
 	return (
 		<div className="badge-card">
 			<div className="badge-head">
@@ -23,7 +17,7 @@ export const BadgeCard = ({ badge }: BadgeCardProps) => {
 				<div className="badge-amount">{badge.estado === 'desbloqueado' ? 'Desbloqueada' : badge.estado}</div>
 			</div>
 			<div className="badge-row">
-				<div className="badge-icon"><Icon size={22} aria-hidden="true" /></div>
+				<div className="badge-icon"><GamificationCriterionIcon kind="badge" criterion={badge.criterio} size={22} /></div>
 				<div className="badge-body">
 					<div className="badge-description">{badge.descricao}</div>
 					{badge.conquistadoEm && <div className="badge-description">Conquistado em {badge.conquistadoEm}</div>}

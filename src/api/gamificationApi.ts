@@ -1,6 +1,6 @@
 import { api } from './api'
-import type { Badge, BadgeRarity, Mission, MissionTrackGroup, ProgressStatus } from '../types/missions'
-import { badgeCriteriaIcons, badgeCriteriaLabels, missionCriteriaLabels, missionDifficultyLabels } from '../util/gamification'
+import type { Badge, BadgeRarity, Mission, MissionQueryOptions, MissionTrackGroup, ProgressStatus } from '../types/missions'
+import { badgeCriteriaIcons, badgeCriteriaLabels, missionCriteriaIcons, missionCriteriaLabels, missionDifficultyLabels } from '../util/gamification'
 
 type ApiRecord = Record<string, unknown>
 
@@ -31,12 +31,6 @@ export const readGamificationProgress = (item: ApiRecord, kind: 'mission' | 'bad
 	return { status, score, completedAt }
 }
 
-interface ListOptions {
-	status?: ProgressStatus
-	trackId?: string
-	limit?: number
-}
-
 const getPages = async (
 	path: string,
 	params: Record<string, string | number | undefined>,
@@ -59,13 +53,7 @@ const getPages = async (
 	return items
 }
 
-export const getMissions = async (options: ListOptions = {}, signal?: AbortSignal): Promise<MissionTrackGroup[]> => {
-	const items = await getPages('/api/v1/missions', {
-		status: options.status,
-		track_id: options.trackId,
-		page_size: options.limit ?? 100,
-		sort: 'recent',
-	}, signal, options.limit !== undefined)
+const mapMissionGroups = (items: unknown[]): MissionTrackGroup[] => {
 	const groups = new Map<string, MissionTrackGroup>()
 	const seen = new Set<string>()
 	for (const item of items) {
@@ -97,7 +85,8 @@ export const getMissions = async (options: ListOptions = {}, signal?: AbortSigna
 				trackTitle: group.trackTitle,
 				stepId,
 				stepTitle,
-				icon: 'Target',
+				criterion: criteria,
+				icon: missionCriteriaIcons[criteria] ?? 'Target',
 				category: missionDifficultyLabels[difficulty] ?? difficulty,
 				categoryTone: difficulty === 'hard' || difficulty === 'very_hard' ? 'warning' : 'info',
 				description: missionCriteriaLabels[criteria] ?? criteria.replace(/_/g, ' '),
@@ -119,6 +108,19 @@ export const getMissions = async (options: ListOptions = {}, signal?: AbortSigna
 		}
 	}
 	return [...groups.values()]
+}
+
+export const getMissions = async (options: MissionQueryOptions = {}, signal?: AbortSignal): Promise<MissionTrackGroup[]> => {
+	const items = await getPages('/api/v1/missions', {
+		...(options.status ? { status: options.status } : {}),
+		...(options.trackId ? { track_id: options.trackId } : {}),
+		...(options.difficulty ? { difficulty: options.difficulty } : {}),
+		...(options.criteria ? { criteria: options.criteria } : {}),
+		...(options.q ? { q: options.q } : {}),
+		page_size: options.limit ?? 100,
+		sort: options.sort ?? 'recent',
+	}, signal, options.limit !== undefined)
+	return mapMissionGroups(items)
 }
 
 const rarityMap: Record<string, BadgeRarity> = { common: 'comum', rare: 'raro', epic: 'epico', legendary: 'lendario' }

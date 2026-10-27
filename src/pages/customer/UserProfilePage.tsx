@@ -10,6 +10,8 @@ import { useUserProfile } from '../../hooks/useUserProfile'
 import { useAuth } from '../../hooks/useAuth'
 import { DataRequestStatus } from '../../components/general/DataRequestStatus'
 
+const PROFILE_TRACKS_LIMIT = 6
+
 export const UserProfilePage = () => {
 	const navigate = useNavigate()
 	const { logout } = useAuth()
@@ -57,7 +59,7 @@ export const UserProfilePage = () => {
 					<div className="min-w-0 space-y-6">
 						<DataRequestStatus loading={tracksLoading} error={tracksError} onRetry={retryTracks} label="trilhas" />
 						{!tracksLoading && !tracksError && (tracks.length > 0
-							? <ActiveTracksSection tracks={tracks} onResumeTrack={handleResumeTrack} onExploreCatalog={() => navigate('/trails/new/create')} />
+							? <ActiveTracksSection tracks={tracks.slice(0, PROFILE_TRACKS_LIMIT)} onResumeTrack={handleResumeTrack} onExploreCatalog={() => navigate('/trails/new/create')} />
 							: <p>Você ainda não tem trilhas ativas.</p>)}
 
 						<DataRequestStatus loading={badgesLoading} error={badgesError} onRetry={retryBadges} label="badges" />

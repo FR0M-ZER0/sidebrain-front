@@ -21,7 +21,9 @@ export const TrailStartPreferencePage = () => {
 			return
 		}
 
-		navigate('/trails/new/guided', { state: { goalDescription, startMode: 'step_by_step' } })
+		navigate('/trails/new/generating', {
+			state: { goalDescription, knowledgeLevel: 'beginner' },
+		})
 	}
 
 	return (

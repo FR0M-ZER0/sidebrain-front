@@ -7,6 +7,15 @@ export const missionCriteriaLabels: Record<string, string> = {
 	get_all_answers_right: 'Acerte todas as respostas',
 }
 
+export const missionCriteriaIcons: Record<string, string> = {
+	number_of_lessons_completed: 'BookOpen',
+	get_all_answer_right_in_a_lesson: 'BadgeCheck',
+	complete_a_step: 'Flag',
+	complete_a_track: 'Route',
+	number_of_steps_completed: 'Layers',
+	get_all_answers_right: 'CheckCircle',
+}
+
 export const missionDifficultyLabels: Record<string, string> = {
 	easy: 'Fácil',
 	medium: 'Média',

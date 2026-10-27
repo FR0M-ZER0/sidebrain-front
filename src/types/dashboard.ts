@@ -18,7 +18,7 @@ export interface DashboardBadge {
   descricao?: string
   estado: DashboardBadgeState
   progresso: number
-  icone: string
+  criterio: string
   conquistadoEm?: string
 }
 
@@ -28,7 +28,7 @@ export interface DashboardMission {
   progresso: number
   recompensaXp: number
   estado: DashboardMissionState
-  tipo: string
+  criterio: string
   trilhaId?: string
   trilhaTitulo?: string
   etapaTitulo?: string

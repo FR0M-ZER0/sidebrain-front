@@ -10,7 +10,7 @@ const stepLabels = [
 	'Criação do banco de quizzes',
 ]
 const POLL_INTERVAL_MS = 1000
-const GENERATION_TIMEOUT_MS = 60_000
+const GENERATION_TIMEOUT_MS = 180_000
 
 const delay = (milliseconds: number) => new Promise((resolve) => window.setTimeout(resolve, milliseconds))
 
@@ -80,7 +80,7 @@ export const useTrailGeneration = (request: TrackGenerationRequest | null) => {
 					if (progress.status === 'failed') {
 						throw new Error(getGenerationErrorMessage(progress.error_code))
 					}
-					if (Date.now() >= deadline) throw new Error('A geração não terminou em até 1 minuto. Tente novamente.')
+					if (Date.now() >= deadline) throw new Error('A geração não terminou em até 3 minutos. Tente novamente.')
 					await delay(POLL_INTERVAL_MS)
 				}
 			} catch (generationError) {

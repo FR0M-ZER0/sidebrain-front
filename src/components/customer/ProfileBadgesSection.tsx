@@ -1,6 +1,7 @@
-import { Award, BookOpen, BookOpenCheck, CheckCircle, ChevronRight, Flame, Layers, Target, Zap } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import type { BadgeRarity } from '../../types/missions'
 import type { ProfileBadge } from '../../types/userProfile'
+import { GamificationCriterionIcon } from '../general/GamificationCriterionIcon'
 
 interface ProfileBadgesSectionProps {
 	badges: ProfileBadge[]
@@ -37,9 +38,7 @@ export const ProfileBadgesSection = ({
 		lendario: 'LENDÁRIO',
 	}
 
-	const badgeIcons = { Award, BookOpen, BookOpenCheck, CheckCircle, Flame, Layers, Target, Zap }
 	const renderBadgeIcon = (badge: ProfileBadge) => {
-		const Icon = badgeIcons[badge.iconType as keyof typeof badgeIcons] ?? Award
 		const iconStyle = badge.rarity === 'raro' || badge.rarity === 'lendario'
 			? 'bg-orange-100 text-orange-800'
 			: badge.rarity === 'epico'
@@ -50,7 +49,7 @@ export const ProfileBadgesSection = ({
 
 		return (
 			<div className={`flex h-12 w-12 items-center justify-center rounded-full ${iconStyle}`}>
-				<Icon size={22} aria-hidden="true" />
+				<GamificationCriterionIcon kind="badge" criterion={badge.criterion} fallbackIcon={badge.iconType} size={22} />
 			</div>
 		)
 	}

@@ -12,7 +12,7 @@ export const useDashboard = () => {
 	const { user } = useAuth()
 	const loadTracks = useCallback((signal: AbortSignal) => getDashboardTracks(signal), [])
 	const tracks = useAsyncData(loadTracks)
-	const missions = useMissions(undefined, 'in_progress', 2)
+	const missions = useMissions({ status: 'in_progress', limit: 2 })
 	const badges = useBadges('done')
 	const recentBadges: DashboardBadge[] = getRecentBadges(badges.data ?? [])
 		.map((badge) => ({
@@ -22,7 +22,7 @@ export const useDashboard = () => {
 			descricao: badge.description,
 			estado: 'desbloqueado',
 			progresso: badge.progressPercent ?? 100,
-			icone: badge.icon.toLowerCase(),
+			criterio: badge.categoryId,
 			conquistadoEm: badge.unlockedAt,
 		}))
 	const currentMissions: DashboardMission[] = (missions.data ?? [])
@@ -35,7 +35,7 @@ export const useDashboard = () => {
 			progresso: mission.percent,
 			recompensaXp: mission.xpReward,
 			estado: 'em_andamento',
-			tipo: 'missao',
+			criterio: mission.criterion ?? '',
 			trilhaId: mission.trackId,
 			trilhaTitulo: mission.trackTitle,
 			etapaTitulo: mission.stepTitle,

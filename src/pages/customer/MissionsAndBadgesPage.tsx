@@ -1,5 +1,6 @@
 import { HeaderBar } from '../../components/customer/HeaderBar'
 import { BadgesShowcase } from '../../components/customer/missions/BadgesShowcase'
+import { MissionFilters } from '../../components/customer/missions/MissionFilters'
 import { MissionsAndBadgesSummary } from '../../components/customer/missions/MissionsAndBadgesSummary'
 import { MissionsGrid } from '../../components/customer/missions/MissionsGrid'
 import { DataRequestStatus } from '../../components/general/DataRequestStatus'
@@ -9,18 +10,26 @@ import { useMissionsAndBadges } from '../../hooks/useMissionsAndBadges'
 import { useSectionAnchor } from '../../hooks/useSectionAnchor'
 import { useAuth } from '../../hooks/useAuth'
 
+const TRACKS_PER_PAGE = 6
+
 export const MissionsAndBadgesPage = () => {
 	const [searchParams] = useSearchParams()
 	const { user } = useAuth()
 	const trackId = searchParams.get('track_id') || undefined
 	const {
 		missions,
+		applyMissionFilters,
+		missionPage,
+		setMissionPage,
 		badges,
 		activeFilter,
 		setActiveFilter,
 		filterOptions,
 		filteredCategoriesWithBadges,
 	} = useMissionsAndBadges(trackId)
+	const missionGroups = missions.data ?? []
+	const totalTrackPages = Math.ceil(missionGroups.length / TRACKS_PER_PAGE)
+	const visibleMissionGroups = missionGroups.slice((missionPage - 1) * TRACKS_PER_PAGE, missionPage * TRACKS_PER_PAGE)
 	useSectionAnchor(Boolean(badges.data) && !missions.loading)
 
 	return (
@@ -56,8 +65,41 @@ export const MissionsAndBadgesPage = () => {
 								<Link to="/missions">Ver missões de todas as trilhas</Link>
 							</div>
 						)}
+						<MissionFilters onApply={applyMissionFilters} />
 						<DataRequestStatus loading={missions.loading} error={missions.error} onRetry={missions.retry} label="missões" />
-						{missions.data && <MissionsGrid groups={missions.data} />}
+						{missions.data && (
+							<>
+								<MissionsGrid groups={visibleMissionGroups} />
+								{missionGroups.length > 0 && (
+									<div className="flex flex-wrap items-center justify-between gap-3">
+										<p className="m-0 text-sm text-slate-600">
+											Exibindo trilhas {((missionPage - 1) * TRACKS_PER_PAGE) + 1}–{Math.min(missionPage * TRACKS_PER_PAGE, missionGroups.length)} de {missionGroups.length}
+										</p>
+										{totalTrackPages > 1 && (
+											<nav className="flex items-center gap-2" aria-label="Paginação das trilhas nas missões">
+												<button
+													type="button"
+													disabled={missions.loading || missionPage <= 1}
+													onClick={() => setMissionPage(missionPage - 1)}
+													className="min-h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+												>
+													Anterior
+												</button>
+												<span className="text-sm font-medium text-slate-600">Página {missionPage} de {totalTrackPages}</span>
+												<button
+													type="button"
+													disabled={missions.loading || missionPage >= totalTrackPages}
+													onClick={() => setMissionPage(missionPage + 1)}
+													className="min-h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+												>
+													Próxima
+												</button>
+											</nav>
+										)}
+									</div>
+								)}
+							</>
+						)}
 					</section>
 
 					<DataRequestStatus loading={badges.loading} error={badges.error} onRetry={badges.retry} label="badges" />

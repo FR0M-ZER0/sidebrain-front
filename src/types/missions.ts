@@ -6,6 +6,31 @@ export type BadgeFilterType = 'todos' | 'desbloqueados' | 'em_progresso' | 'raro
 
 export type ProgressStatus = 'idle' | 'in_progress' | 'done'
 
+export type MissionDifficulty = 'easy' | 'medium' | 'hard' | 'very_hard'
+
+export type MissionCriterion =
+	| 'number_of_lessons_completed'
+	| 'get_all_answer_right_in_a_lesson'
+	| 'complete_a_step'
+	| 'complete_a_track'
+	| 'number_of_steps_completed'
+	| 'get_all_answers_right'
+
+export type MissionSort = 'recent' | 'oldest'
+
+export interface MissionFilters {
+	status?: ProgressStatus
+	difficulty?: MissionDifficulty
+	criteria?: MissionCriterion
+	q?: string
+	sort?: MissionSort
+}
+
+export interface MissionQueryOptions extends MissionFilters {
+	trackId?: string
+	limit?: number
+}
+
 export interface MissionTrackGroup {
 	trackId: string
 	trackTitle: string
@@ -26,6 +51,7 @@ export interface UserGamificationSummary {
 export interface Mission {
 	id: string
 	icon: string
+	criterion?: string
 	category: string
 	categoryTone: 'warning' | 'info'
 	xpReward: number

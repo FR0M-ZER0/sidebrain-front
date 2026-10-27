@@ -15,24 +15,19 @@ import {
 } from 'lucide-react'
 import { StudentPageLayout } from '../../components/customer/layouts/StudentPageLayout'
 import { useTrackDetails } from '../../hooks/useTrackDetails'
-import { forgetStepPreparation, getPendingStepPreparation, hasStepPreparationBeenRequested, prepareNextStep, waitForPreparedNextStep } from '../../api/trackService'
+import { forgetStepPreparation, getEligibleStepForPreparation, getPendingStepPreparation, hasStepPreparationBeenRequested, prepareEligibleNextStep, waitForPreparedNextStep } from '../../api/trackService'
 import type { LessonNavigationContext } from '../../api/lessonsApi'
 import type { Module, TrackDetails } from '../../types/trackDetails'
 import type { PendingStepPreparation } from '../../types/trackFlow'
 import { missionCriteriaLabels, missionDifficultyLabels } from '../../util/gamification'
+
+const MAX_VISIBLE_TRACK_MISSIONS = 3
 
 const getMissionDifficultyLabel = (difficulty: string) =>
 	missionDifficultyLabels[difficulty] ?? difficulty
 
 const getMissionCriteriaLabel = (criteria: string) =>
 	missionCriteriaLabels[criteria] ?? criteria.replace(/_/g, ' ')
-
-const getEligibleStepForPreparation = (track: TrackDetails) => track.modules.find((module, index) => {
-	if (module.totalLessons === 0) return false
-	const progress = module.completedLessons / module.totalLessons
-	const nextStepPrepared = Boolean(track.modules[index + 1]?.lessons.length)
-	return progress >= 0.8 && !nextStepPrepared
-})
 
 const ModuleCard = ({ module, index, track }: { module: Module; index: number; track: TrackDetails }) => {
 	const navigate = useNavigate()
@@ -48,6 +43,7 @@ const ModuleCard = ({ module, index, track }: { module: Module; index: number; t
 			trackId: track.id,
 			stepId: module.id,
 			lessonPosition: lessonIndex + 1,
+			stepLessonCount: module.totalLessons,
 			currentLesson: lessonOffset + lessonIndex + 1,
 			totalLessons: track.totalLessons,
 			trailCompletionPercentage: track.progressPercentage,
@@ -75,7 +71,7 @@ const ModuleCard = ({ module, index, track }: { module: Module; index: number; t
 				{!isLocked && (isExpanded ? <ChevronUp size={21} /> : <ChevronDown size={21} />)}
 				{isLocked && <LockKeyhole className="track-lock" size={20} />}
 			</button>
-			{isExpanded && module.lessons.length > 0 && (
+			{isExpanded && (module.lessons.length > 0 || module.status === 'completed') && (
 				<div className="track-lesson-list">
 					{module.lessons.map((lesson, lessonIndex) => (
 						<div key={lesson.id} className={`track-lesson ${lesson.status}`}>
@@ -96,6 +92,7 @@ const ModuleCard = ({ module, index, track }: { module: Module; index: number; t
 							{lesson.status === 'locked' && <span className="track-locked-label"><LockKeyhole size={15} /> Bloqueada</span>}
 						</div>
 					))}
+					{module.status === 'completed' && <Link to={`/quiz-result?${new URLSearchParams({ trackId: track.id, stepId: module.id }).toString()}`} className="track-step-results-button">Ver resultado da etapa <ArrowRight size={18} aria-hidden="true" /></Link>}
 				</div>
 			)}
 		</section>
@@ -127,11 +124,15 @@ export const TrackDetailsPage = () => {
 		attemptedPreparation.current = preparationKey
 		let isActive = true
 
-		prepareNextStep(track.id, step.id)
-			.then((result) => {
+		prepareEligibleNextStep(track)
+			.then((preparation) => {
 				if (!isActive) return
-				if (result.status === 'accepted') {
-					setPendingPreparation(result.pending)
+				if (!preparation) {
+					setPreparationStatus('idle')
+					return
+				}
+				if (preparation.result.status === 'accepted') {
+					setPendingPreparation(preparation.result.pending)
 					setPreparationStatus('waiting')
 				} else {
 					setPreparationStatus('idle')
@@ -201,7 +202,7 @@ export const TrackDetailsPage = () => {
 							<h2><span>◉</span> Missões da trilha</h2>
 							{track.missions.length === 0 ? (
 								<p className="track-missions-empty">Esta trilha ainda não possui missões.</p>
-							) : track.missions.map((mission) => {
+							) : track.missions.slice(0, MAX_VISIBLE_TRACK_MISSIONS).map((mission) => {
 								const progressPercentage = mission.progressPercentage
 								const visualProgress = progressPercentage === undefined
 									? undefined

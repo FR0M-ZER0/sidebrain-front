@@ -1,12 +1,12 @@
 import type { MetricCard } from '../../types/quizResult'
-import { BadgeCheck, Clock3, Zap } from 'lucide-react'
+import { BadgeCheck, BookOpen, ClipboardCheck } from 'lucide-react'
 
 interface QuizResultMetricGridProps {
 	metrics: MetricCard[]
 }
 
 export const QuizResultMetricGrid = ({ metrics }: QuizResultMetricGridProps) => {
-	const icons = { xp: Zap, precision: BadgeCheck, time: Clock3 }
+	const icons = { accuracy: BadgeCheck, answered: ClipboardCheck, lessons: BookOpen }
 
 	return (
 		<div className="quiz-result-metrics" aria-label="Métricas de desempenho">

@@ -6,7 +6,7 @@ import type { LoginCredentials, LoginFormValidationErrors } from '../../types/au
 
 export const LoginForm = () => {
 	const navigate = useNavigate()
-	const { login, isLoading } = useAuth()
+	const { login, isLoading, error, clearAuthError } = useAuth()
 
 	const [formData, setFormData] = useState<LoginCredentials>({
 		email: '',
@@ -38,6 +38,7 @@ export const LoginForm = () => {
 
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault()
+		clearAuthError()
 		if (!validate()) return
 
 		const success = await login(formData)
@@ -73,6 +74,8 @@ export const LoginForm = () => {
 					</div>
 				)}
 
+				{error && <p role="alert" className="mt-4 text-sm font-medium text-rose-600">{error}</p>}
+
 				<form onSubmit={handleSubmit} className="mt-7 space-y-4" noValidate>
 					{/* Campo de E-mail */}
 					<div>
@@ -80,8 +83,8 @@ export const LoginForm = () => {
 							E-mail institucional ou pessoal
 						</label>
 						<div
-							className={`relative rounded-xl bg-slate-50 border transition-all ${
-								errors.email ? 'border-rose-400 bg-rose-50/20' : 'border-slate-200 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-100'
+							className={`relative rounded-lg transition-all ${
+								errors.email ? 'bg-rose-50/50 ring-1 ring-rose-400' : 'bg-[#f1f2ff] focus-within:ring-2 focus-within:ring-blue-200'
 							}`}
 						>
 							<Mail size={16} className="text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -94,7 +97,7 @@ export const LoginForm = () => {
 									if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }))
 								}}
 								placeholder="seu.email@exemplo.com"
-								className="w-full pl-10 pr-4 py-3 bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-none"
+								className="w-full appearance-none border-0 outline-none ring-0 pl-10 pr-4 py-2.5 bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-0"
 							/>
 						</div>
 						{errors.email && <p className="text-xs text-rose-500 mt-1 font-medium">{errors.email}</p>}
@@ -106,8 +109,8 @@ export const LoginForm = () => {
 							Sua senha de acesso
 						</label>
 						<div
-							className={`relative rounded-xl bg-slate-50 border transition-all ${
-								errors.password ? 'border-rose-400 bg-rose-50/20' : 'border-slate-200 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-100'
+							className={`relative rounded-lg transition-all ${
+								errors.password ? 'bg-rose-50/50 ring-1 ring-rose-400' : 'bg-[#f1f2ff] focus-within:ring-2 focus-within:ring-blue-200'
 							}`}
 						>
 							<Lock size={16} className="text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -120,12 +123,12 @@ export const LoginForm = () => {
 									if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }))
 								}}
 								placeholder="••••••••"
-								className="w-full pl-10 pr-11 py-3 bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-none"
+								className="w-full appearance-none border-0 outline-none ring-0 pl-10 pr-11 py-2.5 bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-0"
 							/>
 							<button
 								type="button"
 								onClick={() => setShowPassword((prev) => !prev)}
-								className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
+								className="appearance-none border-0 bg-transparent shadow-none outline-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors p-1 focus:outline-none focus:ring-0"
 								title={showPassword ? 'Ocultar senha' : 'Exibir senha'}
 							>
 								{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -157,7 +160,7 @@ export const LoginForm = () => {
 					<button
 						type="submit"
 						disabled={isLoading}
-						className="w-full mt-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-70 text-white font-semibold py-3.5 px-4 rounded-xl shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 transition-all flex items-center justify-center gap-2 text-sm cursor-pointer"
+						className="appearance-none border-0 w-full mt-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-70 text-white font-semibold py-3.5 px-4 rounded-xl shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 transition-all flex items-center justify-center gap-2 text-sm cursor-pointer"
 					>
 						{isLoading ? (
 							<span>Autenticando...</span>

@@ -12,3 +12,13 @@ export interface TrackGenerationRequest {
 	assessmentId?: string
 	assessmentAnswers?: TrackAssessmentAnswer[]
 }
+
+export interface PendingStepPreparation {
+	trackId: string
+	stepId: string
+	taskId: string
+}
+
+export type PrepareNextStepResult =
+	| { status: 'accepted'; pending: PendingStepPreparation }
+	| { status: 'skipped'; reason: string }

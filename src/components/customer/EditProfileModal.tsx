@@ -1,12 +1,13 @@
 import { useState, type FormEvent } from 'react'
 import { Image, User, X } from 'lucide-react'
 import type { UserProfile } from '../../types/userProfile'
+import { getApiErrorMessage } from '../../util/apiError'
 
 interface EditProfileModalProps {
 	isOpen: boolean
 	user: UserProfile
 	onClose: () => void
-	onSave: (data: { name: string; avatarUrl: string }) => void
+	onSave: (data: { name: string; avatarUrl: string }) => Promise<void>
 }
 
 const PRESET_AVATARS = [
@@ -25,10 +26,11 @@ export const EditProfileModal = ({
 	const [name, setName] = useState(user.name)
 	const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl)
 	const [error, setError] = useState<string | null>(null)
+	const [isSaving, setIsSaving] = useState(false)
 
 	if (!isOpen) return null
 
-	const handleSubmit = (e: FormEvent) => {
+	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault()
 		const trimmedName = name.trim()
 
@@ -37,8 +39,15 @@ export const EditProfileModal = ({
 			return
 		}
 
-		onSave({ name: trimmedName, avatarUrl: avatarUrl.trim() || user.avatarUrl })
-		onClose()
+		setIsSaving(true)
+		try {
+			await onSave({ name: trimmedName, avatarUrl: avatarUrl.trim() || user.avatarUrl })
+			onClose()
+		} catch (saveError) {
+			setError(getApiErrorMessage(saveError, 'Não foi possível atualizar seu perfil.'))
+		} finally {
+			setIsSaving(false)
+		}
 	}
 
 	return (
@@ -160,15 +169,17 @@ export const EditProfileModal = ({
 						<button
 							type="button"
 							onClick={onClose}
+							disabled={isSaving}
 							className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
 						>
 							Cancelar
 						</button>
 						<button
 							type="submit"
+							disabled={isSaving}
 							className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition cursor-pointer shadow-xs focus:ring-2 focus:ring-blue-500/30"
 						>
-							Salvar Alterações
+							{isSaving ? 'Salvando...' : 'Salvar Alterações'}
 						</button>
 					</div>
 				</form>

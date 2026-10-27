@@ -1,19 +1,31 @@
-import { useEffect, useState } from 'react'
-import { ArrowLeft, ArrowRight, LoaderCircle, Send } from 'lucide-react'
+import { lazy, Suspense, useEffect, useState } from 'react'
+import { ArrowLeft, ArrowRight, LoaderCircle, RotateCcw, Send } from 'lucide-react'
 import { motion, useReducedMotion } from 'motion/react'
 import { useLocation, useNavigate, useParams } from 'react-router'
-import type { LessonNavigationContext } from '../../api/lessonsApi'
+import { markLessonCompleted, type LessonNavigationContext } from '../../api/lessonsApi'
 import { getLessonQuizzes, submitLessonQuizAnswer } from '../../api/quizApi'
-import type { LessonQuiz, QuizAnswerRate } from '../../api/quizApi'
+import { getPendingStepPreparation, hasStepPreparationBeenRequested, prepareNextStep } from '../../api/trackService'
+import type { LessonQuiz, QuizAnswerEvaluation, QuizAnswerRate } from '../../api/quizApi'
+import { MarkdownContent } from '../../components/general/MarkdownContent'
 import { LessonFocusLayout } from '../../components/customer/lesson/LessonFocusLayout'
 import { LessonHeader } from '../../components/customer/lesson/LessonHeader'
 import { useLesson } from '../../hooks/useLesson'
+
+const MarkdownAnswerEditor = lazy(async () => {
+	const module = await import('../../components/customer/lesson/MarkdownAnswerEditor')
+	return { default: module.MarkdownAnswerEditor }
+})
 
 const evaluationFeedback: Record<QuizAnswerRate, { title: string; className: string }> = {
 	perfect: { title: 'Resposta perfeita! A IA avaliou que você dominou o conceito.', className: 'border-emerald-200 bg-emerald-50 text-emerald-800' },
 	good: { title: 'Boa resposta! A IA identificou o conceito principal.', className: 'border-green-200 bg-green-50 text-green-800' },
 	almost_got_it: { title: 'Você estava perto. Revise o conteúdo e tente novamente nas próximas questões.', className: 'border-amber-200 bg-amber-50 text-amber-800' },
 	wrong: { title: 'A IA avaliou que sua resposta precisa de revisão. Continue praticando!', className: 'border-rose-200 bg-rose-50 text-rose-800' },
+}
+
+interface QuizResponse {
+	answer: string
+	evaluation: QuizAnswerEvaluation | null
 }
 
 export const LessonQuizPage = () => {
@@ -33,15 +45,19 @@ export const LessonQuizPage = () => {
 		error: string | null
 	}>(() => ({ lessonId, quizzes: [], loading: Boolean(lessonId), error: null }))
 	const [currentIndex, setCurrentIndex] = useState(0)
-	const [answer, setAnswer] = useState('')
-	const [evaluation, setEvaluation] = useState<QuizAnswerRate | null>(null)
+	const [responses, setResponses] = useState<Record<string, QuizResponse>>({})
+	const [answerEditorVersion, setAnswerEditorVersion] = useState(0)
 	const [submitting, setSubmitting] = useState(false)
+	const [preparingNextStep, setPreparingNextStep] = useState(false)
 	const isCurrentLesson = quizState.lessonId === lessonId
 	const quizzes = isCurrentLesson ? quizState.quizzes : []
 	const loading = lessonId ? !isCurrentLesson || quizState.loading : false
 	const error = isCurrentLesson ? quizState.error : null
 	const returnTo = `/lessons/${lessonId ?? ''}`
 	const currentQuiz = quizzes[currentIndex]
+	const currentResponse = currentQuiz ? responses[currentQuiz.id] : undefined
+	const answer = currentResponse?.answer ?? ''
+	const evaluation = currentResponse?.evaluation ?? null
 	const isLoading = loading || lessonState.status === 'loading'
 	const pageError = lessonState.status === 'error'
 		? lessonState.error?.message ?? 'Ocorreu um erro ao carregar a lição.'
@@ -52,6 +68,8 @@ export const LessonQuizPage = () => {
 		let isActive = true
 		if (!lessonId) return () => { isActive = false }
 
+		setCurrentIndex(0)
+		setResponses({})
 		getLessonQuizzes(lessonId)
 			.then((result) => {
 				if (isActive) setQuizState({ lessonId, quizzes: result, loading: false, error: null })
@@ -68,17 +86,92 @@ export const LessonQuizPage = () => {
 		return () => { isActive = false }
 	}, [lessonId])
 
+	const updateCurrentResponse = (updates: Partial<QuizResponse>) => {
+		if (!currentQuiz) return
+		setResponses((current) => {
+			const response = current[currentQuiz.id] ?? { answer: '', evaluation: null }
+			return { ...current, [currentQuiz.id]: { ...response, ...updates } }
+		})
+	}
+
+	const handleRedo = () => {
+		updateCurrentResponse({ answer: '', evaluation: null })
+		setAnswerEditorVersion((version) => version + 1)
+		setQuizState((state) => ({ ...state, error: null }))
+	}
+
+	const handlePrevious = () => {
+		if (currentIndex === 0 || submitting || preparingNextStep) return
+		setQuizState((state) => ({ ...state, error: null }))
+		setCurrentIndex((index) => index - 1)
+	}
+
 	const handleSubmit = async () => {
 		if (!currentQuiz || submitting) return
 		if (evaluation) {
 			if (currentIndex + 1 >= quizzes.length) {
+				const lessonToComplete = lessonState.status === 'success' ? lessonState.lesson : null
+				if (!lessonToComplete) {
+					setQuizState((state) => ({ ...state, error: 'Não foi possível carregar os dados para registrar a conclusão da lição.' }))
+					return
+				}
+
+				setPreparingNextStep(true)
+				setQuizState((state) => ({ ...state, error: null }))
+				let pendingPreparation = lessonContext?.pendingStepPreparation
+					&& lessonContext.pendingStepPreparation.trackId === lessonContext.trackId
+					&& lessonContext.pendingStepPreparation.stepId === lessonContext.stepId
+					? lessonContext.pendingStepPreparation
+					: null
+				if (!pendingPreparation && lessonContext?.trackId) {
+					const storedPreparation = getPendingStepPreparation(lessonContext.trackId)
+					if (storedPreparation?.stepId === lessonContext.stepId) pendingPreparation = storedPreparation
+				}
+				try {
+					await markLessonCompleted(lessonToComplete)
+				} catch (completionError) {
+					setQuizState((state) => ({
+						...state,
+						error: completionError instanceof Error
+							? completionError.message
+							: 'Não foi possível registrar a conclusão da lição. Tente novamente.',
+					}))
+					setPreparingNextStep(false)
+					return
+				}
+
+				if (lessonContext?.trackId && lessonContext.stepId && !pendingPreparation
+					&& !hasStepPreparationBeenRequested(lessonContext.trackId, lessonContext.stepId)) {
+					try {
+						const result = await prepareNextStep(lessonContext.trackId, lessonContext.stepId)
+						if (result.status === 'accepted') pendingPreparation = result.pending
+					} catch {
+						// A tela da trilha reavalia a elegibilidade e oferece nova tentativa.
+					}
+				}
+				setPreparingNextStep(false)
+
 				const destination = lessonContext?.from ?? returnTo
-				navigate(destination, { replace: true })
+				if (lessonContext?.trackId && lessonContext.stepId
+					&& lessonContext.stepLessonCount === lessonContext.lessonPosition) {
+					const searchParams = new URLSearchParams({
+						trackId: lessonContext.trackId,
+						stepId: lessonContext.stepId,
+					})
+					navigate(`/quiz-result?${searchParams.toString()}`, {
+						replace: true,
+						state: { returnTo: destination, pendingStepPreparation: pendingPreparation ?? undefined },
+					})
+					return
+				}
+
+				navigate(destination, {
+					replace: true,
+					state: pendingPreparation ? { pendingStepPreparation: pendingPreparation } : undefined,
+				})
 				return
 			}
 			setCurrentIndex((index) => index + 1)
-			setAnswer('')
-			setEvaluation(null)
 			return
 		}
 		if (!answer.trim()) return
@@ -86,7 +179,7 @@ export const LessonQuizPage = () => {
 		setQuizState((state) => ({ ...state, error: null }))
 		try {
 			const result = await submitLessonQuizAnswer(currentQuiz.id, answer.trim())
-			setEvaluation(result)
+			updateCurrentResponse({ evaluation: result })
 		} catch (submitError) {
 			setQuizState((state) => ({ ...state, error: submitError instanceof Error ? submitError.message : 'Não foi possível registrar sua resposta.' }))
 		} finally {
@@ -103,13 +196,19 @@ export const LessonQuizPage = () => {
 				{!isLoading && !pageError && quizzes.length === 0 && <section className="m-auto w-full max-w-6xl rounded-[28px] bg-white px-5 py-8 text-center shadow-sm sm:px-10 sm:py-12 lg:px-12"><h1 className="text-3xl font-bold text-foreground sm:text-4xl">Ainda não há quiz nesta lição</h1><p className="mt-3 text-muted">Volte para o conteúdo da aula e continue seus estudos.</p><button className="mt-6 inline-flex min-h-10 items-center gap-2 rounded-lg bg-primary-soft px-4 py-2 font-semibold text-muted transition-colors hover:bg-indigo-100" type="button" onClick={() => navigate(returnTo, { state: location.state })}><ArrowLeft size={17} aria-hidden="true" /> Voltar para a lição</button></section>}
 				{!isLoading && !pageError && currentQuiz && <motion.section initial={shouldReduceMotion ? false : { opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.45, ease: 'easeOut' }} className="min-h-0 w-full flex-1 overflow-y-auto overscroll-contain rounded-[28px] bg-white px-5 py-8 shadow-sm sm:px-10 sm:py-12 lg:px-12">
 					<p className="mb-2 mt-0 text-right text-xs font-semibold text-muted sm:text-sm">Questão {currentIndex + 1} de {quizzes.length}</p>
-					<h1 className="mb-8 mt-0 text-center text-4xl font-bold leading-tight tracking-[-0.04em] text-foreground sm:mb-10 sm:text-5xl lg:text-6xl">{currentQuiz.question}</h1>
-					<textarea id="quiz-answer" rows={6} value={answer} disabled={Boolean(evaluation) || submitting} onChange={(event) => setAnswer(event.target.value)} placeholder="Escreva sua resposta..." className="mt-3 w-full resize-y rounded-xl border border-slate-200 p-4 text-lg leading-relaxed text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50" />
-					{evaluation && <div className={`mt-6 rounded-xl border p-4 text-base font-medium ${evaluationFeedback[evaluation].className}`} role="status">{evaluationFeedback[evaluation].title}</div>}
+					<MarkdownContent content={currentQuiz.question} className="lesson-markdown mb-8 mt-0 text-center text-4xl font-bold leading-tight tracking-[-0.04em] text-foreground sm:mb-10 sm:text-5xl lg:text-6xl" />
+					<Suspense fallback={<div className="mt-3 min-h-40 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-500" role="status">Carregando editor Markdown...</div>}>
+						<MarkdownAnswerEditor key={`${currentQuiz.id}-${answerEditorVersion}`} value={answer} disabled={Boolean(evaluation) || submitting} onChange={(value) => updateCurrentResponse({ answer: value })} />
+					</Suspense>
+					{evaluation && <div className={`mt-6 rounded-xl border p-4 text-base ${evaluationFeedback[evaluation.rate].className}`} role="status"><p className="m-0 font-semibold">{evaluationFeedback[evaluation.rate].title}</p>{evaluation.reason && <p className="mb-0 mt-2 font-normal leading-relaxed">{evaluation.reason}</p>}</div>}
 					{error && quizzes.length > 0 && <p className="mt-5 rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert">{error}</p>}
 				</motion.section>}
-				{!isLoading && !pageError && currentQuiz && <footer className="mt-auto flex flex-wrap items-center justify-end gap-4 pt-2">
-					<button type="button" disabled={(!answer.trim() && !evaluation) || submitting} onClick={() => void handleSubmit()} className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-blue-700 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-300">{submitting ? 'Avaliando com IA...' : evaluation ? currentIndex + 1 === quizzes.length ? 'Concluir quiz' : 'Próxima questão' : 'Enviar resposta'}{evaluation && currentIndex + 1 < quizzes.length ? <ArrowRight size={17} aria-hidden="true" /> : <Send size={16} aria-hidden="true" />}</button>
+				{!isLoading && !pageError && currentQuiz && <footer className="mt-auto flex flex-wrap items-center gap-4 pt-2">
+					{(currentIndex > 0 || evaluation) && <div className="flex flex-wrap items-center justify-start gap-3">
+						{currentIndex > 0 && <button type="button" disabled={submitting || preparingNextStep} onClick={handlePrevious} className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"><ArrowLeft size={17} aria-hidden="true" />Voltar</button>}
+						{evaluation && <button type="button" disabled={submitting || preparingNextStep} onClick={handleRedo} className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"><RotateCcw size={16} aria-hidden="true" />Refazer quiz</button>}
+					</div>}
+					<button type="button" disabled={(!answer.trim() && !evaluation) || submitting || preparingNextStep} onClick={() => void handleSubmit()} className="ml-auto inline-flex min-h-11 items-center gap-2 rounded-lg bg-blue-700 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-300">{preparingNextStep ? 'Finalizando lição...' : submitting ? 'Avaliando com IA...' : evaluation ? currentIndex + 1 === quizzes.length ? 'Concluir quiz' : 'Próxima questão' : 'Enviar resposta'}{evaluation && currentIndex + 1 < quizzes.length ? <ArrowRight size={17} aria-hidden="true" /> : <Send size={16} aria-hidden="true" />}</button>
 				</footer>}
 			</main>
 		</LessonFocusLayout>

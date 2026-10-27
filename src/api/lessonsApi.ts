@@ -1,4 +1,5 @@
 import { api } from './api'
+import type { PendingStepPreparation } from '../types/trackFlow'
 
 export interface LessonBreadcrumb {
 	label: string
@@ -31,6 +32,8 @@ export type LessonContentBlock = LessonImageBlock | LessonParagraphBlock
 export interface LessonData {
 	id: string
 	title: string
+	text: string
+	position?: number
 	breadcrumbs: LessonBreadcrumb[]
 	progress: LessonProgressData
 	streakCount?: number
@@ -44,6 +47,11 @@ export interface LessonNavigationContext {
 	from: string
 	trackTitle: string
 	moduleTitle: string
+	trackId?: string
+	stepId?: string
+	lessonPosition?: number
+	stepLessonCount?: number
+	pendingStepPreparation?: PendingStepPreparation
 	currentLesson: number
 	totalLessons: number
 	trailCompletionPercentage: number
@@ -82,6 +90,7 @@ interface ApiLessonResponse {
 	id: string
 	title: string
 	text?: unknown
+	position?: unknown
 }
 
 const isApiLesson = (value: unknown): value is ApiLessonResponse =>
@@ -106,6 +115,9 @@ export const getLesson = async (
 	const lesson = getApiLesson(data)
 	const title = lesson.title
 	const text = typeof lesson.text === 'string' ? lesson.text : ''
+	const position = typeof lesson.position === 'number' && Number.isInteger(lesson.position) && lesson.position > 0
+		? lesson.position
+		: context?.lessonPosition
 	const breadcrumbs: LessonBreadcrumb[] = context
 		? [
 			{ label: 'Trilhas', destination: '/' },
@@ -117,6 +129,8 @@ export const getLesson = async (
 	const apiLesson: LessonData = {
 		id: lesson.id,
 		title,
+		text,
+		position,
 		breadcrumbs,
 		progress: {
 			currentLesson: context?.currentLesson ?? 1,
@@ -131,4 +145,17 @@ export const getLesson = async (
 
 	if (!isValidLesson(apiLesson)) throw new Error('O conteúdo desta lição está em um formato inválido.')
 	return apiLesson
+}
+
+export const markLessonCompleted = async (lesson: Pick<LessonData, 'id' | 'content' | 'text' | 'position'>) => {
+	if (!lesson.id || !Number.isInteger(lesson.position) || !lesson.position || lesson.position < 1) {
+		throw new Error('Não foi possível identificar a posição desta lição para registrar sua conclusão.')
+	}
+
+	await api.put<unknown>(`/api/v1/lessons/${encodeURIComponent(lesson.id)}`, {
+		title: lesson.content.title,
+		text: lesson.text,
+		position: lesson.position,
+		status: 'done',
+	})
 }

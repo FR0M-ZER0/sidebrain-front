@@ -21,13 +21,13 @@ export const TrailStartPreferencePage = () => {
 			return
 		}
 
-		navigate('/trails/new/guided', { state: { goalDescription, startMode: 'step_by_step' } })
+		navigate('/trails/new/generating', {
+			state: { goalDescription, knowledgeLevel: 'beginner' },
+		})
 	}
 
 	return (
 		<StudentPageLayout
-			xp={320}
-			coins={500}
 			notifications={1}
 			className="track-create-shell"
 			pageClassName="track-create-page track-start-page"

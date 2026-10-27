@@ -1,4 +1,4 @@
-import { Bot, Home, LogOut, Route, Target, UserRound } from 'lucide-react'
+import { Home, LogOut, Plus, Route, Target, Trophy, UserRound } from 'lucide-react'
 import { NavLink, useLocation } from 'react-router'
 import sidebrainLogo from '../../assets/sidebrain-logo.svg'
 import { useAuth } from '../../hooks/useAuth'
@@ -9,13 +9,13 @@ interface SidebarProps {
 
 export const Sidebar = ({ activeItem }: SidebarProps = {}) => {
 	const { pathname, hash } = useLocation()
-	const { logout } = useAuth()
+	const { logout, user } = useAuth()
 	const menuItems = [
 		{ label: 'Início', icon: Home, to: '/' },
-		{ label: 'Criar trilha', icon: Route, to: '/trails/new/create' },
-		{ label: 'Minhas Trilhas', icon: Route, to: '/#tracks' },
+		{ label: 'Criar trilha', icon: Plus, to: '/trails/new/create' },
+		{ label: 'Minhas Trilhas', icon: Route, to: '/trails' },
 		{ label: 'Missões & Badges', icon: Target, to: '/missions' },
-		{ label: 'Mentor', icon: Bot, disabled: true },
+		{ label: 'Ranking', icon: Trophy, to: '/ranking' },
 		{ label: 'Perfil', icon: UserRound, to: '/perfil' },
 	]
 
@@ -29,26 +29,12 @@ export const Sidebar = ({ activeItem }: SidebarProps = {}) => {
 				{menuItems.map((item) => {
 					const Icon = item.icon
 					const isTrackActive = item.label === 'Minhas Trilhas'
-						&& (/^\/trails\/[^/]+$/.test(pathname) || (pathname === '/' && hash === '#tracks'))
+						&& (pathname === '/trails' || /^\/trails\/[^/]+$/.test(pathname) || (pathname === '/' && hash === '#tracks'))
 					const isMissionsActive = item.label === 'Missões & Badges'
 						&& (pathname === '/missions' || (pathname === '/' && (hash === '#missions' || hash === '#badges')))
+					const isRankingActive = item.label === 'Ranking' && pathname === '/ranking'
 					const isHomeActive = item.label === 'Início' && pathname === '/' && !hash
 					const isProfileActive = item.label === 'Perfil' && pathname === '/perfil'
-
-					if (item.disabled) {
-						return (
-							<button
-								key={item.label}
-								type="button"
-								className="nav-item nav-item-disabled"
-								disabled
-								title="Disponível em breve"
-							>
-								<Icon className="nav-icon" size={18} aria-hidden="true" />
-								<span>{item.label}</span>
-							</button>
-						)
-					}
 
 					return (
 						<NavLink
@@ -63,9 +49,8 @@ export const Sidebar = ({ activeItem }: SidebarProps = {}) => {
 								let active = isActive
 								if (item.label === 'Início') active = isHomeActive
 								if (item.label === 'Minhas Trilhas') active = isTrackActive
-								if (item.label === 'Missões & Badges' || item.label === 'Missões' || item.label === 'Badges') {
-								    active = isMissionsActive
-								}
+								if (item.label === 'Missões & Badges') active = isMissionsActive
+								if (item.label === 'Ranking') active = isRankingActive
 								if (item.label === 'Perfil') active = isProfileActive
 								return `nav-item${active ? ' active' : ''}`
 							}}
@@ -78,6 +63,12 @@ export const Sidebar = ({ activeItem }: SidebarProps = {}) => {
 			</nav>
 
 			<div className="sidebar-footer">
+				{user && (
+					<div className="min-w-0 px-3">
+						<p className="m-0 truncate text-sm font-semibold leading-tight text-slate-800">{user.name}</p>
+						<p className="m-0 truncate text-xs leading-tight text-slate-500">{user.email}</p>
+					</div>
+				)}
 				<button
 					type="button"
 					onClick={logout}

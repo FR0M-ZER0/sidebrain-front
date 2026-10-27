@@ -19,8 +19,8 @@ export const AuthHeroPanel = ({ variant }: AuthHeroPanelProps) => {
 				<div className="mt-8 bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
 					<div className="relative h-44 bg-slate-900 overflow-hidden group">
 						<img
-							src="https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&q=80&w=700"
-							alt="Estudo focado com tablet e caderno"
+							src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=700"
+							alt="Ambiente de estudo com computador e livros"
 							className="w-full h-full object-cover opacity-85"
 						/>
 						<div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
@@ -127,7 +127,7 @@ export const AuthHeroPanel = ({ variant }: AuthHeroPanelProps) => {
 					</div>
 
 					<div className="flex items-center justify-between text-xs mt-3 pt-1">
-						<span className="text-slate-500 font-medium">4 de 5 pílulas revisadas</span>
+						<span className="text-slate-500 font-medium">4 de 5 lições revisadas</span>
 						<span className="text-amber-600 font-semibold flex items-center gap-1">
 							<Flame size={14} className="fill-amber-500 text-amber-500" />
 							Streak de 12 dias

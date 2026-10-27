@@ -1,90 +1,12 @@
-import {
-	Award,
-	BarChart,
-	Binary,
-	BookOpen,
-	BookOpenCheck,
-	Bot,
-	BrainCircuit,
-	Calendar,
-	Check,
-	CheckCircle,
-	Clock,
-	Code,
-	Compass,
-	Cpu,
-	Crown,
-	Diamond,
-	Eye,
-	Flame,
-	GitFork,
-	Grid,
-	HelpCircle,
-	Hourglass,
-	Landmark,
-	Layers,
-	Lock,
-	MessageSquare,
-	Moon,
-	Network,
-	Percent,
-	Ruler,
-	Shield,
-	Sigma,
-	Sparkles,
-	Sunrise,
-	Target,
-	Timer,
-	TrendingUp,
-	Zap,
-} from 'lucide-react'
+import { Check, Lock } from 'lucide-react'
 import type { Badge, BadgeRarity } from '../../../types/missions'
+import { GamificationCriterionIcon } from '../../general/GamificationCriterionIcon'
 
 export interface BadgeItemCardProps {
 	badge: Badge
 }
 
 export const BadgeItemCard = ({ badge }: BadgeItemCardProps) => {
-	const iconMap = {
-		TrendingUp,
-		Shield,
-		Sunrise,
-		Timer,
-		Clock,
-		Flame,
-		Calendar,
-		Hourglass,
-		Moon,
-		Zap,
-		Landmark,
-		Ruler,
-		Grid,
-		BookOpenCheck,
-		CheckCircle,
-		BarChart,
-		Network,
-		Code,
-		Diamond,
-		MessageSquare,
-		Layers,
-		Sparkles,
-		Cpu,
-		Bot,
-		Target,
-		BrainCircuit,
-		Crown,
-		Award,
-		BookOpen,
-		Binary,
-		GitFork,
-		Sigma,
-		Compass,
-		Percent,
-		Eye,
-		HelpCircle,
-	}
-
-	const Icon = iconMap[badge.icon as keyof typeof iconMap] ?? Award
 	const isUnlocked = badge.status === 'unlocked'
 	const isInProgress = badge.status === 'in_progress'
 
@@ -114,20 +36,15 @@ export const BadgeItemCard = ({ badge }: BadgeItemCardProps) => {
 	const rarityConfig = rarityStyles[badge.rarity]
 
 	const getIconContainerStyle = () => {
-		if (badge.id === 'b-10') return 'bg-[#075fc7] text-white' // Mestre de XP
-		if (badge.id === 'b-11') return 'bg-slate-900 text-white' // Poliglota Curioso
-		if (badge.id === 'b-12') return 'bg-emerald-500 text-white' // Geômetra Iniciante
-		if (badge.id === 'b-01') return 'bg-amber-100 text-amber-800' // Fogo Imparável
-		if (badge.id === 'b-03') return 'bg-sky-100 text-sky-700' // Ritual Matinal
-		if (badge.id === 'b-04') return 'bg-emerald-100 text-emerald-700' // Zona de Imersão
-		if (badge.id === 'b-19') return 'bg-sky-100 text-sky-700' // Sintoria Cognitiva
-		if (badge.id === 'b-21') return 'bg-slate-100 text-slate-700' // Debate Socrático
+		if (!isUnlocked) return 'bg-slate-100 text-slate-500'
+		if (badge.rarity === 'lendario' || badge.rarity === 'raro') return 'bg-amber-100 text-amber-800'
+		if (badge.rarity === 'epico') return 'bg-[#075fc7] text-white'
 		if (isUnlocked) return 'bg-blue-50 text-blue-700'
 		return 'bg-slate-100 text-slate-500'
 	}
 
 	return (
-		<div className="flex flex-col justify-between rounded-3xl bg-white p-5 shadow-xs border border-slate-100 transition-all hover:shadow-sm">
+		<div className="flex flex-col justify-between rounded-2xl border border-slate-100 bg-white p-5 shadow-xs transition-all hover:shadow-sm">
 			<div>
 				{/* Topo do card: Ícone + Tag de Raridade */}
 				<div className="flex items-start justify-between">
@@ -135,7 +52,7 @@ export const BadgeItemCard = ({ badge }: BadgeItemCardProps) => {
 						<div
 							className={`flex size-12 items-center justify-center rounded-2xl ${getIconContainerStyle()}`}
 						>
-							<Icon size={22} aria-hidden="true" />
+							<GamificationCriterionIcon kind="badge" criterion={badge.categoryId} fallbackIcon={badge.icon} size={22} />
 						</div>
 
 						{/* Selo verde de verificação quando desbloqueado */}
@@ -183,6 +100,11 @@ export const BadgeItemCard = ({ badge }: BadgeItemCardProps) => {
 							<div
 								className="h-full rounded-full bg-[#075fc7] transition-all duration-300"
 								style={{ width: `${badge.progressPercent ?? 0}%` }}
+								role="progressbar"
+								aria-label={`Progresso de ${badge.name}`}
+								aria-valuenow={badge.progressPercent ?? 0}
+								aria-valuemin={0}
+								aria-valuemax={100}
 							/>
 						</div>
 					</div>

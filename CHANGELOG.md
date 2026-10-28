@@ -1,5 +1,72 @@
 # Changelog
 
+## [1.1.0](https://github.com/FR0M-ZER0/sidebrain-front/compare/v1.0.0...v1.1.0) (2026-10-28)
+
+
+### Features
+
+* **sdb-100:** ajusta visual da tela de cadastro ([c68f723](https://github.com/FR0M-ZER0/sidebrain-front/commit/c68f72335b6becaaa409694b5b545b4e1851e687))
+* **sdb-100:** antecipa e acompanha preparo das próximas etapas ([9a7a6e6](https://github.com/FR0M-ZER0/sidebrain-front/commit/9a7a6e6adf17eb961d14d4d23840798be59e70bd))
+* **sdb-100:** atualiza visual da página de ranking ([d388d12](https://github.com/FR0M-ZER0/sidebrain-front/commit/d388d12a4e7f8cab8c68ac5c6aa8fd5ef4407bc2))
+* **sdb-100:** conecta autenticação ao backend ([c853d57](https://github.com/FR0M-ZER0/sidebrain-front/commit/c853d5798e5ab7199785bd7e540463146b11e77f))
+* **sdb-100:** conecta ranking à API ([3a30aac](https://github.com/FR0M-ZER0/sidebrain-front/commit/3a30aacf4bf0f3f40fac36afc69bd154e5296406))
+* **sdb-100:** cria página paginada de trilhas ([32c7b59](https://github.com/FR0M-ZER0/sidebrain-front/commit/32c7b59b30241d4815614fdec6cbaabb2bf5dfb3))
+* **sdb-100:** exibe justificativa da avaliação no quiz ([15b469e](https://github.com/FR0M-ZER0/sidebrain-front/commit/15b469eb29588f85e27913742ae64642bdf85f25))
+* **sdb-100:** exibe missões retornadas nas trilhas ([6472815](https://github.com/FR0M-ZER0/sidebrain-front/commit/6472815016fad3ee634edae9510855732602ad60))
+* **sdb-100:** integra missões e badges da API ([12e432a](https://github.com/FR0M-ZER0/sidebrain-front/commit/12e432a05a41d52f0f0a6ccf8e407da692ecbbc4))
+* **sdb-100:** usa XP e dados reais no perfil ([942078f](https://github.com/FR0M-ZER0/sidebrain-front/commit/942078f84d7d90e6534c400cd58f9014a4d71f55))
+* **sdb-64:** Merging into hml ([bec8c84](https://github.com/FR0M-ZER0/sidebrain-front/commit/bec8c847b5cd6a38c04e2911528b38b036c668bc))
+* **sdb-78:** padroniza layouts das páginas ([4b6f7e5](https://github.com/FR0M-ZER0/sidebrain-front/commit/4b6f7e5d1aa070794f33e2edeedc236b3a12bca8))
+* **sdb-78:** simplifica loading da geração de trilha ([de97b4e](https://github.com/FR0M-ZER0/sidebrain-front/commit/de97b4e5293cd34acbb53b5f9d281ef5e751e728))
+* **sdb-78:** usa logo na barra lateral ([08d8d65](https://github.com/FR0M-ZER0/sidebrain-front/commit/08d8d65328853222b49ff994ec0f387e1a7e1ec1))
+* **sdb-78:** usa logo no layout de lição e quiz ([145ae4c](https://github.com/FR0M-ZER0/sidebrain-front/commit/145ae4c3fb38b72a931f08792907bcf7cf0cbf6b))
+* **sdb-82:** conecta rotas de autenticacao e perfil na aplicacao e integra sidebar ([182f5bb](https://github.com/FR0M-ZER0/sidebrain-front/commit/182f5bb0c360147970d3fa794d1d10c40142860c))
+* **sdb-82:** implementa componentes e pagina de perfil do usuario ([90c1258](https://github.com/FR0M-ZER0/sidebrain-front/commit/90c1258286e6c227ee1ada8c892eddcf8dc58ab8))
+* **sdb-82:** implementa infraestrutura de tipos, sessao e rota privada ([bdcbbc6](https://github.com/FR0M-ZER0/sidebrain-front/commit/bdcbbc6eae2afe543949c7795d6077e4eedd397d))
+* **sdb-82:** implementa tela e fluxo de recuperacao de senha ([e6867e7](https://github.com/FR0M-ZER0/sidebrain-front/commit/e6867e7efb111ecbfe9d553588a1a8163dcee698))
+* **sdb-82:** implementa tela e formulario de login ([8a1dde5](https://github.com/FR0M-ZER0/sidebrain-front/commit/8a1dde591c53c0df595cc390547ff18ae84b8c4e))
+* **sdb-82:** implementa validacao de forca de senha e tela de cadastro ([0088f2c](https://github.com/FR0M-ZER0/sidebrain-front/commit/0088f2c55fd00c3e7669dabbea9582e9444481ab))
+* **sdb-84:** cria tipos dados mockados e hook de missoes e badges ([836be28](https://github.com/FR0M-ZER0/sidebrain-front/commit/836be28d2638dc5e61ade956f392f2aa11582f34))
+* **sdb-84:** implementa tela e componentes de missoes e badges ([6cd097e](https://github.com/FR0M-ZER0/sidebrain-front/commit/6cd097e5fbaf564822a2dc2ec8a64da4a0e29e35))
+* **sdb-86:** cria tela de resultado da lição ([f5b523c](https://github.com/FR0M-ZER0/sidebrain-front/commit/f5b523c43a69531669baca1cf93b290cf7c357eb))
+* **sdb-88:** adiciona sumário da etapa ao resultado do quiz ([a5f63ad](https://github.com/FR0M-ZER0/sidebrain-front/commit/a5f63ad97bf98e1ef0a90be1c7c9d6b90b5a8b8c))
+* **sdb-88:** adicione renderização e edição em Markdown ([becfa9f](https://github.com/FR0M-ZER0/sidebrain-front/commit/becfa9f80b9d4cf6a868fc9ba67d32d767afe41b))
+* **sdb-88:** atualize ícone de criar trilha ([46be49f](https://github.com/FR0M-ZER0/sidebrain-front/commit/46be49fcbce356099c6c3e1bd6889e2085580af2))
+* **sdb-88:** consolida resultados dos quizzes da etapa ([4a7301c](https://github.com/FR0M-ZER0/sidebrain-front/commit/4a7301ccecd7a2f3a7760303246227f4f6327435))
+* **sdb-88:** filtra missões e pagina trilhas ([5257d84](https://github.com/FR0M-ZER0/sidebrain-front/commit/5257d840fc17027957c33cc0e00886041143b592))
+* **sdb-88:** permita consultar resultados das etapas concluídas ([1eaae95](https://github.com/FR0M-ZER0/sidebrain-front/commit/1eaae95ee682b6279d472708fa1589a4df1cf518))
+* **sdb-88:** permita navegar e refazer questões do quiz ([4f596d6](https://github.com/FR0M-ZER0/sidebrain-front/commit/4f596d6a58ef758bc19316b8923051040190cc17))
+* **sdb-88:** renderize pergunta do quiz em markdown ([2a25062](https://github.com/FR0M-ZER0/sidebrain-front/commit/2a2506251ad85af1b3e15e0a4cee83254802ec3d))
+* **sdb-91:** implementa ranking semanal e global ([7255bae](https://github.com/FR0M-ZER0/sidebrain-front/commit/7255bae8ee95f6976652ae6e0a77cff024dcd863))
+
+
+### Bug Fixes
+
+* **sbd-64:** ajusta escopo na sidebar ([857574f](https://github.com/FR0M-ZER0/sidebrain-front/commit/857574f4b1a4927f65d15765582f38041ce61dba))
+* **sdb-100:** ajusta layout e tipografia do perfil ([98a123a](https://github.com/FR0M-ZER0/sidebrain-front/commit/98a123af37f32d33c7808acc761007b3444ff8a4))
+* **sdb-100:** ajusta visual de missões e badges ([59c80cd](https://github.com/FR0M-ZER0/sidebrain-front/commit/59c80cdb2fe213e3a21f18e917c40e3cd81bc2ac))
+* **sdb-100:** padroniza estilos globais de autenticação ([606f73a](https://github.com/FR0M-ZER0/sidebrain-front/commit/606f73afa2f41500dab364f6f9ca8b2cbe702f28))
+* **sdb-100:** posiciona botão sair abaixo dos dados do usuário ([c159e29](https://github.com/FR0M-ZER0/sidebrain-front/commit/c159e29ba38385783ad880be66919ce79835b2fc))
+* **sdb-64:** Ajsutando variavel nao delcarada no escopo ([2faf62b](https://github.com/FR0M-ZER0/sidebrain-front/commit/2faf62b48d8cf938c94284779733c8a9760abfd4))
+* **sdb-64:** Colocando nome da varaivel de ambiente correta ([e0070c9](https://github.com/FR0M-ZER0/sidebrain-front/commit/e0070c97ecd00230ecc2c0c43e7a57def6163f8f))
+* **sdb-64:** Colocando nome da varaivel de ambiente correta ([571ab62](https://github.com/FR0M-ZER0/sidebrain-front/commit/571ab62aed51a17a61e905975242cdef3cf8cca1))
+* **sdb-78:** adicione classe para corrigir a aparência dos botões do motion ([eae43fe](https://github.com/FR0M-ZER0/sidebrain-front/commit/eae43feb950ba3ab82de54d9a4e54111ebbccfb0))
+* **sdb-78:** corrige erros do tailwind ([2dbf283](https://github.com/FR0M-ZER0/sidebrain-front/commit/2dbf283a08e90e3a1f176a6c8a3c37e5fc4098a0))
+* **sdb-78:** remove páginas que não serão utilizadas ([af29ca7](https://github.com/FR0M-ZER0/sidebrain-front/commit/af29ca78b6dc80d005ec243d172a7081943dbb0e))
+* **sdb-86:** adiciona rolagem vertical e ajusta layout de componentes do resultado ([82b0043](https://github.com/FR0M-ZER0/sidebrain-front/commit/82b00432cdd6a0b431712bbd3f1f478fa080d531))
+* **sdb-88:** ajusta polling do preparo de etapas ([afe4499](https://github.com/FR0M-ZER0/sidebrain-front/commit/afe44991797fb61a1057e6635aa783e576a894d1))
+* **sdb-88:** ajusta rolagem da tela de resultado do quiz ([3c03487](https://github.com/FR0M-ZER0/sidebrain-front/commit/3c034872fb4820c0c8d1310d8709c67fd8ddaafb))
+* **sdb-88:** amplie espera da geração para três minutos ([3ae0b4e](https://github.com/FR0M-ZER0/sidebrain-front/commit/3ae0b4e949699dd9619a72b68758158fb1ff4b2e))
+* **sdb-88:** direciona botão de conclusão para trilha ([d0b79a8](https://github.com/FR0M-ZER0/sidebrain-front/commit/d0b79a8117e0aee03b7eee1cfe46029a2a55b427))
+* **sdb-88:** encaminha início passo a passo para geração da trilha ([4cac34f](https://github.com/FR0M-ZER0/sidebrain-front/commit/4cac34f31c34342636f7b0a9d67b64491dc5584b))
+* **sdb-88:** limita missões exibidas na trilha ([6261632](https://github.com/FR0M-ZER0/sidebrain-front/commit/626163243f06414bd4572238a9c740d284955b7b))
+* **sdb-88:** limita trilhas exibidas no perfil ([95f1f59](https://github.com/FR0M-ZER0/sidebrain-front/commit/95f1f591019dff548cc89be007dbd78a51e72203))
+* **sdb-88:** ordena etapas e prepara a próxima na sequência ([1e4e806](https://github.com/FR0M-ZER0/sidebrain-front/commit/1e4e806c0a60a264e12819c55b833831e43d1040))
+* **sdb-88:** padroniza ícones das badges ([1f13cfb](https://github.com/FR0M-ZER0/sidebrain-front/commit/1f13cfba31561ceda0e93f071c0f86b8b2fa8f4a))
+* **sdb-88:** padroniza ícones das missões ([23ace74](https://github.com/FR0M-ZER0/sidebrain-front/commit/23ace74e4bd03b12c2e68e35aa9be4cf2615d7f4))
+* **sdb-88:** remova suporte obsoleto a itens desabilitados ([df45b61](https://github.com/FR0M-ZER0/sidebrain-front/commit/df45b617fbd790d25295742472ede4310bc4c297))
+* **sdb-91:** remove referência inválida na sidebar ([a78d5f5](https://github.com/FR0M-ZER0/sidebrain-front/commit/a78d5f5e5a7f863669566103eeccf841edcf8d32))
+
 ## 1.0.0 (2026-09-29)
 
 

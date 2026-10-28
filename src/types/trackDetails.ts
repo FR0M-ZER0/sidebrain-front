@@ -23,10 +23,14 @@ export interface Module {
 export interface Mission {
 	id: string
 	title: string
+	stepTitle?: string
+	difficulty?: string
+	criteria?: string
 	xpReward?: number
-	currentProgress: number
-	totalProgress: number
-	progressPercentage: number
+	progressUnit?: string
+	currentProgress?: number
+	totalProgress?: number
+	progressPercentage?: number
 }
 
 export interface TrackDetails {

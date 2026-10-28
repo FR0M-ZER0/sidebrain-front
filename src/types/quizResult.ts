@@ -1,10 +1,8 @@
-export type QuizResultStatus = 'success' | 'partial' | 'error'
-
 export type MetricTone = 'neutral' | 'success' | 'warning' | 'info'
 
-export type QuestionStatus = 'correct' | 'incorrect' | 'unanswered'
+export type QuestionStatus = 'correct' | 'incorrect' | 'unanswered' | 'ungraded'
 
-export type ContinuationActionId = 'back-to-track' | 'retry' | 'feedback'
+export type ContinuationActionId = 'retry' | 'complete_step'
 
 export interface MetricCard {
 	id: string
@@ -18,32 +16,30 @@ export interface QuizQuestionReview {
 	id: string
 	number: number
 	title: string
-	category?: string
+	category: string
 	duration?: string
 	status: QuestionStatus
-	userAnswer?: string
-	explanation?: string
+	prompt: string
+	userAnswer: string
+	evaluation: string
+	explanation: string
 	isExpanded?: boolean
 }
 
 export interface ContinuationAction {
 	id: ContinuationActionId
 	label: string
-	destination: string
 }
 
 export interface QuizResultViewModel {
-	moduleName: string
-	attemptLabel: string
+	trackName: string
+	stepName: string
 	scorePercent: number
 	correctAnswers: number
 	totalQuestions: number
-	xpEarned: number
-	precision: number
-	elapsedTime: string
-	retentionEstimate: string
-	currentSequence: string
-	status: QuizResultStatus
+	answeredQuestions: number
+	completedLessons: number
+	totalLessons: number
 	metrics: MetricCard[]
 	questions: QuizQuestionReview[]
 	actions: ContinuationAction[]

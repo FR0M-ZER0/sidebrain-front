@@ -1,35 +1,39 @@
-import { ArrowLeft, RotateCcw, Sparkles } from 'lucide-react'
-import type { ContinuationActionId } from '../../types/quizResult'
+import { ArrowRight, RotateCcw } from 'lucide-react'
+import type { ContinuationAction, ContinuationActionId } from '../../types/quizResult'
 
 interface QuizResultActionBarProps {
-	actions: Array<{ id: ContinuationActionId; label: string; destination: string }>
+	actions: ContinuationAction[]
 	onAction: (actionId: ContinuationActionId) => void
 }
 
-const icons = {
-	'back-to-track': ArrowLeft,
-	retry: RotateCcw,
-	feedback: Sparkles,
-}
-
 export const QuizResultActionBar = ({ actions, onAction }: QuizResultActionBarProps) => {
+	const retryAction = actions.find((action) => action.id === 'retry')
+	const completeStepAction = actions.find((action) => action.id === 'complete_step')
+
 	return (
 		<div className="quiz-result-action-bar" aria-label="Ações de continuidade">
-			{actions.map((action) => {
-				const Icon = icons[action.id]
-
-				return (
+			<div className="quiz-result-action-bar__left">
+				{retryAction && (
 					<button
 						type="button"
-						key={action.id}
-						className={`quiz-result-action-bar__button ${action.id === 'feedback' ? 'is-primary' : ''}`}
-						onClick={() => onAction(action.id)}
+						className="quiz-result-action-bar__button is-outline"
+						onClick={() => onAction('retry')}
 					>
-						<Icon size={16} />
-						<span>{action.label}</span>
+						<RotateCcw size={16} />
+						<span>{retryAction.label}</span>
 					</button>
-				)
-			})}
+				)}
+			</div>
+			{completeStepAction && (
+				<button
+					type="button"
+					className="quiz-result-action-bar__button is-primary"
+					onClick={() => onAction('complete_step')}
+				>
+					<span>{completeStepAction.label}</span>
+					<ArrowRight size={16} />
+				</button>
+			)}
 		</div>
 	)
 }

@@ -1,10 +1,14 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
-import type { LessonContentBlock } from '../../../api/lessonsApi'
+import type { LessonContentBlock, LessonProgressData } from '../../../api/lessonsApi'
+import { MarkdownContent } from '../../general/MarkdownContent'
+import { LessonProgress } from './LessonProgress'
 
 interface LessonContentProps {
 	title: string
 	blocks: LessonContentBlock[]
+	progress: LessonProgressData
+	onProgressChange?: (progressPercent: number) => void
 }
 
 interface LessonImageProps {
@@ -39,29 +43,55 @@ export const LessonImage = ({ url, altText, caption }: LessonImageProps) => {
 	)
 }
 
-export const LessonContent = ({ title, blocks }: LessonContentProps) => (
-	<article className="mx-auto w-full max-w-6xl rounded-[28px] bg-white px-5 py-8 shadow-sm sm:px-10 sm:py-12 lg:px-12">
-		<h1 className="mb-8 text-center text-4xl font-bold leading-tight tracking-[-0.04em] text-foreground sm:mb-10 sm:text-5xl lg:text-6xl">
-			{title}
-		</h1>
-		<div className="mx-auto max-w-5xl">
-			{blocks.map((block) => {
-				if (block.type === 'image') {
-					// Imagens permanecem prontas para exibição quando a API passar a fornecê-las.
-					// return <LessonImage key={block.id} url={block.url} altText={block.altText} caption={block.caption} />
-					return null
-				}
+export const LessonContent = ({ title, blocks, progress, onProgressChange }: LessonContentProps) => {
+	const articleRef = useRef<HTMLElement>(null)
+	const contentRef = useRef<HTMLDivElement>(null)
+	const [markdownRendered, setMarkdownRendered] = useState(false)
+	const hasMarkdown = blocks.some((block) => block.type === 'paragraph' && Boolean(block.text.trim()))
+	const reportProgress = useCallback((article: HTMLElement) => {
+		const scrollableHeight = article.scrollHeight - article.clientHeight
+		const progressPercent = scrollableHeight <= 0
+			? 100
+			: Math.min(100, Math.round((article.scrollTop / scrollableHeight) * 100))
+		onProgressChange?.(progressPercent)
+	}, [onProgressChange])
+	const markMarkdownRendered = useCallback(() => setMarkdownRendered(true), [])
 
-				if (!block.text.trim()) {
-					return null
-				}
+	useEffect(() => {
+		if (hasMarkdown && !markdownRendered) return
+		const article = articleRef.current
+		const content = contentRef.current
+		if (!article || !content) return
 
-				return (
-					<p key={block.id} className="mb-5 text-lg leading-[1.8] text-foreground sm:text-xl">
-						{block.text}
-					</p>
-				)
-			})}
-		</div>
-	</article>
-)
+		reportProgress(article)
+		const observer = new ResizeObserver(() => reportProgress(article))
+		observer.observe(content)
+		return () => observer.disconnect()
+	}, [blocks, hasMarkdown, markdownRendered, reportProgress, title])
+
+	return (
+		<article
+			ref={articleRef}
+			onScroll={(event) => reportProgress(event.currentTarget)}
+			className="mx-auto min-h-0 w-full max-w-none flex-1 overflow-y-auto overscroll-contain rounded-[28px] bg-white px-5 py-8 shadow-sm sm:px-10 sm:py-12 lg:px-12"
+		>
+			<LessonProgress progress={progress} />
+			<h1 className="mb-8 text-center text-4xl font-bold leading-tight tracking-[-0.04em] text-foreground sm:mb-10 sm:text-5xl lg:text-6xl">
+				{title}
+			</h1>
+			<div ref={contentRef} className="mx-auto max-w-5xl">
+				{blocks.map((block) => {
+					if (block.type === 'image') {
+						return <LessonImage key={block.id} url={block.url} altText={block.altText} caption={block.caption} />
+					}
+
+					if (!block.text.trim()) {
+						return null
+					}
+
+					return <MarkdownContent key={block.id} content={block.text} className="lesson-markdown text-lg leading-[1.8] text-foreground sm:text-xl" onRender={markMarkdownRendered} />
+				})}
+			</div>
+		</article>
+	)
+}

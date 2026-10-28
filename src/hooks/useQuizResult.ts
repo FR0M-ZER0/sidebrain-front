@@ -1,142 +1,245 @@
-import { useEffect, useMemo, useState } from 'react'
-import type { ContinuationActionId, QuizResultViewModel } from '../types/quizResult'
+import { useCallback, useEffect, useState } from 'react'
+import { generateAndPollStepSummary, getStepQuizResults, type QuizResultAnswerRate, type StepQuizResultData } from '../api/quizResultApi'
+import { useAuth } from './useAuth'
+import type { ContinuationActionId, QuizQuestionReview, QuizResultViewModel } from '../types/quizResult'
 
-const buildMockQuizResult = (): QuizResultViewModel => ({
-	moduleName: 'Módulo de Cálculo Combinatório',
-	attemptLabel: 'Tentativa final',
-	scorePercent: 100,
-	correctAnswers: 5,
-	totalQuestions: 5,
-	xpEarned: 80,
-	precision: 100,
-	elapsedTime: '2m 15s',
-	retentionEstimate: 'Alta (+94%)',
-	currentSequence: '5/5',
-	status: 'success',
-	metrics: [
-		{ id: 'xp', label: 'XP ganho', value: '+80 XP', detail: 'Bônus de precisão inclusa', tone: 'neutral' },
-		{ id: 'precision', label: 'Precisão', value: '100%', detail: 'Meta do módulo: 60%', tone: 'success' },
-		{ id: 'time', label: 'Tempo gasto', value: '2m 15s', detail: '42 ms mais rápido', tone: 'info' },
-		{ id: 'retention', label: 'Retenção estimada', value: 'Alta (+94%)', detail: 'Indicativo de aprendizado', tone: 'warning' },
-	],
-	questions: [
-		{
-			id: 'question-1',
-			number: 1,
-			title: 'Cálculo de Margem Operacional',
-			category: 'Finanças Corporativas',
-			duration: '18 segundos',
-			status: 'correct',
-			userAnswer: 'A',
-			explanation: 'A margem operacional foi calculada corretamente usando a relação entre receita líquida e custos variáveis.',
-			isExpanded: true,
-		},
-		{
-			id: 'question-2',
-			number: 2,
-			title: 'Interpretação do EBITDA / LAJIDA',
-			category: 'Demonstrações Contábeis',
-			duration: '31 segundos',
-			status: 'correct',
-			userAnswer: 'C',
-			explanation: 'O EBITDA representa o resultado antes de juros, impostos, depreciação e amortização, e o ajuste correto foi aplicado.',
-			isExpanded: false,
-		},
-		{
-			id: 'question-3',
-			number: 3,
-			title: 'Ciclo Financeiro e Capital de Giro',
-			category: 'Seita do Tesoureiro',
-			duration: '25 segundos',
-			status: 'correct',
-			userAnswer: 'B',
-			explanation: 'O capital de giro foi identificado corretamente ao comparar o ciclo de conversão e o prazo médio de pagamento.',
-			isExpanded: false,
-		},
-		{
-			id: 'question-4',
-			number: 4,
-			title: 'Análise DuPont: Decomposição do ROE',
-			category: 'Estrutura de Capital',
-			duration: '39 segundos',
-			status: 'correct',
-			userAnswer: 'D',
-			explanation: 'A decomposição do ROE foi feita corretamente ao separar eficiência operacional, alavancagem e multiplicador patrimonial.',
-			isExpanded: false,
-		},
-		{
-			id: 'question-5',
-			number: 5,
-			title: 'WACC e Custo Médio Ponderado',
-			category: 'Valuation',
-			duration: '27 segundos',
-			status: 'correct',
-			userAnswer: 'A',
-			explanation: 'O custo médio ponderado foi calculado com a estrutura de capital correta e o ajuste dos pesos em cada fonte de financiamento.',
-			isExpanded: false,
-		},
-	],
-	actions: [
-		{ id: 'back-to-track', label: 'Voltar para a Trilha', destination: '/' },
-		{ id: 'retry', label: 'Refazer Quiz', destination: '/quiz' },
-		{ id: 'feedback', label: 'Ver Feedback Detalhado da IA', destination: '/feedback' },
-	],
-})
+type QuizResultLoadState =
+	| { requestKey: string; status: 'error'; message: string }
+	| { requestKey: string; status: 'success'; result: QuizResultViewModel }
 
-export const useQuizResult = () => {
-	const initialResult = useMemo(() => buildMockQuizResult(), [])
-	const [result] = useState<QuizResultViewModel>(initialResult)
-	const [expandedMap, setExpandedMap] = useState<Record<string, boolean>>(() =>
-		Object.fromEntries(result.questions.map((question) => [question.id, Boolean(question.isExpanded)])),
-	)
+type StepSummaryLoadState =
+	| { requestKey: string; status: 'error'; message: string }
+	| { requestKey: string; status: 'success'; summary: string }
+
+type StepSummaryState = StepSummaryLoadState | { requestKey: string; status: 'loading' }
+
+interface QuizResultInteractionState {
+	requestKey: string
+	expandedMap: Record<string, boolean>
+	showRetryConfirmation: boolean
+}
+
+const evaluationLabels: Record<QuizResultAnswerRate, string> = {
+	perfect: 'Resposta perfeita',
+	good: 'Boa resposta',
+	almost_got_it: 'Quase lá',
+	wrong: 'Precisa revisar',
+}
+
+const getQuestionTitle = (question: string) =>
+	question.length > 110 ? `${question.slice(0, 107).trimEnd()}…` : question
+
+const toQuestionReview = (question: StepQuizResultData['questions'][number]): QuizQuestionReview => {
+	const isCorrect = question.rate === 'perfect' || question.rate === 'good'
+	const status = question.answerText === undefined
+		? 'unanswered'
+		: question.rate === undefined
+			? 'ungraded'
+			: isCorrect ? 'correct' : 'incorrect'
+
+	return {
+		id: question.id,
+		number: question.number,
+		title: getQuestionTitle(question.question),
+		category: question.lessonTitle,
+		status,
+		prompt: question.question,
+		userAnswer: question.answerText ?? 'Nenhuma resposta registrada.',
+		evaluation: question.rate ? evaluationLabels[question.rate] : 'Avaliação indisponível',
+		explanation: question.reason
+			?? (question.answerText === undefined
+				? 'A API não retornou uma resposta para este quiz.'
+				: 'A API não retornou a justificativa desta avaliação.'),
+	}
+}
+
+const toQuizResultViewModel = (data: StepQuizResultData): QuizResultViewModel => {
+	const questions = data.questions.map(toQuestionReview)
+	const totalQuestions = questions.length
+	const correctAnswers = questions.filter((question) => question.status === 'correct').length
+	const answeredQuestions = questions.filter((question) => question.status !== 'unanswered').length
+	const scorePercent = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0
+
+	return {
+		trackName: data.trackTitle,
+		stepName: data.stepTitle,
+		scorePercent,
+		correctAnswers,
+		totalQuestions,
+		answeredQuestions,
+		completedLessons: data.completedLessonCount,
+		totalLessons: data.lessonCount,
+		metrics: [
+			{
+				id: 'accuracy',
+				label: 'Aproveitamento da etapa',
+				value: `${scorePercent}%`,
+				detail: `${correctAnswers} de ${totalQuestions} questões corretas`,
+				tone: scorePercent === 100 ? 'success' : scorePercent > 0 ? 'warning' : 'neutral',
+			},
+			{
+				id: 'answered',
+				label: 'Quizzes respondidos',
+				value: `${answeredQuestions} / ${totalQuestions}`,
+				detail: `${Math.max(totalQuestions - answeredQuestions, 0)} sem resposta`,
+				tone: 'info',
+			},
+			{
+				id: 'lessons',
+				label: 'Lições concluídas',
+				value: `${data.completedLessonCount} / ${data.lessonCount}`,
+				detail: 'Progresso registrado na etapa',
+				tone: data.completedLessonCount === data.lessonCount ? 'success' : 'warning',
+			},
+		],
+		questions,
+		actions: [
+			{ id: 'retry', label: 'Refazer Quiz' },
+			{ id: 'complete_step', label: 'Concluir etapa' },
+		],
+	}
+}
+
+export const useQuizResult = ({ trackId, stepId }: { trackId: string | null; stepId: string | null }) => {
+	const { user } = useAuth()
+	const userId = user?.id ?? null
+	const [attempt, setAttempt] = useState(0)
+	const [loadedState, setLoadedState] = useState<QuizResultLoadState | null>(null)
+	const [interactionState, setInteractionState] = useState<QuizResultInteractionState | null>(null)
+	const [summaryAttempt, setSummaryAttempt] = useState(0)
+	const [loadedSummaryState, setLoadedSummaryState] = useState<StepSummaryLoadState | null>(null)
+	const requestKey = `${trackId ?? ''}:${stepId ?? ''}:${userId ?? ''}:${attempt}`
+	const summaryRequestKey = `${trackId ?? ''}:${stepId ?? ''}:${userId ?? ''}:${attempt}:${summaryAttempt}`
 
 	useEffect(() => {
-		const handleEscape = (event: KeyboardEvent) => {
-			if (event.key === 'Escape') {
-				window.location.href = '/'
-			}
+		if (!trackId || !stepId || !userId) return
+		let isActive = true
+		getStepQuizResults(trackId, stepId, userId)
+			.then((data) => {
+				if (isActive) setLoadedState({ requestKey, status: 'success', result: toQuizResultViewModel(data) })
+			})
+			.catch((error: unknown) => {
+				if (isActive) {
+					setLoadedState({
+						requestKey,
+						status: 'error',
+						message: error instanceof Error ? error.message : 'Não foi possível carregar o resultado da etapa.',
+					})
+				}
+			})
+
+		return () => { isActive = false }
+	}, [requestKey, stepId, trackId, userId])
+
+	const loadState = !trackId || !stepId
+		? { requestKey, status: 'error' as const, message: 'Não foi possível identificar a etapa que você concluiu.' }
+		: !userId
+			? { requestKey, status: 'error' as const, message: 'Não foi possível identificar sua conta para carregar o resultado.' }
+			: loadedState?.requestKey === requestKey
+				? loadedState
+				: { requestKey, status: 'loading' as const }
+	const result = loadState.status === 'success' ? loadState.result : null
+	const canGenerateSummary = Boolean(result && result.totalLessons > 0 && result.completedLessons >= result.totalLessons)
+
+	useEffect(() => {
+		if (!trackId || !stepId || !userId || !canGenerateSummary) return
+		const controller = new AbortController()
+		const timer = window.setTimeout(() => {
+			generateAndPollStepSummary(trackId, stepId, controller.signal)
+				.then((summary) => {
+					if (!controller.signal.aborted) setLoadedSummaryState({ requestKey: summaryRequestKey, status: 'success', summary })
+				})
+				.catch((error: unknown) => {
+					if (!controller.signal.aborted) {
+						setLoadedSummaryState({
+							requestKey: summaryRequestKey,
+							status: 'error',
+							message: error instanceof Error ? error.message : 'Não foi possível gerar o sumário da etapa.',
+						})
+					}
+				})
+		}, 0)
+
+		return () => {
+			window.clearTimeout(timer)
+			controller.abort()
 		}
+	}, [canGenerateSummary, result, stepId, trackId, userId, summaryRequestKey])
 
-		window.addEventListener('keydown', handleEscape)
-		return () => window.removeEventListener('keydown', handleEscape)
-	}, [])
+	const summaryState: StepSummaryState = !trackId || !stepId
+		? { requestKey: summaryRequestKey, status: 'error', message: 'Não foi possível identificar a etapa para gerar o sumário.' }
+		: !userId
+			? { requestKey: summaryRequestKey, status: 'error', message: 'Não foi possível identificar sua conta para gerar o sumário.' }
+			: loadState.status === 'loading'
+				? { requestKey: summaryRequestKey, status: 'loading' }
+				: loadState.status === 'error'
+					? { requestKey: summaryRequestKey, status: 'error', message: loadState.message }
+					: !canGenerateSummary
+						? { requestKey: summaryRequestKey, status: 'error', message: 'A etapa ainda não consta como concluída no servidor.' }
+						: loadedSummaryState?.requestKey === summaryRequestKey
+							? loadedSummaryState
+							: { requestKey: summaryRequestKey, status: 'loading' }
+	const retrySummary = useCallback(() => setSummaryAttempt((current) => current + 1), [])
 
-	const allExpanded = result.questions.length > 0 && result.questions.every((question) => expandedMap[question.id] ?? false)
+	const defaultInteractionState: QuizResultInteractionState = {
+		requestKey,
+		expandedMap: Object.fromEntries(result?.questions.map((question) => [question.id, false]) ?? []),
+		showRetryConfirmation: false,
+	}
+	const interactions = interactionState?.requestKey === requestKey ? interactionState : defaultInteractionState
+	const { expandedMap, showRetryConfirmation } = interactions
+	const allExpanded = Boolean(result && result.questions.length > 0
+		&& result.questions.every((question) => expandedMap[question.id] ?? false))
 
 	const toggleQuestion = (questionId: string) => {
-		setExpandedMap((current) => ({
-			...current,
-			[questionId]: !(current[questionId] ?? false),
-		}))
+		setInteractionState((current) => {
+			const currentInteractions = current?.requestKey === requestKey ? current : defaultInteractionState
+			return {
+				...currentInteractions,
+				expandedMap: {
+					...currentInteractions.expandedMap,
+					[questionId]: !(currentInteractions.expandedMap[questionId] ?? false),
+				},
+			}
+		})
 	}
 
 	const toggleAllQuestions = () => {
+		if (!result) return
 		const nextState = !allExpanded
-		setExpandedMap(
-			Object.fromEntries(result.questions.map((question) => [question.id, nextState])),
-		)
+		setInteractionState((current) => ({
+			...(current?.requestKey === requestKey ? current : defaultInteractionState),
+			expandedMap: Object.fromEntries(result.questions.map((question) => [question.id, nextState])),
+		}))
 	}
 
 	const handleAction = (actionId: ContinuationActionId) => {
-		if (actionId === 'back-to-track') {
-			window.location.href = '/'
-			return
-		}
-
 		if (actionId === 'retry') {
-			window.location.href = '/quiz'
-			return
+			setInteractionState((current) => ({
+				...(current?.requestKey === requestKey ? current : defaultInteractionState),
+				showRetryConfirmation: true,
+			}))
 		}
-
-		window.location.href = '/feedback'
 	}
 
+	const retry = useCallback(() => setAttempt((current) => current + 1), [])
+
 	return {
+		status: loadState.status,
+		message: loadState.status === 'error' ? loadState.message : null,
+		canRetry: Boolean(trackId && stepId && userId),
+		summaryStatus: summaryState.status,
+		stageSummary: summaryState.status === 'success' ? summaryState.summary : null,
+		summaryMessage: summaryState.status === 'error' ? summaryState.message : null,
+		canRetrySummary: canGenerateSummary,
 		result,
 		expandedMap,
 		allExpanded,
+		showRetryConfirmation,
 		toggleQuestion,
 		toggleAllQuestions,
 		handleAction,
+		retry,
+		retrySummary,
 	}
 }

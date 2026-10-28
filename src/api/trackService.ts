@@ -1,5 +1,73 @@
 import { api } from './api'
+import { readGamificationProgress } from './gamificationApi'
 import type { Lesson, Module, ModuleStatus, Mission, TrackDetails } from '../types/trackDetails'
+import type { PendingStepPreparation, PrepareNextStepResult } from '../types/trackFlow'
+
+const PENDING_STEP_PREPARATIONS_KEY = 'sidebrain:pending-step-preparations'
+
+interface StepPreparationRecord extends PendingStepPreparation {
+	state?: 'pending' | 'ready'
+}
+
+const readPendingPreparations = (): Record<string, StepPreparationRecord> => {
+	if (typeof window === 'undefined') return {}
+	try {
+		const stored = JSON.parse(window.sessionStorage.getItem(PENDING_STEP_PREPARATIONS_KEY) ?? '{}') as unknown
+		return isRecord(stored) ? stored as Record<string, StepPreparationRecord> : {}
+	} catch {
+		return {}
+	}
+}
+
+const savePendingPreparation = (pending: PendingStepPreparation) => {
+	if (typeof window === 'undefined') return
+	try {
+		const stored = readPendingPreparations()
+		window.sessionStorage.setItem(PENDING_STEP_PREPARATIONS_KEY, JSON.stringify({
+			...stored,
+			[pending.trackId]: { ...pending, state: 'pending' },
+		}))
+	} catch {
+		// O acompanhamento continua na tela mesmo se o armazenamento da sessão estiver indisponível.
+	}
+}
+
+export const getPendingStepPreparation = (trackId: string): PendingStepPreparation | null => {
+	const pending = readPendingPreparations()[trackId]
+	return pending && pending.state !== 'ready' && pending.trackId === trackId
+		&& typeof pending.stepId === 'string' && typeof pending.taskId === 'string'
+		? pending
+		: null
+}
+
+export const hasStepPreparationBeenRequested = (trackId: string, stepId: string) => {
+	const record = readPendingPreparations()[trackId]
+	return record?.trackId === trackId && record.stepId === stepId && typeof record.taskId === 'string'
+}
+
+export const forgetStepPreparation = (trackId: string, stepId: string) => {
+	if (typeof window === 'undefined') return
+	try {
+		const stored = readPendingPreparations()
+		if (stored[trackId]?.stepId !== stepId) return
+		delete stored[trackId]
+		window.sessionStorage.setItem(PENDING_STEP_PREPARATIONS_KEY, JSON.stringify(stored))
+	} catch {
+		// A próxima navegação poderá tentar novamente se o estado não puder ser removido.
+	}
+}
+
+const markPreparationReady = (pending: PendingStepPreparation) => {
+	if (typeof window === 'undefined') return
+	try {
+		const stored = readPendingPreparations()
+		if (stored[pending.trackId]?.taskId !== pending.taskId) return
+		stored[pending.trackId] = { ...pending, state: 'ready' }
+		window.sessionStorage.setItem(PENDING_STEP_PREPARATIONS_KEY, JSON.stringify(stored))
+	} catch {
+		// O armazenamento da sessão é apenas uma persistência adicional para a espera.
+	}
+}
 
 interface ApiLesson {
 	id: string
@@ -15,13 +83,19 @@ interface ApiMission {
 	title?: string
 	name?: string
 	description?: string
+	difficulty?: string
+	criteria?: string
+	criteria_value?: number
+	score?: number
 	status?: string
-	progress?: number
-	current_progress?: number
-	total_progress?: number
-	goal?: number
 	xp_reward?: number
-	reward_xp?: number
+	mission_progresses?: ApiMissionProgress[] | ApiMissionProgress | null
+}
+
+interface ApiMissionProgress {
+	score?: number
+	status?: string
+	updated_at?: string
 }
 
 interface ApiStep {
@@ -47,8 +121,8 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 const asText = (value: unknown, fallback = '') =>
 	typeof value === 'string' ? value : fallback
 
-const asNumber = (value: unknown, fallback = 0) =>
-	typeof value === 'number' && Number.isFinite(value) ? value : fallback
+const asOptionalNumber = (value: unknown) =>
+	typeof value === 'number' && Number.isFinite(value) ? value : undefined
 
 const asItems = <T,>(value: unknown, isItem: (item: unknown) => item is T): T[] =>
 	Array.isArray(value) ? value.filter(isItem) : []
@@ -91,16 +165,37 @@ const toLesson = (lesson: ApiLesson, isNextAvailable: boolean): Lesson => {
 	}
 }
 
-const toMission = (mission: ApiMission, index: number): Mission => {
-	const currentProgress = asNumber(mission.current_progress, asNumber(mission.progress))
-	const totalProgress = asNumber(mission.total_progress, asNumber(mission.goal, 1))
+const getProgressUnit = (criteria: string | undefined) => {
+	if (!criteria) return undefined
+
+	const units: Record<string, string> = {
+		number_of_lessons_completed: 'lições',
+		get_all_answer_right_in_a_lesson: 'respostas corretas',
+		complete_a_step: 'etapas',
+		complete_a_track: 'trilhas',
+		number_of_steps_completed: 'etapas',
+		get_all_answers_right: 'respostas corretas',
+	}
+
+	return units[criteria] ?? 'conclusões'
+}
+
+const toMission = (mission: ApiMission, index: number, step: ApiStep): Mission => {
+	const progress = readGamificationProgress({ ...mission }, 'mission')
+	const totalProgress = asOptionalNumber(mission.criteria_value)
+	const xpReward = asOptionalNumber(mission.xp_reward)
+	const criteria = asText(mission.criteria) || undefined
+
 	return {
-		id: asText(mission.id, `mission-${index + 1}`),
+		id: asText(mission.id, `mission-${step.id}-${index + 1}`),
 		title: asText(mission.title, asText(mission.name, asText(mission.description, 'Missão da trilha'))),
-		xpReward: asNumber(mission.xp_reward, asNumber(mission.reward_xp)),
-		currentProgress,
+		stepTitle: step.title,
+		difficulty: asText(mission.difficulty) || undefined,
+		criteria,
+		xpReward,
+		progressUnit: getProgressUnit(criteria),
 		totalProgress,
-		progressPercentage: totalProgress > 0 ? Math.min(100, Math.round((currentProgress / totalProgress) * 100)) : 0,
+		progressPercentage: progress.score,
 	}
 }
 
@@ -110,8 +205,26 @@ const getModuleStatus = (step: ApiStep, lessons: Lesson[], isNextModule: boolean
 	return 'locked'
 }
 
+const stepLevelOrder = new Map<string, number>([
+	['beginner', 0],
+	['intermediate', 1],
+	['advanced', 2],
+	['avanced', 2],
+	['pro', 3],
+])
+
+const orderApiSteps = (steps: ApiStep[]) => {
+	return steps
+		.map((step, index) => {
+			const level = step.level?.trim().toLowerCase() ?? ''
+			return { step, index, order: stepLevelOrder.get(level) ?? Number.POSITIVE_INFINITY }
+		})
+		.sort((first, second) => first.order - second.order || first.index - second.index)
+		.map(({ step }) => step)
+}
+
 const toTrackDetails = (track: ApiTrack): TrackDetails => {
-	const steps = asItems(track.steps, isApiStep)
+	const steps = orderApiSteps(asItems(track.steps, isApiStep))
 	const apiLessonsByStep = steps.map(getLessonsInPositionOrder)
 	const allLessons = apiLessonsByStep.flat()
 	const completedLessons = allLessons.filter((lesson) => isCompleted(lesson.status)).length
@@ -133,7 +246,9 @@ const toTrackDetails = (track: ApiTrack): TrackDetails => {
 		lessonOffset += apiLessons.length
 		return module
 	})
-	const missions = steps.flatMap((step) => asItems(step.missions, isApiMission)).map(toMission)
+	const missions = steps.flatMap((step) =>
+		asItems(step.missions, isApiMission).map((mission, index) => toMission(mission, index, step)),
+	)
 	const progressUnits = allLessons.length > 0 ? allLessons.length : steps.length
 	const progressDone = allLessons.length > 0 ? completedLessons : steps.filter((step) => isCompleted(step.status)).length
 
@@ -154,4 +269,74 @@ export const getTrackDetails = async (trackId: string): Promise<TrackDetails> =>
 	if (!trackId) throw new Error('A trilha solicitada não foi encontrada.')
 	const { data } = await api.get<unknown>(`/api/v1/tracks/${encodeURIComponent(trackId)}`)
 	return toTrackDetails(getApiTrack(data))
+}
+
+export const prepareNextStep = async (trackId: string, stepId: string): Promise<PrepareNextStepResult> => {
+	if (!trackId || !stepId) throw new Error('Não foi possível identificar a trilha e a etapa para preparar a próxima.')
+	const { data } = await api.post<unknown>(`/api/v1/tracks/${encodeURIComponent(trackId)}/steps/${encodeURIComponent(stepId)}/prepare-next`)
+	const result = isRecord(data) && isRecord(data.data) ? data.data : data
+	if (!isRecord(result)) throw new Error('A resposta do preparo da próxima etapa está em um formato inválido.')
+
+	if (result.status === 'accepted' && typeof result.task_id === 'string') {
+		const pending: PendingStepPreparation = {
+			trackId,
+			stepId,
+			taskId: result.task_id,
+		}
+		savePendingPreparation(pending)
+		return { status: 'accepted', pending }
+	}
+
+	if (result.status === 'skipped') {
+		return {
+			status: 'skipped',
+			reason: typeof result.reason === 'string' ? result.reason : 'A próxima etapa ainda não está elegível para preparação.',
+		}
+	}
+
+	throw new Error('A API não confirmou o preparo da próxima etapa.')
+}
+
+export const getEligibleStepForPreparation = (track: TrackDetails) => track.modules.find((module, index) => {
+	if (module.totalLessons === 0) return false
+	const progress = module.completedLessons / module.totalLessons
+	const nextStepPrepared = Boolean(track.modules[index + 1]?.lessons.length)
+	return progress >= 0.8 && !nextStepPrepared
+})
+
+export const prepareEligibleNextStep = async (track: TrackDetails) => {
+	const step = getEligibleStepForPreparation(track)
+	if (!step) return null
+	return { step, result: await prepareNextStep(track.id, step.id) }
+}
+
+const hasPreparedNextStep = (track: TrackDetails, stepId: string) => {
+	const currentStepIndex = track.modules.findIndex((module) => module.id === stepId)
+	return currentStepIndex >= 0 && Boolean(track.modules[currentStepIndex + 1]?.lessons.length)
+}
+
+const STEP_PREPARATION_POLL_INTERVAL = 15_000
+const wait = (milliseconds: number) => new Promise((resolve) => window.setTimeout(resolve, milliseconds))
+
+export const waitForPreparedNextStep = async (
+	pending: PendingStepPreparation,
+	signal?: AbortSignal,
+): Promise<boolean> => {
+	const deadline = Date.now() + 90_000
+
+	while (!signal?.aborted && Date.now() < deadline) {
+		try {
+			const track = await getTrackDetails(pending.trackId)
+			if (hasPreparedNextStep(track, pending.stepId)) {
+				markPreparationReady(pending)
+				return true
+			}
+		} catch {
+			// A falha transitória de leitura não encerra a espera pela preparação.
+		}
+
+		if (!signal?.aborted) await wait(STEP_PREPARATION_POLL_INTERVAL)
+	}
+
+	return false
 }

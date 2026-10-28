@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import {
 	ArrowLeft,
 	ArrowRight,
@@ -9,16 +9,25 @@ import {
 	ChevronDown,
 	ChevronUp,
 	CircleDashed,
-	Flame,
 	LockKeyhole,
-	Search,
 	Signal,
 	Zap,
 } from 'lucide-react'
-import { Sidebar } from '../../components/customer/Sidebar'
+import { StudentPageLayout } from '../../components/customer/layouts/StudentPageLayout'
 import { useTrackDetails } from '../../hooks/useTrackDetails'
+import { forgetStepPreparation, getEligibleStepForPreparation, getPendingStepPreparation, hasStepPreparationBeenRequested, prepareEligibleNextStep, waitForPreparedNextStep } from '../../api/trackService'
 import type { LessonNavigationContext } from '../../api/lessonsApi'
 import type { Module, TrackDetails } from '../../types/trackDetails'
+import type { PendingStepPreparation } from '../../types/trackFlow'
+import { missionCriteriaLabels, missionDifficultyLabels } from '../../util/gamification'
+
+const MAX_VISIBLE_TRACK_MISSIONS = 3
+
+const getMissionDifficultyLabel = (difficulty: string) =>
+	missionDifficultyLabels[difficulty] ?? difficulty
+
+const getMissionCriteriaLabel = (criteria: string) =>
+	missionCriteriaLabels[criteria] ?? criteria.replace(/_/g, ' ')
 
 const ModuleCard = ({ module, index, track }: { module: Module; index: number; track: TrackDetails }) => {
 	const navigate = useNavigate()
@@ -31,6 +40,10 @@ const ModuleCard = ({ module, index, track }: { module: Module; index: number; t
 			from: `/trails/${track.id}`,
 			trackTitle: track.title,
 			moduleTitle: module.title,
+			trackId: track.id,
+			stepId: module.id,
+			lessonPosition: lessonIndex + 1,
+			stepLessonCount: module.totalLessons,
 			currentLesson: lessonOffset + lessonIndex + 1,
 			totalLessons: track.totalLessons,
 			trailCompletionPercentage: track.progressPercentage,
@@ -58,7 +71,7 @@ const ModuleCard = ({ module, index, track }: { module: Module; index: number; t
 				{!isLocked && (isExpanded ? <ChevronUp size={21} /> : <ChevronDown size={21} />)}
 				{isLocked && <LockKeyhole className="track-lock" size={20} />}
 			</button>
-			{isExpanded && module.lessons.length > 0 && (
+			{isExpanded && (module.lessons.length > 0 || module.status === 'completed') && (
 				<div className="track-lesson-list">
 					{module.lessons.map((lesson, lessonIndex) => (
 						<div key={lesson.id} className={`track-lesson ${lesson.status}`}>
@@ -79,6 +92,7 @@ const ModuleCard = ({ module, index, track }: { module: Module; index: number; t
 							{lesson.status === 'locked' && <span className="track-locked-label"><LockKeyhole size={15} /> Bloqueada</span>}
 						</div>
 					))}
+					{module.status === 'completed' && <Link to={`/quiz-result?${new URLSearchParams({ trackId: track.id, stepId: module.id }).toString()}`} className="track-step-results-button">Ver resultado da etapa <ArrowRight size={18} aria-hidden="true" /></Link>}
 				</div>
 			)}
 		</section>
@@ -87,43 +101,179 @@ const ModuleCard = ({ module, index, track }: { module: Module; index: number; t
 
 export const TrackDetailsPage = () => {
 	const { slug } = useParams()
+	const location = useLocation()
 	const trackState = useTrackDetails(slug)
 	const track = trackState.status === 'success' ? trackState.track : null
+	const initialPendingPreparation = (location.state as { pendingStepPreparation?: PendingStepPreparation } | null)?.pendingStepPreparation ?? null
+	const [pendingPreparation, setPendingPreparation] = useState<PendingStepPreparation | null>(
+		() => initialPendingPreparation ?? (slug ? getPendingStepPreparation(slug) : null),
+	)
+	const [preparationStatus, setPreparationStatus] = useState<'idle' | 'waiting' | 'ready' | 'failed' | 'timed-out'>('idle')
+	const [preparationRetry, setPreparationRetry] = useState(0)
+	const attemptedPreparation = useRef<string | null>(null)
+	const reloadTrack = trackState.reload
+
+	useEffect(() => {
+		if (!track || pendingPreparation) return
+		const step = getEligibleStepForPreparation(track)
+		if (!step) return
+
+		const preparationKey = `${track.id}:${step.id}`
+		if (attemptedPreparation.current === preparationKey) return
+		if (hasStepPreparationBeenRequested(track.id, step.id)) return
+		attemptedPreparation.current = preparationKey
+		let isActive = true
+
+		prepareEligibleNextStep(track)
+			.then((preparation) => {
+				if (!isActive) return
+				if (!preparation) {
+					setPreparationStatus('idle')
+					return
+				}
+				if (preparation.result.status === 'accepted') {
+					setPendingPreparation(preparation.result.pending)
+					setPreparationStatus('waiting')
+				} else {
+					setPreparationStatus('idle')
+				}
+			})
+			.catch(() => {
+				if (isActive) setPreparationStatus('failed')
+			})
+
+		return () => { isActive = false }
+	}, [preparationRetry, pendingPreparation, track])
+
+	useEffect(() => {
+		if (!pendingPreparation) return
+		const controller = new AbortController()
+
+		waitForPreparedNextStep(pendingPreparation, controller.signal).then((isPrepared) => {
+			if (controller.signal.aborted) return
+			attemptedPreparation.current = `${pendingPreparation.trackId}:${pendingPreparation.stepId}`
+			setPendingPreparation(null)
+			if (isPrepared) {
+				setPreparationStatus('ready')
+				reloadTrack()
+			} else {
+				forgetStepPreparation(pendingPreparation.trackId, pendingPreparation.stepId)
+				setPreparationStatus('timed-out')
+			}
+		}).catch(() => {
+			if (!controller.signal.aborted) setPreparationStatus('failed')
+		})
+
+		return () => controller.abort()
+	}, [pendingPreparation, reloadTrack])
+
+	const retryPreparation = () => {
+		if (pendingPreparation) forgetStepPreparation(pendingPreparation.trackId, pendingPreparation.stepId)
+		attemptedPreparation.current = null
+		setPendingPreparation(null)
+		setPreparationStatus('idle')
+		setPreparationRetry((current) => current + 1)
+	}
+	const visiblePreparationStatus = pendingPreparation ? 'waiting' : preparationStatus
 
 	return (
-		<div className="app-shell track-details-shell">
-			<Sidebar />
-			<main className="track-details-page">
-				<header className="track-topbar">
-					<div className="track-search"><Search size={21} /><input aria-label="Pesquisar" value="Pesquisar conceitos, trilhas ou mentoria..." readOnly /></div>
-					<div className="track-topbar-actions">
-						<span className="track-xp-pill"><Zap size={22} />320 / 500 XP</span>
-						<span className="track-streak-pill"><Flame size={21} />12</span>
-						<button type="button" aria-label="Notificações" className="track-bell"><span>♧</span><i /></button>
-					</div>
-				</header>
-				{trackState.status === 'loading' && <div className="track-state" role="status">Carregando trilha...</div>}
-				{trackState.status === 'error' && <div className="track-state track-state-error" role="alert">{trackState.message}</div>}
-				{track && <>
-					<div className="track-breadcrumb"><a href="/#tracks"><ArrowLeft size={18} /> Trilhas Ativas</a><span>/</span><strong>{track.title}</strong></div>
-					<div className="track-details-layout">
-						<aside className="track-overview-card">
-							<div className="track-overview-title"><span className="track-japanese-icon">{track.icon || '🧭'}</span><div><span>TRILHA</span><h1>{track.title}</h1></div></div>
-							<div className="track-overview-meta"><span><Signal size={18} />{track.level}</span><i /><span><BookOpen size={20} />{track.totalLessons} Lições no total</span></div>
-							<div className="track-progress-card"><h2>Progresso da Trilha</h2><div className="track-progress-bar"><span style={{ width: `${track.progressPercentage}%` }} /></div><div className="track-progress-meta"><span>{track.completedLessons} de {track.totalLessons} lições</span><b>{track.progressPercentage}% Concluído</b></div></div>
-							<div className="track-missions-card">
-								<h2><span>◉</span> Missões da trilha</h2>
-								{track.missions.map((mission) => <article className="track-mission" key={mission.id}><div><strong>{mission.title}</strong><b><Zap size={16} /> +{mission.xpReward} XP</b></div><div className="track-mission-bar"><span style={{ width: `${mission.progressPercentage}%` }} /></div><footer><span>{mission.currentProgress} de {mission.totalProgress} {mission.title.toLowerCase().includes('quiz') ? 'quizzes' : 'concluídas'}</span><b>{mission.progressPercentage}%</b></footer></article>)}
-								<button type="button" className="track-all-missions">Ver todas as missões <ArrowRight size={17} /></button>
-							</div>
-						</aside>
-						<div className="track-curriculum">
-							<div className="track-curriculum-heading"><h2>Roteiro de Aprendizado</h2><p>Siga a ordem guiada ou revise tópicos concluídos para reforço de memória.</p></div>
-							<div className="track-module-list">{track.modules.map((module, index) => <ModuleCard key={module.id} module={module} index={index} track={track} />)}</div>
+		<StudentPageLayout
+			notifications={1}
+			streakCount={12}
+			className="track-details-shell"
+			pageClassName="track-details-page"
+			breadcrumb={track && (
+				<nav className="track-breadcrumb" aria-label="Navegação estrutural">
+					<Link to="/trails"><ArrowLeft size={18} /> Minhas Trilhas</Link>
+					<span aria-hidden="true">/</span>
+					<strong aria-current="page">{track.title}</strong>
+				</nav>
+			)}
+		>
+			{trackState.status === 'loading' && <div className="track-state" role="status">Carregando trilha...</div>}
+			{trackState.status === 'error' && <div className="track-state track-state-error" role="alert">{trackState.message}</div>}
+			{track && (
+				<div className="track-details-layout">
+					<aside className="track-overview-card">
+						<div className="track-overview-title"><span className="track-japanese-icon">{track.icon || '🧭'}</span><div><span>TRILHA</span><h1>{track.title}</h1></div></div>
+						<div className="track-overview-meta"><span><Signal size={18} />{track.level}</span><i /><span><BookOpen size={20} />{track.totalLessons} Lições no total</span></div>
+						<div className="track-progress-card"><h2>Progresso da Trilha</h2><div className="track-progress-bar"><span style={{ width: `${track.progressPercentage}%` }} /></div><div className="track-progress-meta"><span>{track.completedLessons} de {track.totalLessons} lições</span><b>{track.progressPercentage}% Concluído</b></div></div>
+						<div className="track-missions-card">
+							<h2><span>◉</span> Missões da trilha</h2>
+							{track.missions.length === 0 ? (
+								<p className="track-missions-empty">Esta trilha ainda não possui missões.</p>
+							) : track.missions.slice(0, MAX_VISIBLE_TRACK_MISSIONS).map((mission) => {
+								const progressPercentage = mission.progressPercentage
+								const visualProgress = progressPercentage === undefined
+									? undefined
+									: Math.min(100, Math.max(0, progressPercentage))
+								const calculatedPercentage = mission.currentProgress !== undefined
+									&& mission.totalProgress !== undefined
+									&& mission.totalProgress > 0
+									? Math.round((mission.currentProgress / mission.totalProgress) * 100)
+									: undefined
+								const hasProgressMismatch = progressPercentage !== undefined
+									&& calculatedPercentage !== undefined
+									&& progressPercentage !== calculatedPercentage
+
+								return (
+									<article className="track-mission" key={mission.id}>
+										{(mission.stepTitle || mission.difficulty) && (
+											<div className="track-mission-context">
+												{mission.stepTitle && <span>{mission.stepTitle}</span>}
+												{mission.difficulty && <span>{getMissionDifficultyLabel(mission.difficulty)}</span>}
+											</div>
+										)}
+										<div className="track-mission-heading">
+											<strong>{mission.title}</strong>
+											{mission.xpReward !== undefined && <b><Zap size={16} /> +{mission.xpReward} XP</b>}
+										</div>
+										{mission.criteria && <p className="track-mission-criteria">{getMissionCriteriaLabel(mission.criteria)}</p>}
+										{visualProgress !== undefined && progressPercentage !== undefined ? (
+											<>
+												<div className="track-mission-bar">
+													<span
+														role="progressbar"
+														aria-label={`Progresso da missão ${mission.title}`}
+														aria-valuenow={visualProgress}
+														aria-valuemin={0}
+														aria-valuemax={100}
+														style={{ width: `${visualProgress}%` }}
+													/>
+												</div>
+												<footer>
+													<span>
+														{mission.currentProgress !== undefined && mission.totalProgress !== undefined
+															? `${mission.currentProgress} de ${mission.totalProgress} ${mission.progressUnit ?? 'progresso'}`
+															: mission.totalProgress !== undefined ? `Meta: ${mission.totalProgress} ${mission.progressUnit ?? ''}` : 'Progresso registrado'}
+													</span>
+													<b>{progressPercentage}%</b>
+												</footer>
+												{hasProgressMismatch && <small className="track-mission-warning" role="status">A contagem e o percentual de progresso divergem.</small>}
+											</>
+										) : (
+											<p className="track-mission-no-progress">Progresso ainda não informado.</p>
+										)}
+									</article>
+								)
+							})}
+							<Link to={`/missions?track_id=${encodeURIComponent(track.id)}`} className="track-all-missions">Ver todas as missões <ArrowRight size={17} /></Link>
 						</div>
+					</aside>
+					<div className="track-curriculum">
+						<div className="track-curriculum-heading"><h2>Roteiro de Aprendizado</h2><p>Siga a ordem guiada ou revise tópicos concluídos para reforço de memória.</p></div>
+						{visiblePreparationStatus === 'waiting' && <p className="track-preparation-status" role="status">Preparando as próximas lições em segundo plano. Elas continuarão bloqueadas até você concluir a lição atual.</p>}
+						{visiblePreparationStatus === 'ready' && <p className="track-preparation-status" role="status">As próximas lições estão prontas.</p>}
+						{(visiblePreparationStatus === 'failed' || visiblePreparationStatus === 'timed-out') && (
+							<div className="track-preparation-status" role="status">
+								<span>Não foi possível confirmar o preparo das próximas lições.</span>
+								<button type="button" onClick={retryPreparation}>Tentar novamente</button>
+							</div>
+						)}
+						<div className="track-module-list">{track.modules.map((module, index) => <ModuleCard key={module.id} module={module} index={index} track={track} />)}</div>
 					</div>
-				</>}
-			</main>
-		</div>
+				</div>
+			)}
+		</StudentPageLayout>
 	)
 }

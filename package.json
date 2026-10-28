@@ -7,17 +7,31 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "test:gamification": "node --test tests/gamification.test.mjs",
+    "test:track-preparation": "node --test tests/track-preparation.test.mjs",
     "preview": "vite preview",
     "prepare": "husky"
   },
   "dependencies": {
+    "@lexical/code": "^0.52.0",
+    "@lexical/history": "^0.52.0",
+    "@lexical/link": "^0.52.0",
+    "@lexical/list": "^0.52.0",
+    "@lexical/markdown": "^0.52.0",
+    "@lexical/react": "^0.52.0",
+    "@lexical/rich-text": "^0.52.0",
+    "@lexical/selection": "^0.52.0",
+    "@reduxjs/toolkit": "^2.13.0",
     "axios": "^1.20.0",
+    "lexical": "^0.52.0",
     "lucide-react": "^1.47.0",
     "motion": "^13.4.4",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "react-markdown": "^10.1.0",
     "react-redux": "^9.3.0",
-    "react-router": "^7.18.4"
+    "react-router": "^7.18.4",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.2",

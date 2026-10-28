@@ -9,6 +9,7 @@
       "url": "https://mcp.atlassian.com/v2/mcp"
     },
     "figma": {
+      "type": "stdio",
       "command": "npx",
       "args": ["-y", "figma-developer-mcp", "--stdio"],
       "env": {

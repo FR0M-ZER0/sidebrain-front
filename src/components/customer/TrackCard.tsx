@@ -37,7 +37,7 @@ export const TrackCard = ({ track }: TrackCardProps) => {
 			</div>
 
 			<button type="button" className="primary-button" onClick={openTrack}>
-				Continuar Trilha <ArrowRight size={15} aria-hidden="true" />
+				{track.status === 'concluido' ? 'Revisar Trilha' : 'Continuar Trilha'} <ArrowRight size={15} aria-hidden="true" />
 			</button>
 		</div>
 	)

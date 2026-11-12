@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { useCallback, useEffect, useState } from 'react'
 
 export const useAsyncData = <T,>(load: (signal: AbortSignal) => Promise<T>) => {
@@ -15,11 +16,16 @@ export const useAsyncData = <T,>(load: (signal: AbortSignal) => Promise<T>) => {
 				if (!controller.signal.aborted) setResult({ load, attempt, data })
 			},
 			(error: unknown) => {
-				if (!controller.signal.aborted) setResult({
-					load,
-					attempt,
-					error: error instanceof Error ? error.message : 'Não foi possível carregar os dados.',
-				})
+				if (!controller.signal.aborted) {
+					if (axios.isAxiosError(error) && error.response?.status === 401) {
+						return
+					}
+					setResult({
+						load,
+						attempt,
+						error: error instanceof Error ? error.message : 'Não foi possível carregar os dados.',
+					})
+				}
 			},
 		)
 		return () => controller.abort()

@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "test": "node --test tests/gamification.test.mjs tests/track-preparation.test.mjs tests/auth-session-expiration.test.mjs",
+    "test:auth-session": "node --test tests/auth-session-expiration.test.mjs",
     "test:gamification": "node --test tests/gamification.test.mjs",
     "test:track-preparation": "node --test tests/track-preparation.test.mjs",
     "preview": "vite preview",

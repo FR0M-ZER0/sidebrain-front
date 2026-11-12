@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { getTrackGenerationStatus, startTrackGeneration } from '../api/trackGenerationApi'
 import type { TrailGenerationJob } from '../types/trailGeneration'
@@ -85,6 +86,9 @@ export const useTrailGeneration = (request: TrackGenerationRequest | null) => {
 				}
 			} catch (generationError) {
 				if (!controller.signal.aborted) {
+					if (axios.isAxiosError(generationError) && generationError.response?.status === 401) {
+						return
+					}
 					const message = generationError instanceof Error ? generationError.message : 'Não foi possível gerar a trilha.'
 					setError(message)
 					if (activeRequestId) setJob(createJob(activeRequestId, null, 'failed', message))

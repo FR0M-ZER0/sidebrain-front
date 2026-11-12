@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { useCallback, useEffect, useState } from 'react'
 import { getTrackDetails } from '../api/trackService'
 import type { TrackDetails } from '../types/trackDetails'
@@ -24,6 +25,9 @@ export const useTrackDetails = (slug: string | undefined) => {
 			})
 			.catch((error: unknown) => {
 				if (isActive) {
+					if (axios.isAxiosError(error) && error.response?.status === 401) {
+						return
+					}
 					setState({
 						slug,
 						status: 'error',

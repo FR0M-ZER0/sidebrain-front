@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit'
-import { setApiAccessToken } from '../api/api'
-import authReducer, { AUTH_TOKEN_STORAGE_KEY } from './slices/authSlice'
+import { setApiAccessToken, setOnUnauthorized } from '../api/api'
+import authReducer, { AUTH_TOKEN_STORAGE_KEY, clearCredentials } from './slices/authSlice'
 
 export const store = configureStore({
 	reducer: {
@@ -31,3 +31,8 @@ const syncAuthState = () => {
 
 syncAuthState()
 store.subscribe(syncAuthState)
+
+setOnUnauthorized(() => {
+	store.dispatch(clearCredentials())
+})
+

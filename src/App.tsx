@@ -1,6 +1,7 @@
 import './App.css'
 import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router'
 import { useEffect, useRef } from 'react'
+import { setApiRedirect } from './api/api'
 import { useAuth } from './hooks/useAuth'
 import { HomeDashboardPage } from './pages/customer/HomeDashboardPage'
 import { CreateTrackPage } from './pages/customer/CreateTrackPage'
@@ -34,6 +35,21 @@ const LessonCompletionRoute = () => {
 	)
 }
 
+const AuthRedirectSync = () => {
+	const navigate = useNavigate()
+
+	useEffect(() => {
+		setApiRedirect((to) => {
+			navigate(to, { replace: true })
+		})
+		return () => {
+			setApiRedirect(null)
+		}
+	}, [navigate])
+
+	return null
+}
+
 const App = () => {
 	const { isInitialized, restoreSession } = useAuth()
 	const restoreStarted = useRef(false)
@@ -47,6 +63,7 @@ const App = () => {
 
 	return (
 		<BrowserRouter>
+			<AuthRedirectSync />
 			<Routes>
 				{/* Rotas públicas de autenticação */}
 				<Route path="/login" element={<LoginPage />} />
@@ -80,3 +97,4 @@ const App = () => {
 }
 
 export default App
+

@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { useCallback, useRef, useState } from 'react'
 import { trackCreationApi } from '../api/trackCreationApi'
 import type { TrackCreationApi } from '../api/trackCreationApi'
@@ -66,6 +67,9 @@ export const useTrackCreation = ({ api = trackCreationApi, onAccepted }: UseTrac
 			onAccepted(goalDescription)
 		} catch (error) {
 			submissionInProgress.current = false
+			if (axios.isAxiosError(error) && error.response?.status === 401) {
+				return
+			}
 			setDraft((current) => ({
 				...current,
 				submissionStatus: 'failed',

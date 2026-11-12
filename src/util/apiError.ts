@@ -1,5 +1,10 @@
 import axios from 'axios'
 
+export const isLoginEndpointUrl = (url?: string) => {
+	if (!url) return false
+	return url.includes('/api/v1/auth/login') || url.includes('/auth/login')
+}
+
 export const getApiErrorMessage = (error: unknown, fallback: string) => {
 	if (!axios.isAxiosError(error)) {
 		return fallback
@@ -7,7 +12,9 @@ export const getApiErrorMessage = (error: unknown, fallback: string) => {
 
 	const status = error.response?.status
 	if (status === 401) {
-		return 'E-mail ou senha inválidos.'
+		if (isLoginEndpointUrl(error.config?.url)) {
+			return 'E-mail ou senha inválidos.'
+		}
 	}
 	if (status === 409) {
 		return 'Este e-mail já está cadastrado.'
@@ -29,3 +36,4 @@ export const getApiErrorMessage = (error: unknown, fallback: string) => {
 
 	return fallback
 }
+

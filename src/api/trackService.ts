@@ -1,4 +1,5 @@
 import { api } from './api'
+import { subscribeToJob } from './wsClient'
 import { readGamificationProgress } from './gamificationApi'
 import type { Lesson, Module, ModuleStatus, Mission, TrackDetails } from '../types/trackDetails'
 import type { PendingStepPreparation, PrepareNextStepResult } from '../types/trackFlow'
@@ -310,33 +311,31 @@ export const prepareEligibleNextStep = async (track: TrackDetails) => {
 	return { step, result: await prepareNextStep(track.id, step.id) }
 }
 
-const hasPreparedNextStep = (track: TrackDetails, stepId: string) => {
-	const currentStepIndex = track.modules.findIndex((module) => module.id === stepId)
-	return currentStepIndex >= 0 && Boolean(track.modules[currentStepIndex + 1]?.lessons.length)
+interface StepPreparationPayload {
+	task_id: string
+	status: 'completed' | 'failed'
 }
-
-const STEP_PREPARATION_POLL_INTERVAL = 15_000
-const wait = (milliseconds: number) => new Promise((resolve) => window.setTimeout(resolve, milliseconds))
 
 export const waitForPreparedNextStep = async (
 	pending: PendingStepPreparation,
 	signal?: AbortSignal,
 ): Promise<boolean> => {
-	const deadline = Date.now() + 90_000
+	try {
+		const payload = await subscribeToJob<StepPreparationPayload>({
+			channel: 'step_preparation',
+			resourceId: pending.taskId,
+			timeoutMs: 90_000,
+			signal,
+			isTerminal: (p) => p.status === 'completed' || p.status === 'failed',
+		})
 
-	while (!signal?.aborted && Date.now() < deadline) {
-		try {
-			const track = await getTrackDetails(pending.trackId)
-			if (hasPreparedNextStep(track, pending.stepId)) {
-				markPreparationReady(pending)
-				return true
-			}
-		} catch {
-			// A falha transitória de leitura não encerra a espera pela preparação.
+		if (payload.status === 'completed') {
+			markPreparationReady(pending)
+			return true
 		}
 
-		if (!signal?.aborted) await wait(STEP_PREPARATION_POLL_INTERVAL)
+		return false
+	} catch {
+		return false
 	}
-
-	return false
 }

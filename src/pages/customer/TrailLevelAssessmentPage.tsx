@@ -20,11 +20,12 @@ export const TrailLevelAssessmentPage = () => {
 	const assessmentRequestRef = useRef<{ subject: string; promise: ReturnType<typeof startTrackAssessment> } | null>(null)
 
 	useEffect(() => {
+		const controller = new AbortController()
 		let isActive = true
 		if (assessmentRequestRef.current?.subject !== goalDescription) {
 			assessmentRequestRef.current = {
 				subject: goalDescription,
-				promise: startTrackAssessment(goalDescription),
+				promise: startTrackAssessment(goalDescription, controller.signal),
 			}
 		}
 
@@ -36,12 +37,17 @@ export const TrailLevelAssessmentPage = () => {
 				}
 			})
 			.catch((assessmentError: unknown) => {
-				if (isActive) setError(assessmentError instanceof Error ? assessmentError.message : 'Não foi possível carregar o diagnóstico.')
+				if (isActive && !controller.signal.aborted) {
+					setError(assessmentError instanceof Error ? assessmentError.message : 'Não foi possível carregar o diagnóstico.')
+				}
 			})
 			.finally(() => {
 				if (isActive) setLoading(false)
 			})
-		return () => { isActive = false }
+		return () => {
+			isActive = false
+			controller.abort()
+		}
 	}, [goalDescription])
 
 	const complete = questions.length > 0 && questions.every((question) => Boolean(draftAnswers[question.id]))

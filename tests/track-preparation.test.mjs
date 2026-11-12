@@ -77,29 +77,63 @@ test('prepara a próxima etapa para progresso preexistente de 80% na primeira et
 	])
 })
 
-test('consulta o preparo da próxima etapa a cada 15 segundos até o conteúdo ficar pronto', async () => {
-	const trackBeforePreparation = {
-		id: 'track-1',
-		title: 'Trilha de teste',
-		steps: [step('step-1', 4, 5), step('step-2', 0, 0)],
+test('acompanha o preparo da próxima etapa via WebSocket até o conteúdo ficar pronto', async () => {
+	respond = ({ url }) => {
+		if (url === '/api/v1/auth/ws-ticket') {
+			return { ticket: 'ticket-prep-123' }
+		}
+		throw new Error(`Endpoint não esperado: ${url}`)
 	}
-	const preparedTrack = {
-		...trackBeforePreparation,
-		steps: [step('step-1', 4, 5), step('step-2', 0, 1)],
+
+	const originalWebSocket = globalThis.WebSocket
+	let createdSocket = null
+
+	class MockSocket {
+		static OPEN = 1
+		static CONNECTING = 0
+		static CLOSED = 3
+
+		constructor(url) {
+			this.url = url
+			this.readyState = MockSocket.CONNECTING
+			this.sentMessages = []
+			this.onopen = null
+			this.onmessage = null
+			this.onerror = null
+			this.onclose = null
+			createdSocket = this
+
+			queueMicrotask(() => {
+				this.readyState = MockSocket.OPEN
+				this.onopen?.()
+			})
+		}
+
+		send(data) {
+			const parsed = JSON.parse(data)
+			this.sentMessages.push(parsed)
+
+			if (parsed.type === 'subscribe' && parsed.channel === 'step_preparation' && parsed.resource_id === 'task-1') {
+				queueMicrotask(() => {
+					this.onmessage?.({
+						data: JSON.stringify({
+							type: 'job.updated',
+							channel: 'step_preparation',
+							resource_id: 'task-1',
+							payload: { task_id: 'task-1', status: 'completed' },
+						}),
+					})
+				})
+			}
+		}
+
+		close() {
+			this.readyState = MockSocket.CLOSED
+			this.onclose?.()
+		}
 	}
-	respond = () => requests.length === 1 ? trackBeforePreparation : preparedTrack
-	const originalWindow = globalThis.window
-	const pollIntervals = []
-	Object.defineProperty(globalThis, 'window', {
-		configurable: true,
-		value: {
-			setTimeout: (callback, milliseconds) => {
-				pollIntervals.push(milliseconds)
-				queueMicrotask(callback)
-				return 1
-			},
-		},
-	})
+
+	globalThis.WebSocket = MockSocket
 
 	try {
 		const isPrepared = await waitForPreparedNextStep({
@@ -107,15 +141,18 @@ test('consulta o preparo da próxima etapa a cada 15 segundos até o conteúdo f
 			stepId: 'step-1',
 			taskId: 'task-1',
 		}, new AbortController().signal)
+
 		assert.equal(isPrepared, true)
-		assert.deepEqual(pollIntervals, [15_000])
-		assert.equal(requests.length, 2)
+		assert.deepEqual(requests, [
+			{ url: '/api/v1/auth/ws-ticket', method: 'post' },
+		])
+		assert.equal(createdSocket?.url.includes('ticket=ticket-prep-123'), true)
+		assert.deepEqual(createdSocket?.sentMessages, [
+			{ type: 'subscribe', channel: 'step_preparation', resource_id: 'task-1' },
+		])
+		assert.equal(createdSocket?.readyState, MockSocket.CLOSED)
 	} finally {
-		if (originalWindow === undefined) {
-			delete globalThis.window
-		} else {
-			Object.defineProperty(globalThis, 'window', { configurable: true, value: originalWindow })
-		}
+		globalThis.WebSocket = originalWebSocket
 	}
 })
 

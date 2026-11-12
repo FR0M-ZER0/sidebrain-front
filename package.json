@@ -7,8 +7,10 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "test": "node --test tests/*.test.mjs",
     "test:gamification": "node --test tests/gamification.test.mjs",
     "test:track-preparation": "node --test tests/track-preparation.test.mjs",
+    "test:websocket": "node --test tests/websocket.test.mjs",
     "preview": "vite preview",
     "prepare": "husky"
   },

@@ -2391,11 +2391,38 @@
 .track-state { padding: 60px; text-align: center; }
 .track-state-error { color: #a73535; }
 
+.mentor-panel { min-width: 0; margin-top: 20px; padding: 22px; border-radius: 17px; background: #f1f2ff; }
+.mentor-panel h2 { margin: 0; font-size: 1.05rem; }
+.mentor-toggle { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 0; border: 0; background: transparent; color: #172238; font: inherit; font-weight: 700; text-align: left; cursor: pointer; }
+.mentor-toggle span { display: flex; align-items: center; gap: 7px; }
+.mentor-toggle span svg { color: #075fc7; }
+.mentor-toggle:focus-visible { outline: 2px solid #075fc7; outline-offset: 4px; }
+.mentor-content { display: flex; flex-direction: column; gap: 12px; min-width: 0; margin-top: 14px; }
+.mentor-intro { margin: 0; color: #4b5563; }
+.mentor-panel select, .mentor-panel textarea { width: 100%; border: 1px solid #dbe3f3; border-radius: 10px; padding: 10px 12px; background: #fff; color: #172033; font: inherit; }
+.mentor-label { font-weight: 600; font-size: 0.9rem; }
+.mentor-panel .link-button { align-self: flex-start; }
+.mentor-consent { background: #f0f4ff; border: 1px solid #dbe3f3; border-radius: 12px; padding: 16px; }
+.mentor-consent p { margin: 8px 0; }
+.mentor-privacy { margin-bottom: 4px; }
+.mentor-conversations, .mentor-chat { display: flex; flex-direction: column; gap: 12px; }
+.mentor-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.mentor-toolbar select { width: auto; flex: 1 1 220px; }
+.mentor-messages { background: #f6f8fe; border: 1px solid #e5eaf7; border-radius: 12px; padding: 16px; min-height: 120px; max-height: 360px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+.mentor-message { max-width: 85%; border-radius: 12px; padding: 12px 14px; background: white; overflow-wrap: anywhere; }
+.mentor-message--student { align-self: flex-end; background: #dfe9ff; }
+.mentor-message p { white-space: pre-wrap; margin: 6px 0 0; }
+.mentor-compose { display: flex; flex-direction: column; gap: 8px; }
+.mentor-compose textarea { min-height: 82px; resize: vertical; }
+.mentor-compose-footer { display: flex; justify-content: space-between; align-items: center; color: #657085; font-size: 0.85rem; }
+.mentor-error { color: #a12424; }
+
 @media (max-width: 1050px) {
 	.track-details-layout { grid-template-columns: 1fr; }
 	.track-overview-card { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 	.track-overview-meta { grid-column: 1 / -1; margin: 0; }
 	.track-missions-card { margin-top: 0; }
+	.mentor-panel { grid-column: 1 / -1; margin-top: 0; }
 }
 @media (max-width: 700px) {
 	.track-topbar { height: 62px; padding: 0 14px; gap: 8px; }
@@ -2410,6 +2437,8 @@
 	.track-overview-card { display: block; padding: 18px; }
 	.track-overview-meta { margin: 18px 0; font-size: .83rem; gap: 8px; }
 	.track-progress-card,.track-missions-card { padding: 17px; }
+	.mentor-panel { margin-top: 20px; padding: 17px; }
+	.mentor-panel + .track-missions-card { margin-top: 20px; }
 	.track-curriculum-heading { margin-bottom: 20px; }
 	.track-curriculum-heading h2 { font-size: 2rem; }
 	.track-curriculum-heading p { font-size: .95rem; }

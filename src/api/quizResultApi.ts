@@ -1,5 +1,4 @@
 import { api } from './api'
-import { subscribeToJob } from './wsClient'
 
 export type QuizResultAnswerRate = 'good' | 'perfect' | 'wrong' | 'almost_got_it'
 
@@ -160,7 +159,8 @@ const unwrapStepSummary = (response: unknown, stepId: string): string | null => 
 }
 
 export const generateStepSummary = async (trackId: string, stepId: string, signal?: AbortSignal) => {
-	await api.post<unknown>(summaryEndpoint(trackId, stepId), undefined, { signal, timeout: STEP_SUMMARY_TIMEOUT_MS })
+	const { data } = await api.post<unknown>(summaryEndpoint(trackId, stepId), undefined, { signal, timeout: STEP_SUMMARY_TIMEOUT_MS })
+	return unwrapStepSummary(data, stepId)
 }
 
 export const getStepSummary = async (trackId: string, stepId: string, signal?: AbortSignal) => {
@@ -168,32 +168,20 @@ export const getStepSummary = async (trackId: string, stepId: string, signal?: A
 	return unwrapStepSummary(data, stepId)
 }
 
-export interface StepSummaryPayload {
-	step_id: string
-	status: 'completed' | 'failed'
-	summary?: string | null
-	error?: string | null
-}
-
-export const generateAndPollStepSummary = async (
+export const loadStepSummary = async (
 	trackId: string,
 	stepId: string,
 	signal?: AbortSignal,
+	onGenerating?: () => void,
 ): Promise<string> => {
-	await generateStepSummary(trackId, stepId, signal)
+	const savedSummary = await getStepSummary(trackId, stepId, signal)
+	signal?.throwIfAborted()
+	if (savedSummary?.trim()) return savedSummary
 
-	const payload = await subscribeToJob<StepSummaryPayload>({
-		channel: 'step_summary',
-		resourceId: `${trackId}:${stepId}`,
-		timeoutMs: STEP_SUMMARY_TIMEOUT_MS,
-		signal,
-		timeoutErrorMessage: 'O sumário da etapa ainda não ficou pronto. Tente novamente.',
-		isTerminal: (p) => p.status === 'completed' || p.status === 'failed',
-	})
-
-	if (payload.status === 'failed') {
-		throw new Error(payload.error || 'Não foi possível gerar o sumário da etapa.')
-	}
-
-	return payload.summary ?? ''
+	onGenerating?.()
+	signal?.throwIfAborted()
+	const generatedSummary = await generateStepSummary(trackId, stepId, signal)
+	signal?.throwIfAborted()
+	if (generatedSummary?.trim()) return generatedSummary
+	throw new Error('Não foi possível gerar o sumário da etapa. Tente novamente.')
 }

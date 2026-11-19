@@ -11,7 +11,6 @@ let waitForTrackGeneration
 let createTrackAssessment
 let waitForTrackAssessment
 let startTrackAssessment
-let generateAndPollStepSummary
 let requests
 let respond
 
@@ -73,7 +72,6 @@ before(async () => {
 	;({ getWsUrl, requestWsTicket, subscribeToJob } = await server.ssrLoadModule('/src/api/wsClient.ts'))
 	;({ waitForTrackGeneration } = await server.ssrLoadModule('/src/api/trackGenerationApi.ts'))
 	;({ createTrackAssessment, waitForTrackAssessment, startTrackAssessment } = await server.ssrLoadModule('/src/api/trackAssessmentApi.ts'))
-	;({ generateAndPollStepSummary } = await server.ssrLoadModule('/src/api/quizResultApi.ts'))
 
 	api.defaults.adapter = async (config) => {
 		requests.push({ url: config.url, method: config.method, data: config.data ? JSON.parse(config.data) : undefined })
@@ -262,37 +260,6 @@ test('startTrackAssessment recebe perguntas via WebSocket após início HTTP', a
 	assert.equal(result.assessmentId, 'assess-55')
 	assert.equal(result.questions.length, 1)
 	assert.equal(result.questions[0].prompt, 'O que é Python?')
-	assert.equal(socket.readyState, MockWebSocket.CLOSED)
-})
-
-test('generateAndPollStepSummary inicia por HTTP e recebe sumário via WebSocket', async () => {
-	respond = ({ url }) => {
-		if (url === '/api/v1/tracks/tr-1/steps/st-1/summary') {
-			return { status: 'accepted' }
-		}
-		if (url === '/api/v1/auth/ws-ticket') {
-			return { ticket: 'ticket-summary' }
-		}
-		throw new Error(`Endpoint não esperado: ${url}`)
-	}
-
-	const promise = generateAndPollStepSummary('tr-1', 'st-1')
-
-	const socket = await waitForSocket()
-
-	socket.emitMessage({
-		type: 'job.updated',
-		channel: 'step_summary',
-		resource_id: 'tr-1:st-1',
-		payload: {
-			step_id: 'st-1',
-			status: 'completed',
-			summary: 'Sumário detalhado da etapa.',
-		},
-	})
-
-	const summary = await promise
-	assert.equal(summary, 'Sumário detalhado da etapa.')
 	assert.equal(socket.readyState, MockWebSocket.CLOSED)
 })
 

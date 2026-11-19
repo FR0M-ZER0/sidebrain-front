@@ -2391,6 +2391,76 @@
 .track-state { padding: 60px; text-align: center; }
 .track-state-error { color: #a73535; }
 
+.mentor-widget { position: fixed; z-index: 100; right: 24px; bottom: 24px; display: flex; flex-direction: column; align-items: flex-end; gap: 14px; }
+.mentor-panel { display: flex; flex-direction: column; width: min(470px, calc(100vw - 32px)); height: min(650px, calc(100dvh - 120px)); min-width: 0; overflow: hidden; border: 1px solid #e1e7f5; border-radius: 20px; background: #fff; box-shadow: 0 16px 48px rgba(24, 40, 85, .2); }
+.mentor-panel[hidden] { display: none; }
+.mentor-header { display: flex; flex-shrink: 0; align-items: center; gap: 12px; padding: 18px 20px; border-bottom: 1px solid #e8edf7; }
+.mentor-header-icon { display: grid; place-items: center; width: 42px; height: 42px; flex: 0 0 42px; border-radius: 14px; background: #e8efff; color: #075fc7; }
+.mentor-panel h2 { margin: 0; color: #172238; font-size: 1.05rem; }
+.mentor-header p { margin: 3px 0 0; color: #657085; font-size: .82rem; }
+.mentor-close { display: grid; place-items: center; width: 36px; height: 36px; margin-left: auto; border: 0; border-radius: 10px; background: transparent; color: #657085; cursor: pointer; }
+.mentor-close:hover { background: #f1f4fc; }
+.mentor-launcher { display: flex; align-items: center; gap: 12px; }
+.mentor-prompt { position: relative; display: flex; align-items: center; gap: 8px; padding: 11px 14px; border: 1px solid #e1e7f5; border-radius: 14px; background: #fff; color: #172238; font-size: .88rem; font-weight: 700; box-shadow: 0 6px 20px rgba(24, 40, 85, .12); }
+.mentor-prompt-close { position: absolute; top: -9px; right: -9px; display: grid; place-items: center; width: 22px; height: 22px; padding: 0; border: 1px solid #e1e7f5; border-radius: 50%; background: #fff; color: #657085; cursor: pointer; }
+.mentor-prompt-close:hover { background: #f1f4fc; }
+.mentor-prompt-close:focus-visible { outline: 2px solid #075fc7; outline-offset: 2px; }
+.mentor-toggle { display: grid; place-items: center; width: 60px; height: 60px; border: 0; border-radius: 50%; background: #075fc7; color: #fff; box-shadow: 0 8px 22px rgba(7, 95, 199, .32); cursor: pointer; }
+.mentor-toggle:hover { background: #064fa7; }
+.mentor-toggle:focus-visible, .mentor-close:focus-visible { outline: 2px solid #075fc7; outline-offset: 4px; }
+.mentor-content { display: flex; flex: 1; flex-direction: column; gap: 12px; min-width: 0; min-height: 0; padding: 18px 20px 20px; }
+.mentor-panel select, .mentor-panel textarea { width: 100%; border: 1px solid #dbe3f3; border-radius: 10px; padding: 10px 12px; background: #fff; color: #172033; font: inherit; }
+.mentor-panel .link-button { align-self: flex-start; }
+.mentor-consent { max-height: 25dvh; overflow-y: auto; flex-shrink: 0; background: #f0f4ff; border: 1px solid #dbe3f3; border-radius: 12px; padding: 16px; }
+.mentor-consent p { margin: 8px 0; }
+.mentor-consent-message details { margin-top: 10px; font-size: .85rem; }
+.mentor-consent-message summary { color: #075fc7; cursor: pointer; }
+.mentor-consent-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.mentor-conversations, .mentor-chat { display: flex; flex: 1; flex-direction: column; gap: 12px; min-height: 0; }
+.mentor-options { position: relative; }
+.mentor-options > summary { list-style: none; color: #075fc7; font-weight: 700; cursor: pointer; }
+.mentor-options > summary::-webkit-details-marker { display: none; }
+.mentor-options-menu { position: absolute; z-index: 1; bottom: calc(100% + 10px); left: 0; width: min(280px, calc(100vw - 80px)); max-height: min(320px, 45dvh); overflow-y: auto; padding: 8px; border: 1px solid #dbe3f3; border-radius: 12px; background: #fff; box-shadow: 0 8px 24px rgba(24, 40, 85, .16); }
+.mentor-options-menu button, .mentor-history > summary { display: block; width: 100%; padding: 9px 10px; border: 0; border-radius: 8px; background: transparent; color: #172238; font: inherit; text-align: left; cursor: pointer; }
+.mentor-options-menu button:hover:not(:disabled), .mentor-history > summary:hover { background: #f1f4fc; }
+.mentor-options-menu button:disabled { opacity: .5; cursor: not-allowed; }
+.mentor-history label { display: block; margin: 6px 10px; color: #657085; font-size: .8rem; }
+.mentor-panel .mentor-history select { width: 100%; font-size: .85rem; }
+.mentor-messages { background: #f6f8fe; border: 1px solid #e5eaf7; border-radius: 12px; padding: 16px; flex: 1; min-height: 50px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+.mentor-message { max-width: 85%; padding: 10px 14px; border-radius: 4px 16px 16px 16px; background: #fff; box-shadow: 0 1px 3px rgba(24, 40, 85, .1); overflow-wrap: anywhere; }
+.mentor-message--mentor { align-self: flex-start; }
+.mentor-message--student { align-self: flex-end; border-radius: 16px 4px 16px 16px; background: #dfe9ff; }
+.mentor-message > strong { color: #075fc7; font-size: .78rem; }
+.mentor-message p { white-space: pre-wrap; margin: 6px 0 0; }
+.mentor-markdown { min-width: 0; }
+.mentor-markdown > :first-child { margin-top: 6px; }
+.mentor-markdown > :last-child { margin-bottom: 0; }
+.mentor-markdown h1, .mentor-markdown h2, .mentor-markdown h3, .mentor-markdown h4 { margin: .7em 0 .3em; font-weight: 700; line-height: 1.25; }
+.mentor-markdown h1 { font-size: 1.3em; }
+.mentor-markdown h2 { font-size: 1.15em; }
+.mentor-markdown ul, .mentor-markdown ol { margin: .5em 0; padding-left: 1.5em; }
+.mentor-markdown ul { list-style: disc; }
+.mentor-markdown ol { list-style: decimal; }
+.mentor-markdown blockquote { margin: .5em 0; border-left: 3px solid #818cf8; padding-left: .75em; color: #475569; }
+.mentor-markdown pre { max-width: 100%; overflow-x: auto; margin: .5em 0; border-radius: 8px; padding: .75em; background: #0f172a; color: #f8fafc; }
+.mentor-markdown :not(pre) > code { border-radius: 4px; padding: .1em .25em; background: #eef2ff; color: #3730a3; }
+.mentor-markdown a { color: #075fc7; text-decoration: underline; }
+.mentor-markdown img { max-width: 100%; }
+.mentor-markdown table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; }
+.mentor-markdown th, .mentor-markdown td { border: 1px solid #dbe3ef; padding: .4em; text-align: left; }
+.mentor-compose { display: flex; flex-shrink: 0; flex-direction: column; gap: 8px; }
+.mentor-compose-field { position: relative; }
+.mentor-compose .quiz-answer-editor--compact .quiz-answer-editor__content { height: 110px; min-height: 0; overflow-y: auto; padding: 10px 12px 30px; font-size: .95rem; line-height: 1.4; }
+.mentor-compose .quiz-answer-editor--compact .quiz-answer-editor__placeholder { top: 10px; left: 12px; font-size: .95rem; }
+.mentor-compose .quiz-answer-editor--compact [role="toolbar"] { gap: 0; padding: 2px 6px; }
+.mentor-compose .quiz-answer-editor--compact [role="toolbar"] button { width: 32px; height: 32px; }
+.mentor-editor-loading { height: 110px; padding: 12px; color: #657085; }
+.mentor-character-count { position: absolute; right: 12px; bottom: 9px; color: #657085; font-size: .75rem; pointer-events: none; }
+.mentor-character-count.mentor-error { color: #a12424; }
+.mentor-compose-footer { display: flex; justify-content: space-between; align-items: center; color: #657085; font-size: 0.85rem; }
+.mentor-error { color: #a12424; }
+.mentor-message-error { align-self: flex-end; }
+
 @media (max-width: 1050px) {
 	.track-details-layout { grid-template-columns: 1fr; }
 	.track-overview-card { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -2410,6 +2480,7 @@
 	.track-overview-card { display: block; padding: 18px; }
 	.track-overview-meta { margin: 18px 0; font-size: .83rem; gap: 8px; }
 	.track-progress-card,.track-missions-card { padding: 17px; }
+	.mentor-widget { right: 16px; bottom: 16px; }
 	.track-curriculum-heading { margin-bottom: 20px; }
 	.track-curriculum-heading h2 { font-size: 2rem; }
 	.track-curriculum-heading p { font-size: .95rem; }
@@ -2919,6 +2990,14 @@
   border-radius: 0;
   background: transparent;
   padding: 0;
+}
+
+@media (min-width: 1100px) {
+  .lesson-focus-footer--with-mentor { padding-right: 280px; }
+}
+
+@media (max-width: 1099px) {
+  .lesson-focus-footer--with-mentor { padding-bottom: 90px; }
 }
 
 .activity-help-bar > button {

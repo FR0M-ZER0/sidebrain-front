@@ -14,6 +14,7 @@ import {
 	Zap,
 } from 'lucide-react'
 import { StudentPageLayout } from '../../components/customer/layouts/StudentPageLayout'
+import { MentorSection } from '../../components/customer/mentor/MentorSection'
 import { useTrackDetails } from '../../hooks/useTrackDetails'
 import { forgetStepPreparation, getEligibleStepForPreparation, getPendingStepPreparation, hasStepPreparationBeenRequested, prepareEligibleNextStep, waitForPreparedNextStep } from '../../api/trackService'
 import type { LessonNavigationContext } from '../../api/lessonsApi'
@@ -198,6 +199,7 @@ export const TrackDetailsPage = () => {
 						<div className="track-overview-title"><span className="track-japanese-icon">{track.icon || '🧭'}</span><div><span>TRILHA</span><h1>{track.title}</h1></div></div>
 						<div className="track-overview-meta"><span><Signal size={18} />{track.level}</span><i /><span><BookOpen size={20} />{track.totalLessons} Lições no total</span></div>
 						<div className="track-progress-card"><h2>Progresso da Trilha</h2><div className="track-progress-bar"><span style={{ width: `${track.progressPercentage}%` }} /></div><div className="track-progress-meta"><span>{track.completedLessons} de {track.totalLessons} lições</span><b>{track.progressPercentage}% Concluído</b></div></div>
+						<MentorSection key={track.id} trackId={track.id} />
 						<div className="track-missions-card">
 							<h2><span>◉</span> Missões da trilha</h2>
 							{track.missions.length === 0 ? (

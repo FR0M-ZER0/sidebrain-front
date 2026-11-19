@@ -1,6 +1,7 @@
 import axios from 'axios'
-import { useEffect, useState } from 'react'
-import { Bot, ChevronDown, ChevronUp, Send } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
+import { Bot, Send, Sparkles, X } from 'lucide-react'
 import {
 	acceptMentorConsent, createMentorConversation, deleteAllMentorConversations, deleteMentorConversation,
 	getMentorConsent, listMentorConversations, listMentorMessages, retryMentorGeneration,
@@ -31,9 +32,11 @@ const errorMessage = (error: unknown) => {
 
 export const MentorSection = ({ trackId }: { trackId: string }) => {
 	const [isOpen, setIsOpen] = useState(false)
+	const [hasOpened, setHasOpened] = useState(false)
 	const [consent, setConsent] = useState<MentorConsent | null>(null)
 	const [error, setError] = useState('')
 	const [busy, setBusy] = useState(false)
+	const [consentDismissed, setConsentDismissed] = useState(false)
 	const refreshConsent = async () => {
 		try { setConsent(await getMentorConsent()); setError('') } catch (e) { setError(errorMessage(e)) }
 	}
@@ -54,56 +57,98 @@ export const MentorSection = ({ trackId }: { trackId: string }) => {
 			} else setError(errorMessage(e))
 		} finally { setBusy(false) }
 	}
-	return <section className="mentor-panel" aria-labelledby="mentor-title">
-		<h2 id="mentor-title"><button type="button" className="mentor-toggle" aria-expanded={isOpen} aria-controls="mentor-content" onClick={() => setIsOpen((open) => !open)}><span><Bot size={19} aria-hidden="true" /> Mentor IA</span>{isOpen ? <ChevronUp size={18} aria-hidden="true" /> : <ChevronDown size={18} aria-hidden="true" />}</button></h2>
-		{isOpen && <div id="mentor-content" className="mentor-content">
-			<p className="mentor-intro">Converse com seu mentor sobre esta trilha.</p>
-			{error && <p role="alert" className="mentor-error">{error}</p>}
-			{!consent && <button type="button" className="link-button" onClick={() => void refreshConsent()}>Consultar aviso de privacidade</button>}
-			{consent && !consent.authorized && <div className="mentor-consent">
-				<strong>Antes de enviar mensagens</strong>
-				<p>{consent.purpose} Destinatário: {consent.recipient}.</p>
-				<p>Dados compartilhados: {consent.data_categories.join(', ')}.</p>
-				<p>{consent.retention_notice}</p>
-				<button type="button" className="primary-button" disabled={busy} onClick={() => void changeConsent(true)}>Li e aceito</button>
+	return <div className="mentor-widget">
+		<section id="mentor-content" className="mentor-panel" aria-labelledby="mentor-title" hidden={!isOpen}>
+			<header className="mentor-header">
+				<span className="mentor-header-icon"><Bot size={22} aria-hidden="true" /></span>
+				<div><h2 id="mentor-title">Mentor Sidebrain</h2><p>Seu segundo cérebro</p></div>
+				<button type="button" className="mentor-close" aria-label="Fechar chat do mentor" onClick={() => setIsOpen(false)}><X size={20} aria-hidden="true" /></button>
+			</header>
+			{hasOpened && <div className="mentor-content">
+				{error && <p role="alert" className="mentor-error">{error}</p>}
+				{!consent && <button type="button" className="link-button" onClick={() => void refreshConsent()}>Consultar aviso de privacidade</button>}
+				<TrackConversations
+					key={trackId}
+					trackId={trackId}
+					authorized={Boolean(consent?.authorized)}
+					onConsentRequired={() => { setConsentDismissed(false); void refreshConsent() }}
+					consentMessage={consent && !consent.authorized && !consentDismissed && <div className="mentor-message mentor-message--mentor mentor-consent-message">
+						<strong>Mentor Sidebrain</strong>
+						<p>Você aceita os termos de uso da IA do Sidebrain?</p>
+						<details>
+							<summary>Leia o aviso de privacidade</summary>
+							<p>{consent.purpose} Destinatário: {consent.recipient}.</p>
+							<p>Dados compartilhados: {consent.data_categories.join(', ')}.</p>
+							<p>{consent.retention_notice}</p>
+						</details>
+						<div className="mentor-consent-actions">
+							<button type="button" className="primary-button" disabled={busy} onClick={() => void changeConsent(true)}>Li e aceito</button>
+							<button type="button" className="link-button" disabled={busy} onClick={() => setConsentDismissed(true)}>Não aceito</button>
+						</div>
+					</div>}
+					consentOption={consent && (consent.authorized
+						? <button type="button" disabled={busy} onClick={() => { if (window.confirm('Revogar a autorização? O histórico não será excluído.')) { setConsentDismissed(false); void changeConsent(false) } }}>Revogar autorização</button>
+						: <button type="button" onClick={() => setConsentDismissed(false)}>Ver termos de uso</button>)}
+				/>
 			</div>}
-			{consent?.authorized && <button type="button" className="link-button mentor-privacy" disabled={busy} onClick={() => { if (window.confirm('Revogar a autorização? O histórico não será excluído.')) void changeConsent(false) }}>Revogar autorização</button>}
-			<TrackConversations key={trackId} trackId={trackId} authorized={Boolean(consent?.authorized)} onConsentRequired={() => void refreshConsent()} />
-		</div>}
-	</section>
+		</section>
+		<div className="mentor-launcher">
+			{!isOpen && <span className="mentor-prompt" aria-hidden="true">Precisa de um conselho? <Sparkles size={15} /></span>}
+			<button type="button" className="mentor-toggle" aria-label={isOpen ? 'Fechar chat do mentor' : 'Precisa de um conselho? Abrir chat do mentor'} aria-expanded={isOpen} aria-controls="mentor-content" onClick={() => { setHasOpened(true); setIsOpen((open) => !open) }}>
+				{isOpen ? <X size={25} aria-hidden="true" /> : <Bot size={28} aria-hidden="true" />}
+			</button>
+		</div>
+	</div>
 }
 
-const TrackConversations = ({ trackId, authorized, onConsentRequired }: { trackId: string; authorized: boolean; onConsentRequired: () => void }) => {
+const TrackConversations = ({ trackId, authorized, onConsentRequired, consentMessage, consentOption }: { trackId: string; authorized: boolean; onConsentRequired: () => void; consentMessage: ReactNode; consentOption: ReactNode }) => {
 	const [items, setItems] = useState<MentorConversation[]>([])
 	const [selected, setSelected] = useState('')
 	const [page, setPage] = useState(1)
 	const [pages, setPages] = useState(1)
 	const [error, setError] = useState('')
-	const [busy, setBusy] = useState(false)
+	const [busy, setBusy] = useState(true)
+	const initialConversation = useRef<Promise<MentorConversation> | null>(null)
 	const load = async (nextPage = 1) => {
 		const result = await listMentorConversations(trackId, nextPage)
 		setItems((old) => nextPage === 1 ? result.data : [...old, ...result.data.filter((item) => !old.some((entry) => entry.id === item.id))])
 		setPage(result.page); setPages(result.total_pages)
 	}
 	useEffect(() => { let active = true
-		listMentorConversations(trackId).then((result) => { if (active) { setItems(result.data); setPages(result.total_pages) } }).catch((e: unknown) => { if (active) setError(errorMessage(e)) })
+		listMentorConversations(trackId).then((result) => { if (active) { setItems((old) => [...old, ...result.data.filter((item) => !old.some((entry) => entry.id === item.id))]); setPages(result.total_pages) } }).catch((e: unknown) => { if (active) setError(errorMessage(e)) })
+		initialConversation.current ??= createMentorConversation(trackId)
+		initialConversation.current.then((created) => {
+			if (active) {
+				setItems((old) => [created, ...old.filter((item) => item.id !== created.id)])
+				setSelected(created.id)
+				setBusy(false)
+			}
+		}).catch((e: unknown) => { if (active) { setError(errorMessage(e)); setBusy(false) } })
 		return () => { active = false }
 	}, [trackId])
 	const action = async (run: () => Promise<void>) => { setBusy(true); setError(''); try { await run() } catch (e) { setError(errorMessage(e)) } finally { setBusy(false) } }
+	const options = <details className="mentor-options">
+		<summary>Opções</summary>
+		<div className="mentor-options-menu">
+			<button type="button" disabled={busy} onClick={() => void action(async () => { const created = await createMentorConversation(trackId); setItems((old) => [created, ...old]); setSelected(created.id) })}>Nova conversa</button>
+			<button type="button" disabled={busy || !selected} onClick={() => { if (window.confirm('Excluir esta conversa e seu conteúdo?')) void action(async () => { await deleteMentorConversation(selected); writePending(selected, {}); setSelected(''); await load() }) }}>Excluir conversa</button>
+			<button type="button" disabled={busy} onClick={() => { if (window.confirm('Excluir todas as conversas de mentoria de todas as trilhas? Esta ação não revoga a autorização.')) void action(async () => { await deleteAllMentorConversations(); clearMentorStorage(); setSelected(''); await load() }) }}>Excluir todo o histórico</button>
+			<details className="mentor-history">
+				<summary>Ver o histórico de conversas</summary>
+				<label htmlFor="mentor-conversation">Selecione uma conversa</label>
+				<select id="mentor-conversation" value={selected} disabled={busy} onChange={(e) => setSelected(e.target.value)}>
+					<option value="">Selecione uma conversa</option>
+					{items.map((item) => <option key={item.id} value={item.id}>Conversa de {new Date(item.created_at).toLocaleString('pt-BR')}</option>)}
+				</select>
+				{page < pages && <button type="button" disabled={busy} onClick={() => void action(() => load(page + 1))}>Mais conversas</button>}
+			</details>
+			{consentOption}
+		</div>
+	</details>
 	return <div className="mentor-conversations">
 		{error && <p role="alert" className="mentor-error">{error}</p>}
-		<div className="mentor-toolbar">
-			<label htmlFor="mentor-conversation">Conversa</label>
-			<select id="mentor-conversation" value={selected} onChange={(e) => setSelected(e.target.value)}>
-				<option value="">Selecione uma conversa</option>
-				{items.map((item) => <option key={item.id} value={item.id}>Conversa de {new Date(item.created_at).toLocaleString('pt-BR')}</option>)}
-			</select>
-			<button type="button" className="link-button" disabled={busy} onClick={() => void action(async () => { const created = await createMentorConversation(trackId); setItems((old) => [created, ...old]); setSelected(created.id) })}>Nova conversa</button>
-			{page < pages && <button type="button" className="link-button" disabled={busy} onClick={() => void action(() => load(page + 1))}>Mais conversas</button>}
-			{selected && <button type="button" className="link-button" disabled={busy} onClick={() => { if (window.confirm('Excluir esta conversa e seu conteúdo?')) void action(async () => { await deleteMentorConversation(selected); writePending(selected, {}); setSelected(''); await load() }) }}>Excluir conversa</button>}
-			<button type="button" className="link-button" disabled={busy} onClick={() => { if (window.confirm('Excluir todas as conversas de mentoria de todas as trilhas? Esta ação não revoga a autorização.')) void action(async () => { await deleteAllMentorConversations(); clearMentorStorage(); setSelected(''); await load() }) }}>Excluir todo o histórico</button>
-		</div>
-		{selected && <MentorChat key={selected} conversationId={selected} authorized={authorized} onConsentRequired={onConsentRequired} />}
+		{busy && !selected && <p role="status">Preparando uma nova conversa...</p>}
+		{selected ? <MentorChat key={selected} conversationId={selected} authorized={authorized} onConsentRequired={onConsentRequired} options={options} consentMessage={consentMessage} /> : <>{consentMessage}{options}</>}
 	</div>
 }
 
@@ -128,7 +173,7 @@ const writePending = (id: string, value: { pending?: PendingRequest; generationI
 		// A conversa continua utilizável quando o armazenamento da sessão está indisponível.
 	}
 }
-const MentorChat = ({ conversationId, authorized, onConsentRequired }: { conversationId: string; authorized: boolean; onConsentRequired: () => void }) => {
+const MentorChat = ({ conversationId, authorized, onConsentRequired, options, consentMessage }: { conversationId: string; authorized: boolean; onConsentRequired: () => void; options: ReactNode; consentMessage: ReactNode }) => {
 	const [messages, setMessages] = useState<MentorMessage[]>([])
 	const [content, setContent] = useState('')
 	const [error, setError] = useState('')
@@ -196,16 +241,19 @@ const MentorChat = ({ conversationId, authorized, onConsentRequired }: { convers
 	return <div className="mentor-chat">
 		{error && <div role="alert" className="mentor-error">{error} {generationId && <button type="button" className="link-button" onClick={() => setStreamAttempt((n) => n + 1)}>Reconectar</button>} <button type="button" className="link-button" onClick={() => setHistoryAttempt((n) => n + 1)}>Atualizar histórico</button></div>}
 		<div className="mentor-messages" aria-live="polite" aria-label="Mensagens da conversa">
-			{historyLoading ? <p>Carregando conversa...</p> : messages.length === 0 && <p>Faça uma pergunta sobre sua trilha para começar.</p>}
-			{messages.map((message) => <div key={message.id} className={`mentor-message mentor-message--${message.role}`}><strong>{message.role === 'student' ? 'Você' : 'Mentor IA'}</strong><p>{message.content}</p></div>)}
-			{generationId && <p>O mentor está preparando sua resposta...</p>}
+			{historyLoading ? <p>Carregando conversa...</p> : <div className="mentor-message mentor-message--mentor"><strong>Mentor Sidebrain</strong><p>Como posso te ajudar?</p></div>}
+			{messages.map((message) => <div key={message.id} className={`mentor-message mentor-message--${message.role}`}><strong>{message.role === 'student' ? 'Você' : 'Mentor Sidebrain'}</strong><p>{message.content}</p></div>)}
+			{consentMessage}
+			{generationId && <p>Pensando...</p>}
 			{generation?.status === 'failed' && <div><p>Não foi possível gerar a resposta. Você pode tentar novamente.</p><button type="button" className="link-button" disabled={busy || !authorized || Boolean(pending)} onClick={() => void request({ kind: 'retry', generationId: generation.id, key: crypto.randomUUID() })}>Tentar novamente</button></div>}
 		</div>
 		{pending && <div className="mentor-consent"><p>Não foi possível confirmar a requisição. Reenvie com a mesma chave para evitar duplicidade.</p><button type="button" className="link-button" disabled={busy || !authorized} onClick={() => void request(pending)}>Reenviar requisição</button></div>}
 		<form className="mentor-compose" onSubmit={(e) => { e.preventDefault(); submit() }}>
-			<label className="mentor-label" htmlFor="mentor-message">Sua mensagem</label>
-			<textarea id="mentor-message" value={content} onChange={(e) => setContent(e.target.value)} maxLength={4000} placeholder="Como posso melhorar meus estudos?" disabled={!authorized || busy || Boolean(generationId) || Boolean(pending)} />
-			<div className="mentor-compose-footer"><span>{content.length}/4000</span><button type="submit" className="primary-button" disabled={!authorized || busy || Boolean(generationId) || Boolean(pending) || !content.trim()}>Enviar <Send size={15} aria-hidden="true" /></button></div>
+			<div className="mentor-compose-field">
+				<textarea id="mentor-message" aria-label="Sua mensagem" value={content} onChange={(e) => setContent(e.target.value)} maxLength={4000} placeholder="Escreva sua mensagem" disabled={!authorized || busy || Boolean(generationId) || Boolean(pending)} />
+				<span className="mentor-character-count">{content.length}/4000</span>
+			</div>
+			<div className="mentor-compose-footer">{options}<button type="submit" className="primary-button" disabled={!authorized || busy || Boolean(generationId) || Boolean(pending) || !content.trim()}>Enviar <Send size={15} aria-hidden="true" /></button></div>
 		</form>
 	</div>
 }

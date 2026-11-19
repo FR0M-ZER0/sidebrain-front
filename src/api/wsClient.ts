@@ -203,11 +203,18 @@ export const subscribeToJob = <T = unknown>(options: SubscribeOptions<T>): Promi
 					}
 
 					if (message.type === 'job.updated') {
+						if (message.payload === null || message.payload === undefined || typeof message.payload !== 'object') {
+							return
+						}
 						const payload = message.payload as T
-						onUpdate?.(payload)
+						try {
+							onUpdate?.(payload)
 
-						if (isTerminal(payload)) {
-							handleResolve(payload)
+							if (isTerminal(payload)) {
+								handleResolve(payload)
+							}
+						} catch (callbackError) {
+							handleReject(callbackError)
 						}
 					}
 				}

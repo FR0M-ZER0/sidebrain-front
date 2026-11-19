@@ -1,7 +1,7 @@
 import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
-import { startTrackAssessment, submitTrackAssessment } from '../../api/trackAssessmentApi'
+import { createTrackAssessment, submitTrackAssessment, waitForTrackAssessment } from '../../api/trackAssessmentApi'
 import { OnboardingProgress } from '../../components/customer/OnboardingProgress'
 import { StudentPageLayout } from '../../components/customer/layouts/StudentPageLayout'
 import type { AssessmentQuestion } from '../../types/trailOnboarding'
@@ -17,7 +17,7 @@ export const TrailLevelAssessmentPage = () => {
 	const [loading, setLoading] = useState(true)
 	const [submitting, setSubmitting] = useState(false)
 	const [error, setError] = useState<string | null>(null)
-	const assessmentRequestRef = useRef<{ subject: string; promise: ReturnType<typeof startTrackAssessment> } | null>(null)
+	const assessmentRequestRef = useRef<{ subject: string; promise: ReturnType<typeof createTrackAssessment> } | null>(null)
 
 	useEffect(() => {
 		const controller = new AbortController()
@@ -25,25 +25,36 @@ export const TrailLevelAssessmentPage = () => {
 		if (assessmentRequestRef.current?.subject !== goalDescription) {
 			assessmentRequestRef.current = {
 				subject: goalDescription,
-				promise: startTrackAssessment(goalDescription, controller.signal),
+				promise: createTrackAssessment(goalDescription),
 			}
 		}
+		const assessmentPromise = assessmentRequestRef.current.promise
 
-		assessmentRequestRef.current.promise
-			.then((result) => {
-				if (isActive) {
+		const loadAssessment = async () => {
+			try {
+				const created = await assessmentPromise
+				if (!isActive || controller.signal.aborted) return
+
+				const result = created.questions.length > 0
+					? created
+					: await waitForTrackAssessment(created.assessmentId, controller.signal)
+
+				if (isActive && !controller.signal.aborted) {
 					setAssessmentId(result.assessmentId)
 					setQuestions(result.questions)
 				}
-			})
-			.catch((assessmentError: unknown) => {
+			} catch (assessmentError: unknown) {
 				if (isActive && !controller.signal.aborted) {
 					setError(assessmentError instanceof Error ? assessmentError.message : 'Não foi possível carregar o diagnóstico.')
 				}
-			})
-			.finally(() => {
-				if (isActive) setLoading(false)
-			})
+			} finally {
+				if (isActive && !controller.signal.aborted) {
+					setLoading(false)
+				}
+			}
+		}
+
+		void loadAssessment()
 		return () => {
 			isActive = false
 			controller.abort()

@@ -64,7 +64,12 @@ const toQuestions = (assessment: ApiAssessment): AssessmentQuestion[] =>
 		required: true,
 	}))
 
-export const startTrackAssessment = async (subject: string, signal?: AbortSignal) => {
+export interface CreatedTrackAssessment {
+	assessmentId: string
+	questions: AssessmentQuestion[]
+}
+
+export const createTrackAssessment = async (subject: string, signal?: AbortSignal): Promise<CreatedTrackAssessment> => {
 	let assessment: ApiAssessment
 	let assessmentId: string | null
 	try {
@@ -76,6 +81,7 @@ export const startTrackAssessment = async (subject: string, signal?: AbortSignal
 		assessment = parseAssessment(response.data)
 		assessmentId = assessment.assessment_id || getLocationId(response.headers)
 	} catch (error) {
+		if (signal?.aborted) throw error
 		const response = getRecordValue(error, 'response')
 		const responseData = getRecordValue(response, 'data')
 		assessmentId = getAssessmentId(responseData) ?? getLocationId(getRecordValue(response, 'headers'))
@@ -85,11 +91,18 @@ export const startTrackAssessment = async (subject: string, signal?: AbortSignal
 
 	if (!assessmentId) throw new Error('A API não retornou o identificador do diagnóstico.')
 
-	if (assessment.status === 'completed' && (assessment.questions?.length ?? 0) > 0) {
-		const questions = toQuestions(assessment)
-		return { assessmentId, questions }
+	if (assessment.status === 'failed') {
+		throw new Error(assessment.error_code || 'Não foi possível gerar as perguntas do diagnóstico.')
 	}
 
+	const questions = assessment.status === 'completed' && (assessment.questions?.length ?? 0) > 0
+		? toQuestions(assessment)
+		: []
+
+	return { assessmentId, questions }
+}
+
+export const waitForTrackAssessment = async (assessmentId: string, signal?: AbortSignal) => {
 	const terminalPayload = await subscribeToJob<ApiAssessment>({
 		channel: 'assessment',
 		resourceId: assessmentId,
@@ -108,6 +121,14 @@ export const startTrackAssessment = async (subject: string, signal?: AbortSignal
 		throw new Error('O diagnóstico não retornou perguntas para avaliar seu nível.')
 	}
 	return { assessmentId, questions }
+}
+
+export const startTrackAssessment = async (subject: string, signal?: AbortSignal) => {
+	const created = await createTrackAssessment(subject, signal)
+	if (created.questions.length > 0) {
+		return created
+	}
+	return waitForTrackAssessment(created.assessmentId, signal)
 }
 
 export const submitTrackAssessment = async (assessmentId: string, answers: AssessmentSelection[]) => {

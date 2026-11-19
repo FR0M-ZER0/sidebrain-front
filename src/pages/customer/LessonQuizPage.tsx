@@ -38,6 +38,7 @@ export const LessonQuizPage = () => {
 		: undefined
 	const lessonState = useLesson(lessonId, lessonContext)
 	const lesson = lessonState.status === 'success' ? lessonState.lesson : null
+	const mentorTrackId = lessonContext?.trackId || lesson?.trackId || new URLSearchParams(location.search).get('trackId') || undefined
 	const [quizState, setQuizState] = useState<{
 		lessonId: string | undefined
 		quizzes: LessonQuiz[]
@@ -188,7 +189,7 @@ export const LessonQuizPage = () => {
 	}
 
 	return (
-		<LessonFocusLayout streakCount={lesson?.streakCount} onExit={() => navigate(returnTo, { state: location.state })}>
+		<LessonFocusLayout streakCount={lesson?.streakCount} trackId={mentorTrackId} onExit={() => navigate(returnTo, { state: location.state })}>
 			<main className="mx-auto flex min-h-0 w-full max-w-360 flex-1 flex-col gap-3 px-4 py-4 sm:gap-4 sm:px-6 sm:py-5">
 				{isLoading && <div className="flex min-h-0 flex-1 items-center justify-center gap-3 text-slate-600" role="status"><LoaderCircle className="animate-spin" />Carregando quiz da lição...</div>}
 				{lesson && !isLoading && <LessonHeader breadcrumbs={lesson.breadcrumbs} onExit={() => navigate(returnTo, { state: location.state })} />}

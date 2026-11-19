@@ -2401,8 +2401,10 @@
 .mentor-close { display: grid; place-items: center; width: 36px; height: 36px; margin-left: auto; border: 0; border-radius: 10px; background: transparent; color: #657085; cursor: pointer; }
 .mentor-close:hover { background: #f1f4fc; }
 .mentor-launcher { display: flex; align-items: center; gap: 12px; }
-.mentor-prompt { display: flex; align-items: center; gap: 8px; padding: 11px 14px; border: 1px solid #e1e7f5; border-radius: 14px; background: #fff; color: #172238; font-size: .88rem; font-weight: 700; box-shadow: 0 6px 20px rgba(24, 40, 85, .12); }
-.mentor-prompt svg { color: #075fc7; }
+.mentor-prompt { position: relative; display: flex; align-items: center; gap: 8px; padding: 11px 14px; border: 1px solid #e1e7f5; border-radius: 14px; background: #fff; color: #172238; font-size: .88rem; font-weight: 700; box-shadow: 0 6px 20px rgba(24, 40, 85, .12); }
+.mentor-prompt-close { position: absolute; top: -9px; right: -9px; display: grid; place-items: center; width: 22px; height: 22px; padding: 0; border: 1px solid #e1e7f5; border-radius: 50%; background: #fff; color: #657085; cursor: pointer; }
+.mentor-prompt-close:hover { background: #f1f4fc; }
+.mentor-prompt-close:focus-visible { outline: 2px solid #075fc7; outline-offset: 2px; }
 .mentor-toggle { display: grid; place-items: center; width: 60px; height: 60px; border: 0; border-radius: 50%; background: #075fc7; color: #fff; box-shadow: 0 8px 22px rgba(7, 95, 199, .32); cursor: pointer; }
 .mentor-toggle:hover { background: #064fa7; }
 .mentor-toggle:focus-visible, .mentor-close:focus-visible { outline: 2px solid #075fc7; outline-offset: 4px; }

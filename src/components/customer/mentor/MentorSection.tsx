@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { Bot, Send, Sparkles, X } from 'lucide-react'
+import { Bot, Send, X } from 'lucide-react'
 import {
 	acceptMentorConsent, createMentorConversation, deleteAllMentorConversations, deleteMentorConversation,
 	getMentorConsent, listMentorConversations, listMentorMessages, retryMentorGeneration,
@@ -39,6 +39,7 @@ const errorMessage = (error: unknown) => {
 export const MentorSection = ({ trackId }: { trackId: string }) => {
 	const [isOpen, setIsOpen] = useState(false)
 	const [hasOpened, setHasOpened] = useState(false)
+	const [showPrompt, setShowPrompt] = useState(true)
 	const [consent, setConsent] = useState<MentorConsent | null>(null)
 	const [error, setError] = useState('')
 	const [busy, setBusy] = useState(false)
@@ -99,8 +100,8 @@ export const MentorSection = ({ trackId }: { trackId: string }) => {
 			</div>}
 		</section>
 		<div className="mentor-launcher">
-			{!isOpen && <span className="mentor-prompt" aria-hidden="true">Precisa de um conselho? <Sparkles size={15} /></span>}
-			<button type="button" className="mentor-toggle" aria-label={isOpen ? 'Fechar chat do mentor' : 'Precisa de um conselho? Abrir chat do mentor'} aria-expanded={isOpen} aria-controls="mentor-content" onClick={() => { setHasOpened(true); setIsOpen((open) => !open) }}>
+			{!isOpen && showPrompt && <span className="mentor-prompt">Precisa de ajuda?<button type="button" className="mentor-prompt-close" aria-label="Fechar convite do mentor" onClick={() => setShowPrompt(false)}><X size={14} aria-hidden="true" /></button></span>}
+			<button type="button" className="mentor-toggle" aria-label={isOpen ? 'Fechar chat do mentor' : 'Precisa de ajuda? Abrir chat do mentor'} aria-expanded={isOpen} aria-controls="mentor-content" onClick={() => { setHasOpened(true); setIsOpen((open) => !open) }}>
 				{isOpen ? <X size={25} aria-hidden="true" /> : <Bot size={28} aria-hidden="true" />}
 			</button>
 		</div>

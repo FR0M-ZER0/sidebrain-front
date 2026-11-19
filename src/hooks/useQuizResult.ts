@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { useCallback, useEffect, useState } from 'react'
 import { loadStepSummary, getStepQuizResults, type QuizResultAnswerRate, type StepQuizResultData } from '../api/quizResultApi'
 import { useAuth } from './useAuth'
@@ -121,6 +122,9 @@ export const useQuizResult = ({ trackId, stepId }: { trackId: string | null; ste
 			})
 			.catch((error: unknown) => {
 				if (isActive) {
+					if (axios.isAxiosError(error) && error.response?.status === 401) {
+						return
+					}
 					setLoadedState({
 						requestKey,
 						status: 'error',

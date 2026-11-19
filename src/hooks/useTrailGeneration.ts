@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { getTrackGenerationStatus, startTrackGeneration } from '../api/trackGenerationApi'
+import { startTrackGeneration, waitForTrackGeneration } from '../api/trackGenerationApi'
 import type { TrailGenerationJob } from '../types/trailGeneration'
 import type { TrackGenerationRequest } from '../types/trackFlow'
 
@@ -9,10 +9,7 @@ const stepLabels = [
 	'Síntese de explicações e exemplos',
 	'Criação do banco de quizzes',
 ]
-const POLL_INTERVAL_MS = 1000
 const GENERATION_TIMEOUT_MS = 180_000
-
-const delay = (milliseconds: number) => new Promise((resolve) => window.setTimeout(resolve, milliseconds))
 
 const getGenerationErrorMessage = (errorCode: string | null) => {
 	if (errorCode === 'generation_validation_failed') return 'A resposta gerada pela IA não passou na validação. Tente novamente com outro tema.'
@@ -69,19 +66,15 @@ export const useTrailGeneration = (request: TrackGenerationRequest | null) => {
 				if (controller.signal.aborted) return
 				activeRequestId = requestId
 				setJob(createJob(requestId, null, 'running'))
-				const deadline = Date.now() + GENERATION_TIMEOUT_MS
-				while (!controller.signal.aborted) {
-					const progress = await getTrackGenerationStatus(requestId)
-					if (progress.status === 'succeeded') {
-						if (!progress.track_id) throw new Error('A geração terminou sem retornar o ID da trilha.')
-						setJob(createJob(progress.request_id, progress.track_id, 'completed'))
-						return
-					}
-					if (progress.status === 'failed') {
-						throw new Error(getGenerationErrorMessage(progress.error_code))
-					}
-					if (Date.now() >= deadline) throw new Error('A geração não terminou em até 3 minutos. Tente novamente.')
-					await delay(POLL_INTERVAL_MS)
+
+				const progress = await waitForTrackGeneration(requestId, controller.signal, GENERATION_TIMEOUT_MS)
+				if (progress.status === 'succeeded') {
+					if (!progress.track_id) throw new Error('A geração terminou sem retornar o ID da trilha.')
+					setJob(createJob(progress.request_id, progress.track_id, 'completed'))
+					return
+				}
+				if (progress.status === 'failed') {
+					throw new Error(getGenerationErrorMessage(progress.error_code))
 				}
 			} catch (generationError) {
 				if (!controller.signal.aborted) {

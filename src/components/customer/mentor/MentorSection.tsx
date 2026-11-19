@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Bot, Send, Sparkles, X } from 'lucide-react'
 import {
@@ -191,6 +191,13 @@ const MentorChat = ({ conversationId, authorized, onConsentRequired, options, co
 	const [pending, setPending] = useState<PendingRequest | null>(() => readPending(conversationId).pending ?? null)
 	const [historyAttempt, setHistoryAttempt] = useState(0)
 	const [historyLoading, setHistoryLoading] = useState(true)
+	const messagesRef = useRef<HTMLDivElement>(null)
+	const followMessages = useRef(true)
+	const scrollToLatest = useCallback(() => {
+		const container = messagesRef.current
+		if (container && followMessages.current) container.scrollTop = container.scrollHeight
+	}, [])
+	useEffect(() => { scrollToLatest() }, [messages, pending, generationId, generation, busy, historyLoading, scrollToLatest])
 	const loadMessages = async () => {
 		const first = await listMentorMessages(conversationId)
 		const all = [...first.data]
@@ -222,6 +229,7 @@ const MentorChat = ({ conversationId, authorized, onConsentRequired, options, co
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [conversationId, generationId, streamAttempt])
 	const request = async (operation: PendingRequest) => {
+		followMessages.current = true
 		setBusy(true); setError(''); setPending(operation)
 		writePending(conversationId, { pending: operation })
 		try {
@@ -247,10 +255,13 @@ const MentorChat = ({ conversationId, authorized, onConsentRequired, options, co
 	}
 	return <div className="mentor-chat">
 		{error && !pending && <div role="alert" className="mentor-error">{error} {generationId && <button type="button" className="link-button" onClick={() => setStreamAttempt((n) => n + 1)}>Reconectar</button>} <button type="button" className="link-button" onClick={() => setHistoryAttempt((n) => n + 1)}>Atualizar histórico</button></div>}
-		<div className="mentor-messages" aria-live="polite" aria-label="Mensagens da conversa">
+		<div ref={messagesRef} className="mentor-messages" aria-live="polite" aria-label="Mensagens da conversa" onScroll={(event) => {
+			const container = event.currentTarget
+			followMessages.current = container.scrollHeight - container.scrollTop - container.clientHeight < 40
+		}}>
 			{historyLoading ? <p>Carregando conversa...</p> : <div className="mentor-message mentor-message--mentor"><strong>Mentor Sidebrain</strong><p>Como posso te ajudar?</p></div>}
-			{messages.map((message) => <div key={message.id} className={`mentor-message mentor-message--${message.role}`}><strong>{message.role === 'student' ? 'Você' : 'Mentor Sidebrain'}</strong><MarkdownContent className="mentor-markdown" content={message.content} /></div>)}
-			{pending?.kind === 'send' && <div className="mentor-message mentor-message--student"><strong>Você</strong><MarkdownContent className="mentor-markdown" content={pending.content} /></div>}
+			{messages.map((message) => <div key={message.id} className={`mentor-message mentor-message--${message.role}`}><strong>{message.role === 'student' ? 'Você' : 'Mentor Sidebrain'}</strong><MarkdownContent className="mentor-markdown" content={message.content} onRender={scrollToLatest} /></div>)}
+			{pending?.kind === 'send' && <div className="mentor-message mentor-message--student"><strong>Você</strong><MarkdownContent className="mentor-markdown" content={pending.content} onRender={scrollToLatest} /></div>}
 			{consentMessage}
 			{generationId && <p>Pensando...</p>}
 			{generation?.status === 'failed' && !pending && <div><p>Não foi possível gerar a resposta. Você pode tentar novamente.</p><button type="button" className="link-button" disabled={busy || !authorized} onClick={() => void request({ kind: 'retry', generationId: generation.id, key: crypto.randomUUID() })}>Tentar novamente</button></div>}

@@ -239,15 +239,16 @@ const MentorChat = ({ conversationId, authorized, onConsentRequired, options, co
 		void request({ kind: 'send', content: trimmed, key: crypto.randomUUID() })
 	}
 	return <div className="mentor-chat">
-		{error && <div role="alert" className="mentor-error">{error} {generationId && <button type="button" className="link-button" onClick={() => setStreamAttempt((n) => n + 1)}>Reconectar</button>} <button type="button" className="link-button" onClick={() => setHistoryAttempt((n) => n + 1)}>Atualizar histórico</button></div>}
+		{error && !pending && <div role="alert" className="mentor-error">{error} {generationId && <button type="button" className="link-button" onClick={() => setStreamAttempt((n) => n + 1)}>Reconectar</button>} <button type="button" className="link-button" onClick={() => setHistoryAttempt((n) => n + 1)}>Atualizar histórico</button></div>}
 		<div className="mentor-messages" aria-live="polite" aria-label="Mensagens da conversa">
 			{historyLoading ? <p>Carregando conversa...</p> : <div className="mentor-message mentor-message--mentor"><strong>Mentor Sidebrain</strong><p>Como posso te ajudar?</p></div>}
 			{messages.map((message) => <div key={message.id} className={`mentor-message mentor-message--${message.role}`}><strong>{message.role === 'student' ? 'Você' : 'Mentor Sidebrain'}</strong><p>{message.content}</p></div>)}
+			{pending?.kind === 'send' && <div className="mentor-message mentor-message--student"><strong>Você</strong><p>{pending.content}</p></div>}
 			{consentMessage}
 			{generationId && <p>Pensando...</p>}
-			{generation?.status === 'failed' && <div><p>Não foi possível gerar a resposta. Você pode tentar novamente.</p><button type="button" className="link-button" disabled={busy || !authorized || Boolean(pending)} onClick={() => void request({ kind: 'retry', generationId: generation.id, key: crypto.randomUUID() })}>Tentar novamente</button></div>}
+			{generation?.status === 'failed' && !pending && <div><p>Não foi possível gerar a resposta. Você pode tentar novamente.</p><button type="button" className="link-button" disabled={busy || !authorized} onClick={() => void request({ kind: 'retry', generationId: generation.id, key: crypto.randomUUID() })}>Tentar novamente</button></div>}
+			{pending && !busy && <div role="alert" className="mentor-error mentor-message-error">Ocorreu um erro. <button type="button" className="link-button" disabled={!authorized} onClick={() => void request(pending)}>Tente novamente</button></div>}
 		</div>
-		{pending && <div className="mentor-consent"><p>Não foi possível confirmar a requisição. Reenvie com a mesma chave para evitar duplicidade.</p><button type="button" className="link-button" disabled={busy || !authorized} onClick={() => void request(pending)}>Reenviar requisição</button></div>}
 		<form className="mentor-compose" onSubmit={(e) => { e.preventDefault(); submit() }}>
 			<div className="mentor-compose-field">
 				<textarea id="mentor-message" aria-label="Sua mensagem" value={content} onChange={(e) => setContent(e.target.value)} maxLength={4000} placeholder="Escreva sua mensagem" disabled={!authorized || busy || Boolean(generationId) || Boolean(pending)} />

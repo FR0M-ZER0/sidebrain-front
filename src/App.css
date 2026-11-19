@@ -2436,6 +2436,7 @@
 .mentor-character-count { position: absolute; right: 12px; bottom: 9px; color: #657085; font-size: .75rem; pointer-events: none; }
 .mentor-compose-footer { display: flex; justify-content: space-between; align-items: center; color: #657085; font-size: 0.85rem; }
 .mentor-error { color: #a12424; }
+.mentor-message-error { align-self: flex-end; }
 
 @media (max-width: 1050px) {
 	.track-details-layout { grid-template-columns: 1fr; }

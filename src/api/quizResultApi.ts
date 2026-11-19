@@ -21,7 +21,6 @@ export interface StepQuizResultData {
 }
 
 const STEP_SUMMARY_TIMEOUT_MS = 90_000
-const STEP_SUMMARY_POLL_INTERVAL_MS = 1_500
 
 interface ApiAnswer {
 	text?: unknown
@@ -160,7 +159,8 @@ const unwrapStepSummary = (response: unknown, stepId: string): string | null => 
 }
 
 export const generateStepSummary = async (trackId: string, stepId: string, signal?: AbortSignal) => {
-	await api.post<unknown>(summaryEndpoint(trackId, stepId), undefined, { signal, timeout: STEP_SUMMARY_TIMEOUT_MS })
+	const { data } = await api.post<unknown>(summaryEndpoint(trackId, stepId), undefined, { signal, timeout: STEP_SUMMARY_TIMEOUT_MS })
+	return unwrapStepSummary(data, stepId)
 }
 
 export const getStepSummary = async (trackId: string, stepId: string, signal?: AbortSignal) => {
@@ -168,25 +168,20 @@ export const getStepSummary = async (trackId: string, stepId: string, signal?: A
 	return unwrapStepSummary(data, stepId)
 }
 
-export const generateAndPollStepSummary = async (
+export const loadStepSummary = async (
 	trackId: string,
 	stepId: string,
 	signal?: AbortSignal,
+	onGenerating?: () => void,
 ): Promise<string> => {
-	const timeoutAt = Date.now() + STEP_SUMMARY_TIMEOUT_MS
-	await generateStepSummary(trackId, stepId, signal)
+	const savedSummary = await getStepSummary(trackId, stepId, signal)
+	signal?.throwIfAborted()
+	if (savedSummary?.trim()) return savedSummary
 
-	while (Date.now() < timeoutAt) {
-		if (signal?.aborted) {
-			const abortError = new Error('A busca do sumário foi cancelada.')
-			abortError.name = 'AbortError'
-			throw abortError
-		}
-
-		const summary = await getStepSummary(trackId, stepId, signal)
-		if (summary?.trim()) return summary
-		await new Promise((resolve) => setTimeout(resolve, STEP_SUMMARY_POLL_INTERVAL_MS))
-	}
-
-	throw new Error('O sumário da etapa ainda não ficou pronto. Tente novamente.')
+	onGenerating?.()
+	signal?.throwIfAborted()
+	const generatedSummary = await generateStepSummary(trackId, stepId, signal)
+	signal?.throwIfAborted()
+	if (generatedSummary?.trim()) return generatedSummary
+	throw new Error('Não foi possível gerar o sumário da etapa. Tente novamente.')
 }

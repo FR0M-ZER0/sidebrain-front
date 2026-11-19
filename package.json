@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "test:gamification": "node --test tests/gamification.test.mjs",
     "test:track-preparation": "node --test tests/track-preparation.test.mjs",
+    "test:quiz-summary": "node --test tests/quiz-summary.test.mjs",
     "preview": "vite preview",
     "prepare": "husky"
   },

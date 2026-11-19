@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { generateAndPollStepSummary, getStepQuizResults, type QuizResultAnswerRate, type StepQuizResultData } from '../api/quizResultApi'
+import { loadStepSummary, getStepQuizResults, type QuizResultAnswerRate, type StepQuizResultData } from '../api/quizResultApi'
 import { useAuth } from './useAuth'
 import type { ContinuationActionId, QuizQuestionReview, QuizResultViewModel } from '../types/quizResult'
 
@@ -8,6 +8,7 @@ type QuizResultLoadState =
 	| { requestKey: string; status: 'success'; result: QuizResultViewModel }
 
 type StepSummaryLoadState =
+	| { requestKey: string; status: 'generating' }
 	| { requestKey: string; status: 'error'; message: string }
 	| { requestKey: string; status: 'success'; summary: string }
 
@@ -145,7 +146,9 @@ export const useQuizResult = ({ trackId, stepId }: { trackId: string | null; ste
 		if (!trackId || !stepId || !userId || !canGenerateSummary) return
 		const controller = new AbortController()
 		const timer = window.setTimeout(() => {
-			generateAndPollStepSummary(trackId, stepId, controller.signal)
+			loadStepSummary(trackId, stepId, controller.signal, () => {
+				if (!controller.signal.aborted) setLoadedSummaryState({ requestKey: summaryRequestKey, status: 'generating' })
+			})
 				.then((summary) => {
 					if (!controller.signal.aborted) setLoadedSummaryState({ requestKey: summaryRequestKey, status: 'success', summary })
 				})
@@ -154,7 +157,7 @@ export const useQuizResult = ({ trackId, stepId }: { trackId: string | null; ste
 						setLoadedSummaryState({
 							requestKey: summaryRequestKey,
 							status: 'error',
-							message: error instanceof Error ? error.message : 'Não foi possível gerar o sumário da etapa.',
+							message: error instanceof Error ? error.message : 'Não foi possível carregar o sumário da etapa.',
 						})
 					}
 				})

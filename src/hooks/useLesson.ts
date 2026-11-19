@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { useCallback, useEffect, useState } from 'react'
 import { getLesson } from '../api/lessonsApi'
 import type { LessonData, LessonNavigationContext } from '../api/lessonsApi'
@@ -23,6 +24,9 @@ export const useLesson = (lessonId: string | undefined, context?: LessonNavigati
 			})
 			.catch((error: unknown) => {
 				if (!isActive) {
+					return
+				}
+				if (axios.isAxiosError(error) && error.response?.status === 401) {
 					return
 				}
 

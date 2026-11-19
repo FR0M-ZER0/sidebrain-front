@@ -2428,12 +2428,33 @@
 .mentor-message { max-width: 85%; padding: 10px 14px; border-radius: 4px 16px 16px 16px; background: #fff; box-shadow: 0 1px 3px rgba(24, 40, 85, .1); overflow-wrap: anywhere; }
 .mentor-message--mentor { align-self: flex-start; }
 .mentor-message--student { align-self: flex-end; border-radius: 16px 4px 16px 16px; background: #dfe9ff; }
-.mentor-message strong { color: #075fc7; font-size: .78rem; }
+.mentor-message > strong { color: #075fc7; font-size: .78rem; }
 .mentor-message p { white-space: pre-wrap; margin: 6px 0 0; }
+.mentor-markdown { min-width: 0; }
+.mentor-markdown > :first-child { margin-top: 6px; }
+.mentor-markdown > :last-child { margin-bottom: 0; }
+.mentor-markdown h1, .mentor-markdown h2, .mentor-markdown h3, .mentor-markdown h4 { margin: .7em 0 .3em; font-weight: 700; line-height: 1.25; }
+.mentor-markdown h1 { font-size: 1.3em; }
+.mentor-markdown h2 { font-size: 1.15em; }
+.mentor-markdown ul, .mentor-markdown ol { margin: .5em 0; padding-left: 1.5em; }
+.mentor-markdown ul { list-style: disc; }
+.mentor-markdown ol { list-style: decimal; }
+.mentor-markdown blockquote { margin: .5em 0; border-left: 3px solid #818cf8; padding-left: .75em; color: #475569; }
+.mentor-markdown pre { max-width: 100%; overflow-x: auto; margin: .5em 0; border-radius: 8px; padding: .75em; background: #0f172a; color: #f8fafc; }
+.mentor-markdown :not(pre) > code { border-radius: 4px; padding: .1em .25em; background: #eef2ff; color: #3730a3; }
+.mentor-markdown a { color: #075fc7; text-decoration: underline; }
+.mentor-markdown img { max-width: 100%; }
+.mentor-markdown table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; }
+.mentor-markdown th, .mentor-markdown td { border: 1px solid #dbe3ef; padding: .4em; text-align: left; }
 .mentor-compose { display: flex; flex-shrink: 0; flex-direction: column; gap: 8px; }
 .mentor-compose-field { position: relative; }
-.mentor-panel .mentor-compose textarea { display: block; height: 110px; padding-bottom: 30px; resize: none; }
+.mentor-compose .quiz-answer-editor--compact .quiz-answer-editor__content { height: 110px; min-height: 0; overflow-y: auto; padding: 10px 12px 30px; font-size: .95rem; line-height: 1.4; }
+.mentor-compose .quiz-answer-editor--compact .quiz-answer-editor__placeholder { top: 10px; left: 12px; font-size: .95rem; }
+.mentor-compose .quiz-answer-editor--compact [role="toolbar"] { gap: 0; padding: 2px 6px; }
+.mentor-compose .quiz-answer-editor--compact [role="toolbar"] button { width: 32px; height: 32px; }
+.mentor-editor-loading { height: 110px; padding: 12px; color: #657085; }
 .mentor-character-count { position: absolute; right: 12px; bottom: 9px; color: #657085; font-size: .75rem; pointer-events: none; }
+.mentor-character-count.mentor-error { color: #a12424; }
 .mentor-compose-footer { display: flex; justify-content: space-between; align-items: center; color: #657085; font-size: 0.85rem; }
 .mentor-error { color: #a12424; }
 .mentor-message-error { align-self: flex-end; }

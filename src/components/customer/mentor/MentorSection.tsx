@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Bot, Send, Sparkles, X } from 'lucide-react'
 import {
@@ -8,6 +8,12 @@ import {
 	revokeMentorConsent, sendMentorMessage, streamMentorGeneration,
 } from '../../../api/mentorApi'
 import type { MentorConsent, MentorConversation, MentorGeneration, MentorMessage } from '../../../api/mentorApi'
+import { MarkdownContent } from '../../general/MarkdownContent'
+
+const MarkdownAnswerEditor = lazy(async () => {
+	const module = await import('../lesson/MarkdownAnswerEditor')
+	return { default: module.MarkdownAnswerEditor }
+})
 
 const errorMessage = (error: unknown) => {
 	if (!axios.isAxiosError(error)) return 'Não foi possível concluir a operação. Tente novamente.'
@@ -176,6 +182,7 @@ const writePending = (id: string, value: { pending?: PendingRequest; generationI
 const MentorChat = ({ conversationId, authorized, onConsentRequired, options, consentMessage }: { conversationId: string; authorized: boolean; onConsentRequired: () => void; options: ReactNode; consentMessage: ReactNode }) => {
 	const [messages, setMessages] = useState<MentorMessage[]>([])
 	const [content, setContent] = useState('')
+	const [editorVersion, setEditorVersion] = useState(0)
 	const [error, setError] = useState('')
 	const [busy, setBusy] = useState(false)
 	const [generation, setGeneration] = useState<MentorGeneration | null>(null)
@@ -222,7 +229,7 @@ const MentorChat = ({ conversationId, authorized, onConsentRequired, options, co
 				? await sendMentorMessage(conversationId, operation.content, operation.key)
 				: await retryMentorGeneration(conversationId, operation.generationId, operation.key)
 			writePending(conversationId, { generationId: accepted.generation_id })
-			setPending(null); setContent(''); setGeneration(null); setGenerationId(accepted.generation_id)
+			setPending(null); setContent(''); setEditorVersion((version) => version + 1); setGeneration(null); setGenerationId(accepted.generation_id)
 			try { setMessages(await loadMessages()) } catch { setError('Mensagem enviada, mas não foi possível atualizar o histórico.') }
 		} catch (e) {
 			if (axios.isAxiosError(e) && e.response && e.response.status < 500) {
@@ -242,8 +249,8 @@ const MentorChat = ({ conversationId, authorized, onConsentRequired, options, co
 		{error && !pending && <div role="alert" className="mentor-error">{error} {generationId && <button type="button" className="link-button" onClick={() => setStreamAttempt((n) => n + 1)}>Reconectar</button>} <button type="button" className="link-button" onClick={() => setHistoryAttempt((n) => n + 1)}>Atualizar histórico</button></div>}
 		<div className="mentor-messages" aria-live="polite" aria-label="Mensagens da conversa">
 			{historyLoading ? <p>Carregando conversa...</p> : <div className="mentor-message mentor-message--mentor"><strong>Mentor Sidebrain</strong><p>Como posso te ajudar?</p></div>}
-			{messages.map((message) => <div key={message.id} className={`mentor-message mentor-message--${message.role}`}><strong>{message.role === 'student' ? 'Você' : 'Mentor Sidebrain'}</strong><p>{message.content}</p></div>)}
-			{pending?.kind === 'send' && <div className="mentor-message mentor-message--student"><strong>Você</strong><p>{pending.content}</p></div>}
+			{messages.map((message) => <div key={message.id} className={`mentor-message mentor-message--${message.role}`}><strong>{message.role === 'student' ? 'Você' : 'Mentor Sidebrain'}</strong><MarkdownContent className="mentor-markdown" content={message.content} /></div>)}
+			{pending?.kind === 'send' && <div className="mentor-message mentor-message--student"><strong>Você</strong><MarkdownContent className="mentor-markdown" content={pending.content} /></div>}
 			{consentMessage}
 			{generationId && <p>Pensando...</p>}
 			{generation?.status === 'failed' && !pending && <div><p>Não foi possível gerar a resposta. Você pode tentar novamente.</p><button type="button" className="link-button" disabled={busy || !authorized} onClick={() => void request({ kind: 'retry', generationId: generation.id, key: crypto.randomUUID() })}>Tentar novamente</button></div>}
@@ -251,10 +258,13 @@ const MentorChat = ({ conversationId, authorized, onConsentRequired, options, co
 		</div>
 		<form className="mentor-compose" onSubmit={(e) => { e.preventDefault(); submit() }}>
 			<div className="mentor-compose-field">
-				<textarea id="mentor-message" aria-label="Sua mensagem" value={content} onChange={(e) => setContent(e.target.value)} maxLength={4000} placeholder="Escreva sua mensagem" disabled={!authorized || busy || Boolean(generationId) || Boolean(pending)} />
-				<span className="mentor-character-count">{content.length}/4000</span>
+				<Suspense fallback={<div className="mentor-editor-loading" role="status">Carregando editor...</div>}>
+					<MarkdownAnswerEditor key={editorVersion} id="mentor-message" label="Sua mensagem em Markdown" placeholder="Escreva sua mensagem" compact value={content} onChange={setContent} disabled={!authorized || busy || Boolean(generationId) || Boolean(pending)} />
+				</Suspense>
+				<span className={`mentor-character-count ${content.length > 4000 ? 'mentor-error' : ''}`}>{content.length}/4000</span>
 			</div>
-			<div className="mentor-compose-footer">{options}<button type="submit" className="primary-button" disabled={!authorized || busy || Boolean(generationId) || Boolean(pending) || !content.trim()}>Enviar <Send size={15} aria-hidden="true" /></button></div>
+			{content.length > 4000 && <span className="mentor-error" role="alert">A mensagem deve ter no máximo 4000 caracteres.</span>}
+			<div className="mentor-compose-footer">{options}<button type="submit" className="primary-button" disabled={!authorized || busy || Boolean(generationId) || Boolean(pending) || !content.trim() || content.length > 4000}>Enviar <Send size={15} aria-hidden="true" /></button></div>
 		</form>
 	</div>
 }

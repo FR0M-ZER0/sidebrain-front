@@ -8,6 +8,8 @@ let getWsUrl
 let requestWsTicket
 let subscribeToJob
 let waitForTrackGeneration
+let createTrackAssessment
+let waitForTrackAssessment
 let startTrackAssessment
 let generateAndPollStepSummary
 let requests
@@ -55,9 +57,9 @@ class MockWebSocket {
 	}
 }
 
-const waitForSocket = async () => {
+const waitForSocket = async (expectedCount = 1) => {
 	for (let i = 0; i < 50; i++) {
-		if (MockWebSocket.instances.length > 0) {
+		if (MockWebSocket.instances.length >= expectedCount) {
 			return MockWebSocket.instances.at(-1)
 		}
 		await new Promise((resolve) => setTimeout(resolve, 5))
@@ -70,7 +72,7 @@ before(async () => {
 	;({ api } = await server.ssrLoadModule('/src/api/api.ts'))
 	;({ getWsUrl, requestWsTicket, subscribeToJob } = await server.ssrLoadModule('/src/api/wsClient.ts'))
 	;({ waitForTrackGeneration } = await server.ssrLoadModule('/src/api/trackGenerationApi.ts'))
-	;({ startTrackAssessment } = await server.ssrLoadModule('/src/api/trackAssessmentApi.ts'))
+	;({ createTrackAssessment, waitForTrackAssessment, startTrackAssessment } = await server.ssrLoadModule('/src/api/trackAssessmentApi.ts'))
 	;({ generateAndPollStepSummary } = await server.ssrLoadModule('/src/api/quizResultApi.ts'))
 
 	api.defaults.adapter = async (config) => {
@@ -291,5 +293,139 @@ test('generateAndPollStepSummary inicia por HTTP e recebe sumário via WebSocket
 
 	const summary = await promise
 	assert.equal(summary, 'Sumário detalhado da etapa.')
+	assert.equal(socket.readyState, MockWebSocket.CLOSED)
+})
+
+test('reaproveita criação do diagnóstico após abort de StrictMode e conclui na segunda inscrição', async () => {
+	let ticketCounter = 0
+	respond = ({ url }) => {
+		if (url === '/api/v1/assessments') {
+			return { assessment_id: 'assess-strict', status: 'pending' }
+		}
+		if (url === '/api/v1/auth/ws-ticket') {
+			ticketCounter += 1
+			return { ticket: `ticket-strict-${ticketCounter}` }
+		}
+		throw new Error(`Endpoint não esperado: ${url}`)
+	}
+
+	const createdPromise = createTrackAssessment('TypeScript')
+	const controller1 = new AbortController()
+	const firstWait = createdPromise.then((created) => waitForTrackAssessment(created.assessmentId, controller1.signal))
+
+	const firstSocket = await waitForSocket(1)
+	controller1.abort()
+	await assert.rejects(firstWait, { name: 'AbortError' })
+	assert.equal(firstSocket.readyState, MockWebSocket.CLOSED)
+
+	const controller2 = new AbortController()
+	const secondWait = createdPromise.then((created) => waitForTrackAssessment(created.assessmentId, controller2.signal))
+
+	const secondSocket = await waitForSocket(2)
+	secondSocket.emitMessage({
+		type: 'job.updated',
+		channel: 'assessment',
+		resource_id: 'assess-strict',
+		payload: {
+			assessment_id: 'assess-strict',
+			status: 'completed',
+			questions: [
+				{
+					id: 'q1',
+					statement: 'O que é narrowing?',
+					alternatives: [{ id: 'a1', text: 'Refinamento de tipos' }],
+				},
+			],
+		},
+	})
+
+	const result = await secondWait
+	assert.equal(result.assessmentId, 'assess-strict')
+	assert.equal(result.questions.length, 1)
+	assert.equal(result.questions[0].prompt, 'O que é narrowing?')
+	assert.equal(secondSocket.readyState, MockWebSocket.CLOSED)
+	assert.equal(requests.filter((req) => req.url === '/api/v1/assessments').length, 1)
+	assert.equal(requests.filter((req) => req.url === '/api/v1/auth/ws-ticket').length, 2)
+})
+
+test('rejeita quando ocorre erro de socket e encerra a conexão', async () => {
+	respond = () => ({ ticket: 'ticket-socket-err' })
+
+	const promise = subscribeToJob({
+		channel: 'track_generation',
+		resourceId: 'req-err',
+	})
+
+	const socket = await waitForSocket(1)
+	socket.emitError()
+
+	await assert.rejects(promise, {
+		message: 'Falha na conexão com o servidor em tempo real.',
+	})
+	assert.equal(socket.readyState, MockWebSocket.CLOSED)
+})
+
+test('rejeita quando o socket fecha prematuramente antes do estado terminal', async () => {
+	respond = () => ({ ticket: 'ticket-premature-close' })
+
+	const promise = subscribeToJob({
+		channel: 'step_preparation',
+		resourceId: 'task-close',
+	})
+
+	const socket = await waitForSocket(1)
+	socket.close()
+
+	await assert.rejects(promise, {
+		message: 'A conexão em tempo real foi encerrada antes da conclusão.',
+	})
+	assert.equal(socket.readyState, MockWebSocket.CLOSED)
+})
+
+test('rejeita por timeout e encerra o socket quando o prazo expira', async () => {
+	respond = () => ({ ticket: 'ticket-timeout' })
+
+	const promise = subscribeToJob({
+		channel: 'step_summary',
+		resourceId: 'tr-1:st-timeout',
+		timeoutMs: 25,
+		timeoutErrorMessage: 'Tempo esgotado no teste.',
+	})
+
+	const socket = await waitForSocket(1)
+
+	await assert.rejects(promise, {
+		message: 'Tempo esgotado no teste.',
+	})
+	assert.equal(socket.readyState, MockWebSocket.CLOSED)
+})
+
+test('ignora job.updated com payload nulo e conclui quando payload válido chega', async () => {
+	respond = () => ({ ticket: 'ticket-malformed' })
+
+	const promise = subscribeToJob({
+		channel: 'track_generation',
+		resourceId: 'req-malformed',
+		isTerminal: (payload) => payload.status === 'succeeded',
+	})
+
+	const socket = await waitForSocket(1)
+
+	socket.emitMessage({
+		type: 'job.updated',
+		channel: 'track_generation',
+		resource_id: 'req-malformed',
+		payload: null,
+	})
+
+	socket.emitMessage({
+		type: 'job.updated',
+		channel: 'track_generation',
+		resource_id: 'req-malformed',
+		payload: { request_id: 'req-malformed', status: 'succeeded', track_id: 'track-ok' },
+	})
+
+	const result = await promise
+	assert.equal(result.track_id, 'track-ok')
 	assert.equal(socket.readyState, MockWebSocket.CLOSED)
 })

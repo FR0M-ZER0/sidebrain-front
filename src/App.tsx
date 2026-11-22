@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-route
 import { useEffect, useRef } from 'react'
 import { setApiRedirect } from './api/api'
 import { useAuth } from './hooks/useAuth'
+import { useLiveXp } from './hooks/useLiveXp'
 import { HomeDashboardPage } from './pages/customer/HomeDashboardPage'
 import { CreateTrackPage } from './pages/customer/CreateTrackPage'
 import { TrailLevelAssessmentPage } from './pages/customer/TrailLevelAssessmentPage'
@@ -52,6 +53,7 @@ const AuthRedirectSync = () => {
 
 const App = () => {
 	const { isInitialized, restoreSession } = useAuth()
+	useLiveXp()
 	const restoreStarted = useRef(false)
 
 	useEffect(() => {
@@ -97,4 +99,3 @@ const App = () => {
 }
 
 export default App
-

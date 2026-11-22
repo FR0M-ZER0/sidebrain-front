@@ -1,8 +1,9 @@
 import axios from 'axios'
 import { api } from './api'
+import { streamEvents } from './eventStream'
 import type { RankingDataset, RankingParticipant, RankingUserSummary } from '../types/ranking'
 
-interface ApiRankingEntry {
+export interface ApiRankingEntry {
 	position: number
 	userId: string
 	name: string
@@ -69,6 +70,10 @@ export const getGlobalRanking = async (signal?: AbortSignal): Promise<RankingDat
 	} while (page <= totalPages)
 
 	const currentUser = await getCurrentRankingUser(signal)
+	return toRankingDataset(entries, currentUser)
+}
+
+export const toRankingDataset = (entries: ApiRankingEntry[], currentUser: ApiRankingEntry | null): RankingDataset => {
 	const participants = entries.map((entry) => toParticipant(entry, currentUser?.userId))
 	const podiumFloor = participants.filter((participant) => participant.rank <= 3)
 		.reduce((minimum, participant) => Math.min(minimum, participant.score), Number.POSITIVE_INFINITY)
@@ -95,3 +100,32 @@ export const getGlobalRanking = async (signal?: AbortSignal): Promise<RankingDat
 		initialVisibleCount: 10,
 	}
 }
+
+export const streamMyRanking = (
+	signal: AbortSignal,
+	onUpdate: (entry: ApiRankingEntry) => void,
+	onError?: (error: unknown) => void,
+) => streamEvents({
+	url: '/api/v1/rankings/me/events',
+	event: 'xp',
+	signal,
+	onError,
+	onEvent: (data) => {
+		if (!isApiRankingEntry(data)) throw new Error('A posição do usuário atual está em um formato inválido.')
+		onUpdate(data)
+	},
+})
+
+export const streamRankingPage = (
+	page: number,
+	signal: AbortSignal,
+	onUpdate: (result: { entries: ApiRankingEntry[]; totalPages: number }) => void,
+	onError?: (error: unknown) => void,
+) => streamEvents({
+	url: '/api/v1/rankings/events',
+	event: 'ranking',
+	params: { page, page_size: 100 },
+	signal,
+	onError,
+	onEvent: (data) => onUpdate(getRankingPage(data)),
+})

@@ -62,6 +62,11 @@ const authSlice = createSlice({
 			state.isInitialized = true
 			state.error = null
 		},
+		setUserXp: (state, action: PayloadAction<{ userId: string; xp: number; missionsCompleted: number }>) => {
+			if (state.user?.id !== action.payload.userId) return
+			state.user.xp = action.payload.xp
+			state.user.missionsCompleted = action.payload.missionsCompleted
+		},
 		requestFailed: (state, action: PayloadAction<string>) => {
 			state.isLoading = false
 			state.isInitialized = true
@@ -88,6 +93,7 @@ export const {
 	requestStarted,
 	setCredentials,
 	setUser,
+	setUserXp,
 } = authSlice.actions
 
 export default authSlice.reducer

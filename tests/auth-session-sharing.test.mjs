@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { after, before, test } from 'node:test'
-import { createServer } from 'vite'
+import { createServer } from './viteTestServer.mjs'
 
 const channels = new Set()
 class FakeBroadcastChannel {

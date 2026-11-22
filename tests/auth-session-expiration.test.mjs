@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { after, before, beforeEach, test } from 'node:test'
-import { createServer } from 'vite'
+import { createServer } from './viteTestServer.mjs'
 
 let server
 let api
@@ -243,4 +243,3 @@ test('respostas com status 403 e outros códigos HTTP permanecem inalteradas', a
 	assert.equal(unauthorizedTriggered, false)
 	assert.equal(getApiErrorMessage(caughtError, 'Não permitido'), 'Acesso negado.')
 })
-

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { createServer as createHttpServer } from 'node:http'
 import { after, before, test } from 'node:test'
-import { createServer } from 'vite'
+import { createServer } from './viteTestServer.mjs'
 
 let vite, http, api, mentor, port
 const requests = []

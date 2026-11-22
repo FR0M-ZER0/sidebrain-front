@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { after, before, beforeEach, test } from 'node:test'
-import { createServer } from 'vite'
+import { createServer } from './viteTestServer.mjs'
 
 let server
 let api

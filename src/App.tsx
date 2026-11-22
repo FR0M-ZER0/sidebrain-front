@@ -19,6 +19,7 @@ import { MissionsAndBadgesPage } from './pages/customer/MissionsAndBadgesPage'
 
 import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
+import { TermsOfUsePage } from './pages/auth/TermsOfUsePage'
 import { PasswordRecoveryPage } from './pages/auth/PasswordRecoveryPage'
 import { UserProfilePage } from './pages/customer/UserProfilePage'
 import { RankingPage } from './pages/customer/RankingPage'
@@ -70,6 +71,7 @@ const App = () => {
 				{/* Rotas públicas de autenticação */}
 				<Route path="/login" element={<LoginPage />} />
 				<Route path="/cadastro" element={<RegisterPage />} />
+				<Route path="/termos-de-uso" element={<TermsOfUsePage />} />
 				<Route path="/recuperar-senha" element={<PasswordRecoveryPage />} />
 
 				{/* Todas as rotas do produto exigem autenticação */}

@@ -4,11 +4,13 @@ import type { ReactNode } from 'react'
 import { Bot, Send, X } from 'lucide-react'
 import {
 	acceptMentorConsent, createMentorConversation, deleteAllMentorConversations, deleteMentorConversation,
-	getMentorConsent, listMentorConversations, listMentorMessages, retryMentorGeneration,
+	getMentorConsent, getMentorConversation, listMentorConversations, listMentorMessages, retryMentorGeneration,
 	revokeMentorConsent, sendMentorMessage, streamMentorGeneration,
 } from '../../../api/mentorApi'
 import type { MentorConsent, MentorConversation, MentorGeneration, MentorMessage } from '../../../api/mentorApi'
 import { MarkdownContent } from '../../general/MarkdownContent'
+import { useAppSelector } from '../../../hooks/redux'
+import { mentorSession } from './mentorSession'
 
 const MarkdownAnswerEditor = lazy(async () => {
 	const module = await import('../lesson/MarkdownAnswerEditor')
@@ -37,6 +39,7 @@ const errorMessage = (error: unknown) => {
 }
 
 export const MentorSection = ({ trackId }: { trackId: string }) => {
+	const userId = useAppSelector((state) => state.auth.user?.id) ?? ''
 	const [isOpen, setIsOpen] = useState(false)
 	const [hasOpened, setHasOpened] = useState(false)
 	const [showPrompt, setShowPrompt] = useState(true)
@@ -44,6 +47,9 @@ export const MentorSection = ({ trackId }: { trackId: string }) => {
 	const [error, setError] = useState('')
 	const [busy, setBusy] = useState(false)
 	const [consentDismissed, setConsentDismissed] = useState(false)
+	useEffect(() => {
+		mentorSession.activate(userId, trackId)
+	}, [userId, trackId])
 	const refreshConsent = async () => {
 		try { setConsent(await getMentorConsent()); setError('') } catch (e) { setError(errorMessage(e)) }
 	}
@@ -75,8 +81,9 @@ export const MentorSection = ({ trackId }: { trackId: string }) => {
 				{error && <p role="alert" className="mentor-error">{error}</p>}
 				{!consent && <button type="button" className="link-button" onClick={() => void refreshConsent()}>Consultar aviso de privacidade</button>}
 				<TrackConversations
-					key={trackId}
+					key={`${userId}:${trackId}`}
 					trackId={trackId}
+					userId={userId}
 					authorized={Boolean(consent?.authorized)}
 					onConsentRequired={() => { setConsentDismissed(false); void refreshConsent() }}
 					consentMessage={consent && !consent.authorized && !consentDismissed && <div className="mentor-message mentor-message--mentor mentor-consent-message">
@@ -108,14 +115,13 @@ export const MentorSection = ({ trackId }: { trackId: string }) => {
 	</div>
 }
 
-const TrackConversations = ({ trackId, authorized, onConsentRequired, consentMessage, consentOption }: { trackId: string; authorized: boolean; onConsentRequired: () => void; consentMessage: ReactNode; consentOption: ReactNode }) => {
+const TrackConversations = ({ trackId, userId, authorized, onConsentRequired, consentMessage, consentOption }: { trackId: string; userId: string; authorized: boolean; onConsentRequired: () => void; consentMessage: ReactNode; consentOption: ReactNode }) => {
 	const [items, setItems] = useState<MentorConversation[]>([])
 	const [selected, setSelected] = useState('')
 	const [page, setPage] = useState(1)
 	const [pages, setPages] = useState(1)
 	const [error, setError] = useState('')
 	const [busy, setBusy] = useState(true)
-	const initialConversation = useRef<Promise<MentorConversation> | null>(null)
 	const load = async (nextPage = 1) => {
 		const result = await listMentorConversations(trackId, nextPage)
 		setItems((old) => nextPage === 1 ? result.data : [...old, ...result.data.filter((item) => !old.some((entry) => entry.id === item.id))])
@@ -123,27 +129,32 @@ const TrackConversations = ({ trackId, authorized, onConsentRequired, consentMes
 	}
 	useEffect(() => { let active = true
 		listMentorConversations(trackId).then((result) => { if (active) { setItems((old) => [...old, ...result.data.filter((item) => !old.some((entry) => entry.id === item.id))]); setPages(result.total_pages) } }).catch((e: unknown) => { if (active) setError(errorMessage(e)) })
-		initialConversation.current ??= createMentorConversation(trackId)
-		initialConversation.current.then((created) => {
+		mentorSession.getConversation(userId, trackId).then((conversationId) => {
 			if (active) {
-				setItems((old) => [created, ...old.filter((item) => item.id !== created.id)])
-				setSelected(created.id)
+				setSelected(conversationId ?? '')
 				setBusy(false)
+				if (conversationId) void getMentorConversation(conversationId).then((conversation) => {
+					if (active) setItems((old) => [conversation, ...old.filter((item) => item.id !== conversation.id)])
+				}).catch(() => {})
 			}
 		}).catch((e: unknown) => { if (active) { setError(errorMessage(e)); setBusy(false) } })
 		return () => { active = false }
-	}, [trackId])
+	}, [trackId, userId])
+	const selectConversation = (id: string) => {
+		mentorSession.selectConversation(userId, trackId, id || null)
+		setSelected(id)
+	}
 	const action = async (run: () => Promise<void>) => { setBusy(true); setError(''); try { await run() } catch (e) { setError(errorMessage(e)) } finally { setBusy(false) } }
 	const options = <details className="mentor-options">
 		<summary>Opções</summary>
 		<div className="mentor-options-menu">
-			<button type="button" disabled={busy} onClick={() => void action(async () => { const created = await createMentorConversation(trackId); setItems((old) => [created, ...old]); setSelected(created.id) })}>Nova conversa</button>
-			<button type="button" disabled={busy || !selected} onClick={() => { if (window.confirm('Excluir esta conversa e seu conteúdo?')) void action(async () => { await deleteMentorConversation(selected); writePending(selected, {}); setSelected(''); await load() }) }}>Excluir conversa</button>
-			<button type="button" disabled={busy} onClick={() => { if (window.confirm('Excluir todas as conversas de mentoria de todas as trilhas? Esta ação não revoga a autorização.')) void action(async () => { await deleteAllMentorConversations(); clearMentorStorage(); setSelected(''); await load() }) }}>Excluir todo o histórico</button>
+			<button type="button" disabled={busy} onClick={() => void action(async () => { const created = await createMentorConversation(trackId); setItems((old) => [created, ...old]); selectConversation(created.id) })}>Nova conversa</button>
+			<button type="button" disabled={busy || !selected} onClick={() => { if (window.confirm('Excluir esta conversa e seu conteúdo?')) void action(async () => { await deleteMentorConversation(selected); writePending(selected, {}); selectConversation(''); await load() }) }}>Excluir conversa</button>
+			<button type="button" disabled={busy} onClick={() => { if (window.confirm('Excluir todas as conversas de mentoria de todas as trilhas? Esta ação não revoga a autorização.')) void action(async () => { await deleteAllMentorConversations(); clearMentorStorage(); selectConversation(''); await load() }) }}>Excluir todo o histórico</button>
 			<details className="mentor-history">
 				<summary>Ver o histórico de conversas</summary>
 				<label htmlFor="mentor-conversation">Selecione uma conversa</label>
-				<select id="mentor-conversation" value={selected} disabled={busy} onChange={(e) => setSelected(e.target.value)}>
+				<select id="mentor-conversation" value={selected} disabled={busy} onChange={(e) => selectConversation(e.target.value)}>
 					<option value="">Selecione uma conversa</option>
 					{items.map((item) => <option key={item.id} value={item.id}>Conversa de {new Date(item.created_at).toLocaleString('pt-BR')}</option>)}
 				</select>

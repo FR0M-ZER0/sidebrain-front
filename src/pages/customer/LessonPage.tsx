@@ -106,7 +106,7 @@ export const LessonPage = () => {
 	const lesson = lessonState.status === 'success' ? lessonState.lesson : null
 
 	return (
-		<LessonFocusLayout streakCount={lesson?.streakCount} trackId={lesson?.trackId} onExit={requestExit}>
+		<LessonFocusLayout streakCount={lesson?.streakCount} trackId={lesson?.trackId} onExit={requestExit} mentorContextRequired mentorContext={lesson ? { screen: { type: 'lesson', lesson_id: lesson.id }, lessonTitle: lesson.title } : undefined}>
 			{lessonState.status === 'loading' && <LessonLoading />}
 			{lessonState.status === 'error' && (
 				<LessonError message={lessonState.error?.message ?? 'Ocorreu um erro inesperado.'} onRetry={lessonState.retry} />

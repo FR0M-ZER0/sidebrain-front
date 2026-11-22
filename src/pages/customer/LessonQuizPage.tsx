@@ -10,6 +10,7 @@ import { MarkdownContent } from '../../components/general/MarkdownContent'
 import { LessonFocusLayout } from '../../components/customer/lesson/LessonFocusLayout'
 import { LessonHeader } from '../../components/customer/lesson/LessonHeader'
 import { useLesson } from '../../hooks/useLesson'
+import { getQuizMentorContext } from '../../components/customer/mentor/mentorContext'
 
 const MarkdownAnswerEditor = lazy(async () => {
 	const module = await import('../../components/customer/lesson/MarkdownAnswerEditor')
@@ -189,7 +190,15 @@ export const LessonQuizPage = () => {
 	}
 
 	return (
-		<LessonFocusLayout streakCount={lesson?.streakCount} trackId={mentorTrackId} onExit={() => navigate(returnTo, { state: location.state })}>
+		<LessonFocusLayout
+			streakCount={lesson?.streakCount}
+			trackId={mentorTrackId}
+			onExit={() => navigate(returnTo, { state: location.state })}
+			mentorContextRequired
+			mentorContext={!isLoading && !pageError
+				? getQuizMentorContext(lesson, lessonId, currentQuiz, evaluation, currentIndex, quizzes.length)
+				: undefined}
+		>
 			<main className="mx-auto flex min-h-0 w-full max-w-360 flex-1 flex-col gap-3 px-4 py-4 sm:gap-4 sm:px-6 sm:py-5">
 				{isLoading && <div className="flex min-h-0 flex-1 items-center justify-center gap-3 text-slate-600" role="status"><LoaderCircle className="animate-spin" />Carregando quiz da lição...</div>}
 				{lesson && !isLoading && <LessonHeader breadcrumbs={lesson.breadcrumbs} onExit={() => navigate(returnTo, { state: location.state })} />}

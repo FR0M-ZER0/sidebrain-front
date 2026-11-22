@@ -25,7 +25,6 @@ export const CreateTrackPage = ({ api }: CreateTrackPageProps) => {
 
 	return (
 		<StudentPageLayout
-			notifications={1}
 			className="track-create-shell"
 			pageClassName="track-create-page"
 			breadcrumb={<Link to="/" className="track-create-breadcrumb"><ArrowLeft aria-hidden="true" size={22} /><span>Trilhas</span><span aria-hidden="true">/</span><span className="track-create-breadcrumb__current">Criar trilha</span></Link>}

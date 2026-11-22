@@ -45,7 +45,7 @@ test('aceita zero e rejeita dados ausentes ou inválidos', async () => {
 })
 
 test('exibe a sequência na barra, inclusive zero, sem inventar valor ausente', () => {
-	const render = (streakCount) => renderToStaticMarkup(React.createElement(HeaderBar, { xp: 0, notifications: 0, streakCount }))
+	const render = (streakCount) => renderToStaticMarkup(React.createElement(HeaderBar, { xp: 0, streakCount }))
 	assert.match(render(7), /aria-label="7 dias de sequência"/)
 	assert.match(render(0), /aria-label="0 dias de sequência"/)
 	assert.doesNotMatch(render(undefined), /dias de sequência/)

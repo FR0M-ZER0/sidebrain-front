@@ -41,7 +41,7 @@ export const MissionsAndBadgesPage = () => {
 			<main className="page-shell">
 				<HeaderBar
 					xp={user?.xp ?? 0}
-					notifications={12}
+					userId={user?.id}
 					streakCount={streakCount}
 				/>
 

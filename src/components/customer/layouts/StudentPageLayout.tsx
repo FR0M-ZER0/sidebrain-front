@@ -6,7 +6,6 @@ import { useUserStreak } from '../../../hooks/useUserStreak'
 
 interface StudentPageLayoutProps {
 	children: ReactNode
-	notifications: number
 	breadcrumb?: ReactNode
 	className?: string
 	pageClassName?: string
@@ -14,7 +13,6 @@ interface StudentPageLayoutProps {
 
 export const StudentPageLayout = ({
 	children,
-	notifications,
 	breadcrumb,
 	className = '',
 	pageClassName = '',
@@ -26,7 +24,7 @@ export const StudentPageLayout = ({
 		<div className={`app-shell student-page-shell ${className}`.trim()}>
 			<Sidebar />
 			<main className={`page-shell student-page-main ${pageClassName}`.trim()}>
-				<HeaderBar xp={user?.xp ?? 0} notifications={notifications} streakCount={streakCount ?? undefined} />
+				<HeaderBar xp={user?.xp ?? 0} userId={user?.id} streakCount={streakCount ?? undefined} />
 				{breadcrumb && <div className="student-page-breadcrumb">{breadcrumb}</div>}
 				<div className="student-page-content">{children}</div>
 			</main>

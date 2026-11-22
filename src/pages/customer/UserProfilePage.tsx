@@ -37,7 +37,6 @@ export const UserProfilePage = () => {
 
 	return (
 		<StudentPageLayout
-			notifications={3}
 			pageClassName="profile-page-main"
 		>
 			<div className="w-full space-y-5 py-1">

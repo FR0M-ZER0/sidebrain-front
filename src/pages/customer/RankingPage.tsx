@@ -13,7 +13,6 @@ export const RankingPage = () => {
 
 	return (
 		<StudentPageLayout
-			notifications={1}
 			pageClassName="ranking-page-shell"
 		>
 			<div className="ranking-page">

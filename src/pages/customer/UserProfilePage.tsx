@@ -52,7 +52,6 @@ export const UserProfilePage = () => {
 				<ProfileHeroBanner
 					user={user}
 					onEditProfile={() => setIsEditModalOpen(true)}
-					onChangePhoto={() => setIsEditModalOpen(true)}
 				/>
 
 				<div className="grid grid-cols-1 items-start gap-5 md:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">

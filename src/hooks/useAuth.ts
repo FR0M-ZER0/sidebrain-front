@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { useCallback } from 'react'
 import { getCurrentUser, loginUser, registerUser, updateCurrentUser } from '../api/auth'
+import type { CurrentUserUpdate } from '../api/auth'
 import { getApiErrorMessage } from '../util/apiError'
 import type { AuthUser, LoginCredentials, RegisterFormData } from '../types/auth'
 import {
@@ -88,7 +89,7 @@ export const useAuth = () => {
 		}
 	}, [accessToken, dispatch, isInitialized])
 
-	const updateUser = useCallback(async (data: { name?: string; email?: string }) => {
+	const updateUser = useCallback(async (data: CurrentUserUpdate) => {
 		const updatedUser = await updateCurrentUser(data)
 		dispatch(setUser(updatedUser))
 		return updatedUser

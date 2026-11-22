@@ -1,21 +1,18 @@
 import { useState, type FormEvent } from 'react'
-import { Image, User, X } from 'lucide-react'
-import type { UserProfile } from '../../types/userProfile'
+import { User, X } from 'lucide-react'
+import { getAvatars } from '../../api/avatarApi'
+import { useAsyncData } from '../../hooks/useAsyncData'
+import type { EditProfileFormData, UserProfile } from '../../types/userProfile'
+import { DEFAULT_AVATAR_PATH } from '../../util/avatar'
 import { getApiErrorMessage } from '../../util/apiError'
+import { AvatarImage } from '../general/AvatarImage'
 
 interface EditProfileModalProps {
 	isOpen: boolean
 	user: UserProfile
 	onClose: () => void
-	onSave: (data: { name: string; avatarUrl: string }) => Promise<void>
+	onSave: (data: EditProfileFormData) => Promise<void>
 }
-
-const PRESET_AVATARS = [
-	'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=250',
-	'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&q=80&w=250',
-	'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=250',
-	'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250',
-]
 
 export const EditProfileModal = ({
 	isOpen,
@@ -24,9 +21,13 @@ export const EditProfileModal = ({
 	onSave,
 }: EditProfileModalProps) => {
 	const [name, setName] = useState(user.name)
-	const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl)
+	const [avatarSlug, setAvatarSlug] = useState(user.avatarSlug)
+	const avatars = useAsyncData(getAvatars)
 	const [error, setError] = useState<string | null>(null)
 	const [isSaving, setIsSaving] = useState(false)
+	const selectedAvatarUrl = avatarSlug === null
+		? DEFAULT_AVATAR_PATH
+		: avatars.data?.find((avatar) => avatar.slug === avatarSlug)?.imageUrl ?? user.avatarUrl
 
 	if (!isOpen) return null
 
@@ -41,7 +42,10 @@ export const EditProfileModal = ({
 
 		setIsSaving(true)
 		try {
-			await onSave({ name: trimmedName, avatarUrl: avatarUrl.trim() || user.avatarUrl })
+			await onSave({
+				name: trimmedName,
+				...(avatarSlug !== user.avatarSlug ? { avatar: avatarSlug } : {}),
+			})
 			onClose()
 		} catch (saveError) {
 			setError(getApiErrorMessage(saveError, 'Não foi possível atualizar seu perfil.'))
@@ -75,60 +79,38 @@ export const EditProfileModal = ({
 				<form onSubmit={handleSubmit} className="mt-5 space-y-5">
 					{/* Preview e seleção de Avatar */}
 					<div>
-						<label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-							Foto de Perfil
-						</label>
+						<span className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Avatar de perfil</span>
 						<div className="flex items-center gap-4">
-							<img
-								src={avatarUrl || user.avatarUrl}
-								alt="Prévia do perfil"
+							<AvatarImage
+								src={selectedAvatarUrl}
+								name={name || user.name}
 								className="w-16 h-16 rounded-full object-cover border-2 border-slate-200 shadow-xs"
-								onError={(e) => {
-									// Fallback seguro se imagem quebrar
-									(e.target as HTMLImageElement).src = user.avatarUrl
-								}}
 							/>
 							<div className="flex-1">
 								<span className="text-xs text-slate-500 block mb-1.5">
-									Escolha um avatar rápido:
+									Escolha um avatar:
 								</span>
-								<div className="flex items-center gap-2">
-									{PRESET_AVATARS.map((url, idx) => (
+								{avatars.loading && <p role="status">Carregando avatares...</p>}
+								{avatars.error && <p role="alert">Não foi possível carregar os avatares. <button type="button" onClick={avatars.retry}>Tentar novamente</button></p>}
+								{avatars.data && <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Escolha seu avatar">
+									{[{ slug: null, name: 'Avatar padrão', imageUrl: DEFAULT_AVATAR_PATH }, ...avatars.data].map((avatar) => (
 										<button
-											key={idx}
+											key={avatar.slug ?? 'default'}
 											type="button"
-											onClick={() => setAvatarUrl(url)}
+											aria-label={avatar.name}
+											aria-pressed={avatarSlug === avatar.slug}
+											onClick={() => setAvatarSlug(avatar.slug)}
 											className={`w-8 h-8 rounded-full overflow-hidden border-2 transition cursor-pointer ${
-												avatarUrl === url
+												avatarSlug === avatar.slug
 													? 'border-blue-600 ring-2 ring-blue-500/30'
 													: 'border-transparent hover:border-slate-300'
 											}`}
 										>
-											<img src={url} alt={`Avatar opção ${idx + 1}`} className="w-full h-full object-cover" />
+											<AvatarImage src={avatar.imageUrl} name={avatar.name} className="w-full h-full object-cover" />
 										</button>
 									))}
-								</div>
+								</div>}
 							</div>
-						</div>
-					</div>
-
-					{/* Campo URL Customizada */}
-					<div>
-						<label htmlFor="edit-avatar-url" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-							Ou URL da imagem
-						</label>
-						<div className="relative">
-							<div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-								<Image size={16} />
-							</div>
-							<input
-								id="edit-avatar-url"
-								type="url"
-								value={avatarUrl}
-								onChange={(e) => setAvatarUrl(e.target.value)}
-								placeholder="https://exemplo.com/foto.jpg"
-								className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-300 text-xs text-slate-900 placeholder-slate-400 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
-							/>
 						</div>
 					</div>
 

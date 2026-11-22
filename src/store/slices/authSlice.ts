@@ -30,7 +30,7 @@ const getInitialState = (): AuthState => {
 		accessToken,
 		user: null,
 		isLoading: Boolean(accessToken),
-		isInitialized: !accessToken,
+		isInitialized: false,
 		error: null,
 		rememberMe,
 	}
@@ -40,6 +40,14 @@ const authSlice = createSlice({
 	name: 'auth',
 	initialState: getInitialState(),
 	reducers: {
+		setRestoredToken: (state, action: PayloadAction<{ accessToken: string; rememberMe: boolean }>) => {
+			if (state.isInitialized || state.accessToken) return
+			state.accessToken = action.payload.accessToken
+			state.rememberMe = action.payload.rememberMe
+		},
+		finishInitialization: (state) => {
+			if (!state.accessToken) state.isInitialized = true
+		},
 		requestStarted: (state) => {
 			state.isLoading = true
 			state.error = null
@@ -89,9 +97,11 @@ const authSlice = createSlice({
 export const {
 	clearCredentials,
 	clearError,
+	finishInitialization,
 	requestFailed,
 	requestStarted,
 	setCredentials,
+	setRestoredToken,
 	setUser,
 	setUserXp,
 } = authSlice.actions

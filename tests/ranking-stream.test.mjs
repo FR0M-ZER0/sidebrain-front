@@ -82,7 +82,7 @@ test('envia paginação no stream e monta o ranking atualizado', async () => {
 		assert.equal(url, '/api/v1/rankings/events')
 		assert.deepEqual(config.params, { page: 2, page_size: 100 })
 		return { data: stream(`event: ranking\ndata: ${JSON.stringify({
-			data: [entry(4)], total_pages: 2,
+			data: [entry(4, { avatar: { slug: 'cat', name: 'Gato', imageUrl: '/static/avatars/cat.png' } })], total_pages: 2,
 		})}\n\n`) }
 	}
 	await streamRankingPage(2, controller.signal, ({ entries, totalPages }) => {
@@ -94,6 +94,7 @@ test('envia paginação no stream e monta o ranking atualizado', async () => {
 	assert.equal(dataset.userSummary.rank, 4)
 	assert.equal(dataset.userSummary.scoreToPodium, 100)
 	assert.equal(dataset.participants[3].isCurrentUser, true)
+	assert.equal(dataset.participants[3].avatar, '/static/avatars/cat.png')
 })
 
 test('interrompe tentativas em erro de autenticação', async () => {

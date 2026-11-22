@@ -2,6 +2,7 @@ import axios from 'axios'
 import { api } from './api'
 import { streamEvents } from './eventStream'
 import type { RankingDataset, RankingParticipant, RankingUserSummary } from '../types/ranking'
+import type { Avatar } from '../types/auth'
 
 export interface ApiRankingEntry {
 	position: number
@@ -9,6 +10,7 @@ export interface ApiRankingEntry {
 	name: string
 	xp: number
 	missionsCompleted: number
+	avatar?: Avatar
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -21,6 +23,12 @@ const isApiRankingEntry = (value: unknown): value is ApiRankingEntry =>
 	&& typeof value.name === 'string'
 	&& typeof value.xp === 'number'
 	&& typeof value.missionsCompleted === 'number'
+	&& (value.avatar === undefined || (
+		isRecord(value.avatar)
+		&& typeof value.avatar.slug === 'string'
+		&& typeof value.avatar.name === 'string'
+		&& typeof value.avatar.imageUrl === 'string'
+	))
 
 const getRankingPage = (value: unknown) => {
 	if (!isRecord(value) || !Array.isArray(value.data)
@@ -39,6 +47,7 @@ const toParticipant = (entry: ApiRankingEntry, currentUserId?: string): RankingP
 	name: entry.name,
 	score: entry.xp,
 	missionsCompleted: entry.missionsCompleted,
+	avatar: entry.avatar?.imageUrl,
 	isCurrentUser: entry.userId === currentUserId,
 })
 

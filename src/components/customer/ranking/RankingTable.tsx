@@ -1,6 +1,7 @@
 import { Fragment } from 'react'
 import { ArrowDown, ArrowUp, ChevronDown, ChevronUp, Minus } from 'lucide-react'
 import type { RankingDataset, RankingParticipant } from '../../../types/ranking'
+import { AvatarImage } from '../../general/AvatarImage'
 
 interface RankingTableProps {
   dataset: RankingDataset
@@ -43,7 +44,9 @@ const RankingRow = ({ participant, maxScore }: { participant: RankingParticipant
 		<td>
 			<div className="ranking-student-cell">
 				<span className="ranking-table-avatar" role="img" aria-label={`Avatar de ${participant.name}`}>
-					{getInitials(participant.name)}
+					{participant.avatar
+						? <AvatarImage src={participant.avatar} name={participant.name} className="h-full w-full rounded-full object-cover" />
+						: getInitials(participant.name)}
 				</span>
 				<span className="ranking-student-copy">
 					<strong>

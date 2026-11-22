@@ -4,6 +4,8 @@ import { streamEvents } from './eventStream'
 import type { RankingDataset, RankingParticipant, RankingUserSummary } from '../types/ranking'
 import type { Avatar } from '../types/auth'
 
+export const RANKING_PAGE_SIZE = 10
+
 export interface ApiRankingEntry {
 	position: number
 	userId: string
@@ -32,12 +34,17 @@ const isApiRankingEntry = (value: unknown): value is ApiRankingEntry =>
 
 const getRankingPage = (value: unknown) => {
 	if (!isRecord(value) || !Array.isArray(value.data)
-		|| !Number.isInteger(value.total_pages) || Number(value.total_pages) < 0) {
+		|| !Number.isInteger(value.total_pages) || Number(value.total_pages) < 0
+		|| !Number.isInteger(value.total_items) || Number(value.total_items) < 0) {
+		throw new Error('A API retornou o ranking em um formato inválido.')
+	}
+	if (!value.data.every(isApiRankingEntry)) {
 		throw new Error('A API retornou o ranking em um formato inválido.')
 	}
 	return {
-		entries: value.data.filter(isApiRankingEntry),
+		entries: value.data,
 		totalPages: Number(value.total_pages),
+		totalItems: Number(value.total_items),
 	}
 }
 
@@ -82,9 +89,16 @@ export const getGlobalRanking = async (signal?: AbortSignal): Promise<RankingDat
 	return toRankingDataset(entries, currentUser)
 }
 
-export const toRankingDataset = (entries: ApiRankingEntry[], currentUser: ApiRankingEntry | null): RankingDataset => {
+export const toRankingDataset = (
+	entries: ApiRankingEntry[],
+	currentUser: ApiRankingEntry | null,
+	options?: { podiumEntries: ApiRankingEntry[]; page: number; totalItems: number; totalPages: number },
+): RankingDataset => {
 	const participants = entries.map((entry) => toParticipant(entry, currentUser?.userId))
-	const podiumFloor = participants.filter((participant) => participant.rank <= 3)
+	const podium = (options?.podiumEntries ?? entries)
+		.filter((entry) => entry.position <= 3)
+		.map((entry) => toParticipant(entry, currentUser?.userId))
+	const podiumFloor = podium
 		.reduce((minimum, participant) => Math.min(minimum, participant.score), Number.POSITIVE_INFINITY)
 	const userSummary: RankingUserSummary | null = currentUser ? {
 		participantId: currentUser.userId,
@@ -102,11 +116,17 @@ export const toRankingDataset = (entries: ApiRankingEntry[], currentUser: ApiRan
 		scoreLabel: 'XP total',
 		cycle: null,
 		division: null,
-		podium: participants.filter((participant) => participant.rank <= 3),
+		podium,
 		participants,
 		userSummary,
 		currentUserName: currentUser?.name,
 		initialVisibleCount: 10,
+		...(options ? { pagination: {
+			page: options.page,
+			pageSize: RANKING_PAGE_SIZE,
+			totalItems: options.totalItems,
+			totalPages: options.totalPages,
+		} } : {}),
 	}
 }
 
@@ -128,12 +148,12 @@ export const streamMyRanking = (
 export const streamRankingPage = (
 	page: number,
 	signal: AbortSignal,
-	onUpdate: (result: { entries: ApiRankingEntry[]; totalPages: number }) => void,
+	onUpdate: (result: { entries: ApiRankingEntry[]; totalPages: number; totalItems: number }) => void,
 	onError?: (error: unknown) => void,
 ) => streamEvents({
 	url: '/api/v1/rankings/events',
 	event: 'ranking',
-	params: { page, page_size: 100 },
+	params: { page, page_size: RANKING_PAGE_SIZE },
 	signal,
 	onError,
 	onEvent: (data) => onUpdate(getRankingPage(data)),

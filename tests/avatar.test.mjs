@@ -59,7 +59,7 @@ test('exibe o avatar do ranking no pódio e na tabela', () => {
 	const dataset = toRankingDataset(entries, entries[3])
 	assert.equal(dataset.participants[3].avatar, cat.imageUrl)
 	const podium = renderToStaticMarkup(React.createElement(RankingPodium, { participants: dataset.podium, scoreLabel: 'XP' }))
-	const table = renderToStaticMarkup(React.createElement(RankingTable, { dataset, isExpanded: true, onToggleExpanded: () => {} }))
+	const table = renderToStaticMarkup(React.createElement(RankingTable, { dataset, onPageChange: () => {} }))
 	assert.match(podium, /static\/avatars\/cat\.png/)
 	assert.match(table, /static\/avatars\/cat\.png/)
 	assert.match(table, /Avatar de Aluno 4/)

@@ -80,9 +80,9 @@ test('envia paginação no stream e monta o ranking atualizado', async () => {
 	let dataset
 	api.get = async (url, config) => {
 		assert.equal(url, '/api/v1/rankings/events')
-		assert.deepEqual(config.params, { page: 2, page_size: 100 })
+		assert.deepEqual(config.params, { page: 2, page_size: 10 })
 		return { data: stream(`event: ranking\ndata: ${JSON.stringify({
-			data: [entry(4, { avatar: { slug: 'cat', name: 'Gato', imageUrl: '/static/avatars/cat.png' } })], total_pages: 2,
+			data: [entry(4, { avatar: { slug: 'cat', name: 'Gato', imageUrl: '/static/avatars/cat.png' } })], total_pages: 2, total_items: 11,
 		})}\n\n`) }
 	}
 	await streamRankingPage(2, controller.signal, ({ entries, totalPages }) => {
@@ -122,7 +122,7 @@ test('atualiza somente o XP do usuário da sessão atual', () => {
 	assert.equal(state.user.name, 'Ada')
 })
 
-test('acompanha todas as páginas e encerra os streams removidos ou cancelados', async () => {
+test('acompanha o pódio e somente a página selecionada', async () => {
 	const connections = new Map()
 	const updates = []
 	const encoder = new TextEncoder()
@@ -141,22 +141,101 @@ test('acompanha todas as páginas e encerra os streams removidos ou cancelados',
 	const send = (key, event, data) => connections.get(key).writer.enqueue(
 		encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`),
 	)
-	const stop = watchGlobalRanking((data) => updates.push(data), () => assert.fail('erro inesperado'))
+	const stop = watchGlobalRanking((data) => updates.push(data), () => assert.fail('erro inesperado'), 2)
 	try {
 		await until(() => connections.has(1) && connections.has('me'))
 		send('me', 'xp', entry(1))
-		send(1, 'ranking', { data: [entry(1)], total_pages: 2 })
+		send(1, 'ranking', { data: [entry(1), entry(2), entry(3)], total_pages: 4, total_items: 31 })
 		await until(() => connections.has(2))
-		send(2, 'ranking', { data: [entry(2)], total_pages: 2 })
-		await until(() => updates.at(-1)?.participants.length === 2)
-		send(2, 'ranking', { data: [entry(2, { xp: 999 })], total_pages: 2 })
-		await until(() => updates.at(-1)?.participants[1]?.score === 999)
-		send(1, 'ranking', { data: [entry(1)], total_pages: 1 })
-		await until(() => updates.at(-1)?.participants.length === 1)
-		assert.equal(connections.get(2).signal.aborted, true)
+		send(2, 'ranking', { data: [entry(11)], total_pages: 4, total_items: 31 })
+		await until(() => updates.at(-1)?.participants[0]?.rank === 11)
+		assert.deepEqual(updates.at(-1).podium.map((item) => item.rank), [1, 2, 3])
+		assert.deepEqual(updates.at(-1).pagination, { page: 2, pageSize: 10, totalPages: 4, totalItems: 31 })
+		assert.equal(connections.has(3), false)
+		assert.equal(connections.has(4), false)
+		send(2, 'ranking', { data: [entry(11, { xp: 999 })], total_pages: 4, total_items: 31 })
+		await until(() => updates.at(-1)?.participants[0]?.score === 999)
+		send(1, 'ranking', { data: [entry(1, { xp: 1200 }), entry(2), entry(3)], total_pages: 4, total_items: 31 })
+		await until(() => updates.at(-1)?.podium[0]?.score === 1200)
 	} finally {
 		stop()
 	}
 	assert.equal(connections.get(1).signal.aborted, true)
+	assert.equal(connections.get(2).signal.aborted, true)
 	assert.equal(connections.get('me').signal.aborted, true)
+})
+
+test('volta à última página válida quando a classificação diminui', async () => {
+	const connections = new Map()
+	const pages = []
+	const encoder = new TextEncoder()
+	const flush = () => new Promise((resolve) => setImmediate(resolve))
+	const until = async (predicate) => {
+		for (let attempt = 0; attempt < 100 && !predicate(); attempt += 1) await flush()
+		assert.ok(predicate(), 'esperava atualização')
+	}
+	api.get = async (url, config) => {
+		const key = url.includes('/me/') ? 'me' : config.params.page
+		let writer
+		const data = new ReadableStream({ start(controller) { writer = controller } })
+		connections.set(key, writer)
+		return { data }
+	}
+	const stop = watchGlobalRanking(() => assert.fail('página inválida'), () => assert.fail('erro inesperado'), 3, (page) => pages.push(page))
+	try {
+		await until(() => connections.has(1))
+		connections.get(1).enqueue(encoder.encode(`event: ranking\ndata: ${JSON.stringify({ data: [entry(1)], total_pages: 2, total_items: 11 })}\n\n`))
+		await until(() => pages.length > 0)
+		assert.equal(pages[0], 2)
+		assert.equal(connections.has(3), false)
+	} finally {
+		stop()
+	}
+})
+
+test('a primeira página usa apenas um stream de classificação', async () => {
+	const connections = new Map()
+	const updates = []
+	const encoder = new TextEncoder()
+	const flush = () => new Promise((resolve) => setImmediate(resolve))
+	const until = async (predicate) => {
+		for (let attempt = 0; attempt < 100 && !predicate(); attempt += 1) await flush()
+		assert.ok(predicate(), 'esperava atualização')
+	}
+	api.get = async (url, config) => {
+		const key = url.includes('/me/') ? 'me' : config.params.page
+		let writer
+		const data = new ReadableStream({ start(controller) { writer = controller } })
+		connections.set(key, writer)
+		return { data }
+	}
+	const send = (key, event, data) => connections.get(key).enqueue(
+		encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`),
+	)
+	const stop = watchGlobalRanking((data) => updates.push(data), () => assert.fail('erro inesperado'))
+	try {
+		await until(() => connections.has(1) && connections.has('me'))
+		send('me', 'xp', entry(2))
+		send(1, 'ranking', { data: [entry(1), entry(2), entry(3)], total_pages: 20, total_items: 200 })
+		await until(() => updates.length > 0)
+		assert.deepEqual([...connections.keys()].sort(), [1, 'me'])
+		assert.deepEqual(updates[0].participants.map((item) => item.rank), [1, 2, 3])
+		assert.equal(updates[0].participants[1].isCurrentUser, true)
+		assert.equal(updates[0].pagination.totalItems, 200)
+	} finally {
+		stop()
+	}
+})
+
+test('não omite participantes quando um registro do ranking é inválido', async () => {
+	const controller = new AbortController()
+	const errors = []
+	api.get = async () => ({ data: stream(`event: ranking\ndata: ${JSON.stringify({
+		data: [entry(1), { position: 2 }], total_pages: 1, total_items: 2,
+	})}\n\n`) })
+	await streamRankingPage(1, controller.signal, () => assert.fail('página inválida'), (error) => {
+		errors.push(error)
+		controller.abort()
+	})
+	assert.match(errors[0].message, /formato inválido/)
 })

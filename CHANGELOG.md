@@ -1,5 +1,41 @@
 # Changelog
 
+## [1.2.0](https://github.com/FR0M-ZER0/sidebrain-front/compare/v1.1.0...v1.2.0) (2026-11-24)
+
+
+### Features
+
+* **sdb-104:** adiciona cliente websocket autenticado por ticket de uso unico ([b9fd740](https://github.com/FR0M-ZER0/sidebrain-front/commit/b9fd740f98643aee90125732381693de77f1ce4d))
+* **sdb-104:** substitui polling por websocket na geracao de trilha ([f2dc579](https://github.com/FR0M-ZER0/sidebrain-front/commit/f2dc5794b5a65b3c667b678a2eb8960c4086669d))
+* **sdb-104:** substitui polling por websocket no diagnostico de nivel ([f397871](https://github.com/FR0M-ZER0/sidebrain-front/commit/f397871eaafa27b0ca5328a5e81c973bd27190a3))
+* **sdb-104:** substitui polling por websocket no preparo da proxima etapa ([0f34363](https://github.com/FR0M-ZER0/sidebrain-front/commit/0f34363787cfdbc4bba5d73bd6ce3a9141da44c1))
+* **sdb-104:** substitui polling por websocket no sumario do quiz ([bebb25a](https://github.com/FR0M-ZER0/sidebrain-front/commit/bebb25acf101ad29733c60d0022010c3837f3306))
+* **sdb-110:** adiciona chat de mentor à trilha ([13f2249](https://github.com/FR0M-ZER0/sidebrain-front/commit/13f2249bd6f091cadbfe7ffa4238c4b7ea4c3ee5))
+* **sdb-110:** adiciona rolagem automática ao chat do mentor ([9de5a73](https://github.com/FR0M-ZER0/sidebrain-front/commit/9de5a73a66c7454c4c0f33c1e66547cf5d34fd37))
+* **sdb-110:** adiciona suporte a markdown no chat do mentor ([bf41511](https://github.com/FR0M-ZER0/sidebrain-front/commit/bf41511e02c9a139763414a3b79c4f5b43a8326f))
+* **sdb-110:** disponibiliza o mentor nas lições e quizzes ([408c90a](https://github.com/FR0M-ZER0/sidebrain-front/commit/408c90ac3251a98a7c0134d47fa14092fd9d4c21))
+* **sdb-110:** permite fechar o convite do mentor ([214318e](https://github.com/FR0M-ZER0/sidebrain-front/commit/214318e91045d52eaf2b809c40bde39755adc813))
+* **sdb-110:** transforme o mentor em chat flutuante ([a37796e](https://github.com/FR0M-ZER0/sidebrain-front/commit/a37796ef9d6e7a660db78826c1ad4a0e0c0972b6))
+* **sdb-113:** adiciona atualização de ranking e xp em tempo real ([1cac974](https://github.com/FR0M-ZER0/sidebrain-front/commit/1cac974cf1bfbac5e25f1b1785be071a74efa4c9))
+* **sdb-113:** adiciona paginação ao ranking em tempo real ([faa6f58](https://github.com/FR0M-ZER0/sidebrain-front/commit/faa6f5894d183779bd0112b6e512979022538112))
+* **sdb-113:** adiciona termos de uso ao cadastro ([c7adf48](https://github.com/FR0M-ZER0/sidebrain-front/commit/c7adf48c75176d4636186ee72a9ceb3133d30617))
+* **sdb-113:** envia contexto da lição e do quiz ao mentor ([85ff44f](https://github.com/FR0M-ZER0/sidebrain-front/commit/85ff44f5bfc5bcea742771827aac27183b110bb0))
+* **sdb-113:** exibe avatares no ranking ([8c617ae](https://github.com/FR0M-ZER0/sidebrain-front/commit/8c617ae37196995937975c1d7e77be66746909dc))
+* **sdb-113:** exibe sequência de estudos do usuário ([6904323](https://github.com/FR0M-ZER0/sidebrain-front/commit/690432381500ac1db399b992d9e7c3f3e1c42b6d))
+* **sdb-113:** integra notificações ao cabeçalho ([5f2f1c7](https://github.com/FR0M-ZER0/sidebrain-front/commit/5f2f1c7d49136f087012d13cad568865637c9392))
+* **sdb-113:** integra seleção de avatar ao perfil ([d2b3a7d](https://github.com/FR0M-ZER0/sidebrain-front/commit/d2b3a7d894d5cab4862b3a1c2451a41874fbd147))
+
+
+### Bug Fixes
+
+* **sdb-103:** corrigir bug de autenticacao de token de login ([d479cbf](https://github.com/FR0M-ZER0/sidebrain-front/commit/d479cbfe9adb15f3b26507ff6eb2693f08e03c54))
+* **sdb-104:** evita cancelamento do diagnostico em StrictMode e valida payload do websocket ([257417b](https://github.com/FR0M-ZER0/sidebrain-front/commit/257417b1b5dff51b47f90ed04aea5c5c361fb22a))
+* **sdb-110:** exibe erro de envio junto à mensagem ([91e9c87](https://github.com/FR0M-ZER0/sidebrain-front/commit/91e9c878db74a137c07de9bec4b3f1f27e9ff7c4))
+* **sdb-110:** reutiliza o sumário salvo da etapa ([29becef](https://github.com/FR0M-ZER0/sidebrain-front/commit/29becefbcdf4b618720a91ffc8ec7253a283a2bb))
+* **sdb-113:** mantém conversa do mentor na mesma trilha ([ac15485](https://github.com/FR0M-ZER0/sidebrain-front/commit/ac15485c0b3d659f4c281ac41f5d3e1a0844f0b7))
+* **sdb-113:** restaura a sessão em novas abas ([71461ee](https://github.com/FR0M-ZER0/sidebrain-front/commit/71461ee9b166c58856ec092415766c87ee89bc8d))
+* **sdb-113:** trata falhas ao carregar conteúdo markdown ([074f2a7](https://github.com/FR0M-ZER0/sidebrain-front/commit/074f2a74abb062ae7b2772563e26d52cf63ce739))
+
 ## [1.1.0](https://github.com/FR0M-ZER0/sidebrain-front/compare/v1.0.0...v1.1.0) (2026-10-28)
 
 

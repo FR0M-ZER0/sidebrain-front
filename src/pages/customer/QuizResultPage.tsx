@@ -112,7 +112,7 @@ export const QuizResultPage = () => {
 					{status === 'loading' && (
 						<section className="quiz-result-state" role="status">
 							<LoaderCircle className="quiz-result-state__spinner" aria-hidden="true" size={24} />
-							<p>Carregando os quizzes e preparando o sumário da etapa...</p>
+							<p>Carregando os quizzes da etapa...</p>
 						</section>
 					)}
 
@@ -141,6 +141,12 @@ export const QuizResultPage = () => {
 								{summaryStatus === 'loading' && (
 									<div className="quiz-result-stage-summary__loading" role="status" aria-live="polite">
 										<LoaderCircle className="quiz-result-state__spinner" aria-hidden="true" size={21} />
+										<span>Estamos consultando o sumário da etapa.</span>
+									</div>
+								)}
+								{summaryStatus === 'generating' && (
+									<div className="quiz-result-stage-summary__loading" role="status" aria-live="polite">
+										<LoaderCircle className="quiz-result-state__spinner" aria-hidden="true" size={21} />
 										<span>Estamos gerando o sumário da etapa. Isso pode levar alguns instantes.</span>
 									</div>
 								)}
@@ -150,7 +156,7 @@ export const QuizResultPage = () => {
 								{summaryStatus === 'error' && (
 									<div className="quiz-result-stage-summary__error" role="alert">
 										<p>{summaryMessage}</p>
-										{canRetrySummary && <button type="button" className="quiz-result-action-bar__button is-outline" onClick={retrySummary}>Tentar gerar novamente</button>}
+										{canRetrySummary && <button type="button" className="quiz-result-action-bar__button is-outline" onClick={retrySummary}>Tentar novamente</button>}
 									</div>
 								)}
 							</section>

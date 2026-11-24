@@ -1,5 +1,6 @@
 import { CheckCircle2, Crown, Trophy } from 'lucide-react'
 import type { RankingParticipant } from '../../../types/ranking'
+import { AvatarImage } from '../../general/AvatarImage'
 
 interface RankingPodiumProps {
   participants: RankingParticipant[]
@@ -19,7 +20,7 @@ const PodiumAvatar = ({ participant }: { participant: RankingParticipant }) => (
 		aria-label={`Avatar de ${participant.name}`}
 	>
 		{participant.avatar
-			? <img src={participant.avatar} alt="" />
+			? <AvatarImage src={participant.avatar} name={participant.name} />
 			: getInitials(participant.name)}
 	</span>
 )

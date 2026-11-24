@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { lessonCompletionService } from '../api/lessonCompletionService'
 import type { LessonCompletionService } from '../api/lessonCompletionService'
@@ -59,6 +60,9 @@ export const useLessonCompletion = ({
 					})
 				} catch (error) {
 					if (!isActive) return
+					if (axios.isAxiosError(error) && error.response?.status === 401) {
+						return
+					}
 					updateViewState({
 						status: 'ready',
 						completion,
@@ -69,6 +73,9 @@ export const useLessonCompletion = ({
 			})
 			.catch((error: unknown) => {
 				if (!isActive) return
+				if (axios.isAxiosError(error) && error.response?.status === 401) {
+					return
+				}
 				updateViewState({
 					status: 'load-error',
 					message: error instanceof Error ? error.message : 'Não foi possível carregar os dados da conclusão.',

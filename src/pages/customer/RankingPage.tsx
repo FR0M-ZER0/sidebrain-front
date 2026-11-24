@@ -9,11 +9,10 @@ import { DataRequestStatus } from '../../components/general/DataRequestStatus'
 import '../../components/customer/ranking/ranking.css'
 
 export const RankingPage = () => {
-	const { data: dataset, loading, error, retry, isExpanded, toggleExpanded } = useRanking()
+	const { data: dataset, loading, error, retry, setPage } = useRanking()
 
 	return (
 		<StudentPageLayout
-			notifications={1}
 			pageClassName="ranking-page-shell"
 		>
 			<div className="ranking-page">
@@ -22,7 +21,7 @@ export const RankingPage = () => {
 					<>
 						<RankingIntro dataset={dataset} />
 						<RankingModeSwitch selectedMode={dataset.mode} />
-						{dataset.participants.length > 0 ? (
+						{dataset.podium.length > 0 ? (
 							<section className="ranking-overview" aria-label={`Visão geral do ${dataset.contextLabel}`}>
 								<h2 className="ranking-visually-hidden">Pódio do ranking</h2>
 								<RankingPodium participants={dataset.podium} scoreLabel={dataset.scoreLabel} />
@@ -37,7 +36,7 @@ export const RankingPage = () => {
 								scoreLabel={dataset.scoreLabel}
 							/>
 						)}
-						<RankingTable dataset={dataset} isExpanded={isExpanded} onToggleExpanded={toggleExpanded} />
+						<RankingTable dataset={dataset} onPageChange={setPage} />
 					</>
 				)}
 			</div>

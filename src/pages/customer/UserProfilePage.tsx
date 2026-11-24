@@ -37,8 +37,6 @@ export const UserProfilePage = () => {
 
 	return (
 		<StudentPageLayout
-			notifications={3}
-			streakCount={14}
 			pageClassName="profile-page-main"
 		>
 			<div className="w-full space-y-5 py-1">
@@ -52,7 +50,6 @@ export const UserProfilePage = () => {
 				<ProfileHeroBanner
 					user={user}
 					onEditProfile={() => setIsEditModalOpen(true)}
-					onChangePhoto={() => setIsEditModalOpen(true)}
 				/>
 
 				<div className="grid grid-cols-1 items-start gap-5 md:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">

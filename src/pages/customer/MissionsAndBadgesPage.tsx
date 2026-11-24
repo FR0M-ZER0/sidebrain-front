@@ -9,12 +9,14 @@ import { Sidebar } from '../../components/customer/Sidebar'
 import { useMissionsAndBadges } from '../../hooks/useMissionsAndBadges'
 import { useSectionAnchor } from '../../hooks/useSectionAnchor'
 import { useAuth } from '../../hooks/useAuth'
+import { useUserStreak } from '../../hooks/useUserStreak'
 
 const TRACKS_PER_PAGE = 6
 
 export const MissionsAndBadgesPage = () => {
 	const [searchParams] = useSearchParams()
 	const { user } = useAuth()
+	const streakCount = useUserStreak(user?.id)
 	const trackId = searchParams.get('track_id') || undefined
 	const {
 		missions,
@@ -39,7 +41,8 @@ export const MissionsAndBadgesPage = () => {
 			<main className="page-shell">
 				<HeaderBar
 					xp={user?.xp ?? 0}
-					notifications={12}
+					userId={user?.id}
+					streakCount={streakCount}
 				/>
 
 				<div className="flex w-full min-w-0 flex-col gap-8 pb-8">

@@ -1,16 +1,19 @@
 import axios from 'axios'
 import { useCallback } from 'react'
 import { getCurrentUser, loginUser, registerUser, updateCurrentUser } from '../api/auth'
+import type { CurrentUserUpdate } from '../api/auth'
 import { getApiErrorMessage } from '../util/apiError'
 import type { AuthUser, LoginCredentials, RegisterFormData } from '../types/auth'
 import {
 	clearCredentials,
 	clearError,
+	finishInitialization,
 	requestFailed,
 	requestStarted,
 	setCredentials,
 	setUser,
 } from '../store/slices/authSlice'
+import { restoreSharedSession, store } from '../store/store'
 import { useAppDispatch, useAppSelector } from './redux'
 
 export const useAuth = () => {
@@ -63,7 +66,15 @@ export const useAuth = () => {
 	}, [completeAuthentication, dispatch])
 
 	const restoreSession = useCallback(async () => {
-		if (!accessToken || isInitialized) return
+		if (isInitialized) return
+
+		if (!accessToken) await restoreSharedSession()
+		const auth = store.getState().auth
+		if (auth.isInitialized) return
+		if (!auth.accessToken) {
+			dispatch(finishInitialization())
+			return
+		}
 
 		dispatch(requestStarted())
 		try {
@@ -78,7 +89,7 @@ export const useAuth = () => {
 		}
 	}, [accessToken, dispatch, isInitialized])
 
-	const updateUser = useCallback(async (data: { name?: string; email?: string }) => {
+	const updateUser = useCallback(async (data: CurrentUserUpdate) => {
 		const updatedUser = await updateCurrentUser(data)
 		dispatch(setUser(updatedUser))
 		return updatedUser

@@ -8,6 +8,7 @@ import { LexicalComposer } from '@lexical/react/LexicalComposer'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary'
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin'
+import { ListPlugin } from '@lexical/react/LexicalListPlugin'
 import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin'
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin'
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
@@ -20,6 +21,10 @@ interface MarkdownAnswerEditorProps {
 	value: string
 	disabled?: boolean
 	onChange: (markdown: string) => void
+	id?: string
+	label?: string
+	placeholder?: string
+	compact?: boolean
 }
 
 const AnswerEditorToolbar = ({ disabled }: { disabled: boolean }) => {
@@ -85,7 +90,7 @@ const MarkdownChangePlugin = ({ onChange }: { onChange: (markdown: string) => vo
 	return <OnChangePlugin onChange={handleChange} ignoreSelectionChange />
 }
 
-export const MarkdownAnswerEditor = ({ value, disabled = false, onChange }: MarkdownAnswerEditorProps) => {
+export const MarkdownAnswerEditor = ({ value, disabled = false, onChange, id = 'quiz-answer', label = 'Resposta do quiz em Markdown', placeholder = 'Escreva sua resposta...', compact = false }: MarkdownAnswerEditorProps) => {
 	const [initialMarkdown] = useState(value)
 	const initialConfig = useMemo(() => ({
 		namespace: 'lesson-quiz-answer',
@@ -97,22 +102,23 @@ export const MarkdownAnswerEditor = ({ value, disabled = false, onChange }: Mark
 
 	return (
 		<LexicalComposer initialConfig={initialConfig}>
-			<div className={`quiz-answer-editor overflow-hidden rounded-xl border border-slate-200 bg-white transition focus-within:border-primary focus-within:ring-2 focus-within:ring-indigo-100 ${disabled ? 'is-disabled bg-slate-50' : ''}`}>
+			<div className={`quiz-answer-editor ${compact ? 'quiz-answer-editor--compact' : ''} overflow-hidden rounded-xl border border-slate-200 bg-white transition focus-within:border-primary focus-within:ring-2 focus-within:ring-indigo-100 ${disabled ? 'is-disabled bg-slate-50' : ''}`}>
 				<AnswerEditorToolbar disabled={disabled} />
 				<div className="relative">
 					<RichTextPlugin
 						contentEditable={(
 							<ContentEditable
-								id="quiz-answer"
-								aria-label="Resposta do quiz em Markdown"
-								aria-placeholder="Escreva sua resposta..."
-								placeholder={<div className="pointer-events-none absolute left-4 top-3 text-lg text-slate-400">Escreva sua resposta...</div>}
+								id={id}
+								aria-label={label}
+								aria-placeholder={placeholder}
+								placeholder={<div className="quiz-answer-editor__placeholder pointer-events-none absolute left-4 top-3 text-lg text-slate-400">{placeholder}</div>}
 								className="quiz-answer-editor__content min-h-40 w-full px-4 py-3 text-lg leading-relaxed text-foreground outline-none"
 							/>
 						)}
 						ErrorBoundary={LexicalErrorBoundary}
 					/>
 					<HistoryPlugin />
+					<ListPlugin />
 					<MarkdownShortcutPlugin transformers={TRANSFORMERS} />
 					<MarkdownChangePlugin onChange={onChange} />
 					<EditorReadOnlyPlugin disabled={disabled} />

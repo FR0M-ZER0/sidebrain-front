@@ -51,7 +51,7 @@ export const MyTracksPage = () => {
 	}
 
 	return (
-		<StudentPageLayout notifications={12} pageClassName="my-tracks-main">
+		<StudentPageLayout pageClassName="my-tracks-main">
 			<div className="my-tracks-page">
 				<header className="my-tracks-header">
 					<div>

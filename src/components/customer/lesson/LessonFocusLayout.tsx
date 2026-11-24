@@ -4,14 +4,19 @@ import type { ReactNode } from 'react'
 import sidebrainLogo from '../../../assets/sidebrain-logo.svg'
 import { KeyboardShortcutsHelp } from './KeyboardShortcutsHelp'
 import { useKeyboardHelp } from '../../../hooks/useKeyboardHelp'
+import { MentorSection } from '../mentor/MentorSection'
+import type { MentorPageContext } from '../../../api/mentorApi'
 
 interface LessonFocusLayoutProps {
 	children: ReactNode
 	streakCount?: number
 	onExit: () => void
+	trackId?: string
+	mentorContext?: MentorPageContext
+	mentorContextRequired?: boolean
 }
 
-export const LessonFocusLayout = ({ children, streakCount, onExit }: LessonFocusLayoutProps) => {
+export const LessonFocusLayout = ({ children, streakCount, onExit, trackId, mentorContext, mentorContextRequired }: LessonFocusLayoutProps) => {
 	const shouldReduceMotion = useReducedMotion()
 	const { isOpen, openHelp, closeHelp } = useKeyboardHelp()
 
@@ -43,9 +48,10 @@ export const LessonFocusLayout = ({ children, streakCount, onExit }: LessonFocus
 
 			{children}
 
+			{trackId && <MentorSection key={trackId} trackId={trackId} pageContext={mentorContext} contextRequired={mentorContextRequired} />}
 			<KeyboardShortcutsHelp isOpen={isOpen} onClose={closeHelp} />
 
-			<footer className="lesson-focus-footer mt-auto flex flex-col items-start justify-between gap-3 border-t border-slate-100 bg-primary-soft px-5 py-4 text-sm font-medium text-muted sm:flex-row sm:items-center sm:px-8">
+			<footer className={`lesson-focus-footer ${trackId ? 'lesson-focus-footer--with-mentor' : ''} mt-auto flex flex-col items-start justify-between gap-3 border-t border-slate-100 bg-primary-soft px-5 py-4 text-sm font-medium text-muted sm:flex-row sm:items-center sm:px-8`}>
 				<span>© {new Date().getFullYear()} Sidebrain AI. Modo de foco sem distrações.</span>
 				<div className="activity-help-bar">
 					<button type="button" onClick={(event) => openHelp(event.currentTarget)} aria-keyshortcuts="Control+K">

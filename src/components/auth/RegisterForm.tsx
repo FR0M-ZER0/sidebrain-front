@@ -48,7 +48,7 @@ export const RegisterForm = () => {
 		}
 
 		if (!formData.termsAccepted) {
-			newErrors.termsAccepted = 'É necessário concordar com os Termos e a Política de Privacidade'
+			newErrors.termsAccepted = 'É necessário concordar com os Termos de Uso'
 		}
 
 		setErrors(newErrors)
@@ -244,9 +244,14 @@ export const RegisterForm = () => {
 
 				{/* Checkbox de concordância com termos */}
 				<div className="pt-2">
-					<label className="flex items-start gap-2.5 text-xs text-slate-600 cursor-pointer select-none">
+					<div className="flex items-start gap-2.5 text-xs text-slate-600">
 						<input
+							id="register-terms"
 							type="checkbox"
+							required
+							aria-labelledby="register-terms-label"
+							aria-invalid={Boolean(errors.termsAccepted)}
+							aria-describedby={errors.termsAccepted ? 'register-terms-error' : undefined}
 							checked={formData.termsAccepted}
 							onChange={(e) => {
 								setFormData((prev) => ({ ...prev, termsAccepted: e.target.checked }))
@@ -254,27 +259,19 @@ export const RegisterForm = () => {
 							}}
 							className="mt-0.5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500 h-4 w-4 cursor-pointer"
 						/>
-						<span className="leading-relaxed">
-							Concordo com os{' '}
-							<button
-								type="button"
-								onClick={() => handleInfoLink('Termos de Serviço')}
+						<span id="register-terms-label" className="leading-relaxed">
+							<label htmlFor="register-terms" className="cursor-pointer">Concordo com os </label>
+							<Link
+								to="/termos-de-uso"
+								target="_blank"
+								rel="noopener noreferrer"
 								className="text-blue-600 hover:text-blue-700 font-semibold underline underline-offset-2"
 							>
-								Termos de Serviço
-							</button>{' '}
-							e a{' '}
-							<button
-								type="button"
-								onClick={() => handleInfoLink('Política de Privacidade')}
-								className="text-blue-600 hover:text-blue-700 font-semibold underline underline-offset-2"
-							>
-								Política de Privacidade
-							</button>
-							.
+								Termos de Uso
+							</Link> (abre em uma nova aba).
 						</span>
-					</label>
-					{errors.termsAccepted && <p className="text-xs text-rose-500 mt-1 font-medium">{errors.termsAccepted}</p>}
+					</div>
+					{errors.termsAccepted && <p id="register-terms-error" role="alert" className="text-xs text-rose-500 mt-1 font-medium">{errors.termsAccepted}</p>}
 				</div>
 
 				{/* Botão Criar Conta */}

@@ -1,7 +1,9 @@
 import './App.css'
 import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router'
 import { useEffect, useRef } from 'react'
+import { setApiRedirect } from './api/api'
 import { useAuth } from './hooks/useAuth'
+import { useLiveXp } from './hooks/useLiveXp'
 import { HomeDashboardPage } from './pages/customer/HomeDashboardPage'
 import { CreateTrackPage } from './pages/customer/CreateTrackPage'
 import { TrailLevelAssessmentPage } from './pages/customer/TrailLevelAssessmentPage'
@@ -17,6 +19,7 @@ import { MissionsAndBadgesPage } from './pages/customer/MissionsAndBadgesPage'
 
 import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
+import { TermsOfUsePage } from './pages/auth/TermsOfUsePage'
 import { PasswordRecoveryPage } from './pages/auth/PasswordRecoveryPage'
 import { UserProfilePage } from './pages/customer/UserProfilePage'
 import { RankingPage } from './pages/customer/RankingPage'
@@ -34,8 +37,24 @@ const LessonCompletionRoute = () => {
 	)
 }
 
+const AuthRedirectSync = () => {
+	const navigate = useNavigate()
+
+	useEffect(() => {
+		setApiRedirect((to) => {
+			navigate(to, { replace: true })
+		})
+		return () => {
+			setApiRedirect(null)
+		}
+	}, [navigate])
+
+	return null
+}
+
 const App = () => {
 	const { isInitialized, restoreSession } = useAuth()
+	useLiveXp()
 	const restoreStarted = useRef(false)
 
 	useEffect(() => {
@@ -47,10 +66,12 @@ const App = () => {
 
 	return (
 		<BrowserRouter>
+			<AuthRedirectSync />
 			<Routes>
 				{/* Rotas públicas de autenticação */}
 				<Route path="/login" element={<LoginPage />} />
 				<Route path="/cadastro" element={<RegisterPage />} />
+				<Route path="/termos-de-uso" element={<TermsOfUsePage />} />
 				<Route path="/recuperar-senha" element={<PasswordRecoveryPage />} />
 
 				{/* Todas as rotas do produto exigem autenticação */}

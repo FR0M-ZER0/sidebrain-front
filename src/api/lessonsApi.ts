@@ -31,6 +31,7 @@ export type LessonContentBlock = LessonImageBlock | LessonParagraphBlock
 
 export interface LessonData {
 	id: string
+	trackId?: string
 	title: string
 	text: string
 	position?: number
@@ -89,6 +90,7 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 interface ApiLessonResponse {
 	id: string
 	title: string
+	track_id?: unknown
 	text?: unknown
 	position?: unknown
 }
@@ -128,6 +130,7 @@ export const getLesson = async (
 		: [{ label: 'Trilhas', destination: '/' }, { label: title, current: true }]
 	const apiLesson: LessonData = {
 		id: lesson.id,
+		trackId: context?.trackId || (typeof lesson.track_id === 'string' && lesson.track_id.trim() ? lesson.track_id : undefined),
 		title,
 		text,
 		position,

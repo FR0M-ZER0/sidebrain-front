@@ -1,4 +1,5 @@
 import { api } from './api'
+import { subscribeToJob } from './wsClient'
 import type { TrackGenerationRequest } from '../types/trackFlow'
 
 interface GenerationAcceptedResponse {
@@ -11,6 +12,13 @@ export interface TrackGenerationProgress {
 	status: 'pending' | 'succeeded' | 'failed'
 	track_id: string | null
 	error_code: string | null
+}
+
+export interface TrackGenerationPayload {
+	request_id: string
+	status: 'pending' | 'succeeded' | 'failed'
+	track_id?: string | null
+	error_code?: string | null
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -40,6 +48,37 @@ export const getTrackGenerationStatus = async (requestId: string): Promise<Track
 	return {
 		request_id: result.request_id,
 		status: result.status as TrackGenerationProgress['status'],
+		track_id: typeof result.track_id === 'string' ? result.track_id : null,
+		error_code: typeof result.error_code === 'string' ? result.error_code : null,
+	}
+}
+
+export const waitForTrackGeneration = async (
+	requestId: string,
+	signal?: AbortSignal,
+	timeoutMs = 180_000,
+	onUpdate?: (progress: TrackGenerationProgress) => void,
+): Promise<TrackGenerationProgress> => {
+	const result = await subscribeToJob<TrackGenerationPayload>({
+		channel: 'track_generation',
+		resourceId: requestId,
+		timeoutMs,
+		signal,
+		timeoutErrorMessage: 'A geração não terminou em até 3 minutos. Tente novamente.',
+		isTerminal: (payload) => payload.status === 'succeeded' || payload.status === 'failed',
+		onUpdate: (payload) => {
+			onUpdate?.({
+				request_id: payload.request_id,
+				status: payload.status,
+				track_id: typeof payload.track_id === 'string' ? payload.track_id : null,
+				error_code: typeof payload.error_code === 'string' ? payload.error_code : null,
+			})
+		},
+	})
+
+	return {
+		request_id: result.request_id,
+		status: result.status,
 		track_id: typeof result.track_id === 'string' ? result.track_id : null,
 		error_code: typeof result.error_code === 'string' ? result.error_code : null,
 	}

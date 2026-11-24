@@ -1,4 +1,5 @@
 import { api } from './api'
+import { subscribeToJob } from './wsClient'
 import type { AssessmentQuestion } from '../types/trailOnboarding'
 
 export interface AssessmentSelection {
@@ -54,8 +55,6 @@ const getRequestErrorMessage = (error: unknown) => {
 	return error instanceof Error ? error.message : 'Não foi possível iniciar o diagnóstico.'
 }
 
-const delay = (milliseconds: number) => new Promise((resolve) => window.setTimeout(resolve, milliseconds))
-
 const toQuestions = (assessment: ApiAssessment): AssessmentQuestion[] =>
 	(assessment.questions ?? []).map((question, index) => ({
 		id: question.id,
@@ -65,7 +64,12 @@ const toQuestions = (assessment: ApiAssessment): AssessmentQuestion[] =>
 		required: true,
 	}))
 
-export const startTrackAssessment = async (subject: string) => {
+export interface CreatedTrackAssessment {
+	assessmentId: string
+	questions: AssessmentQuestion[]
+}
+
+export const createTrackAssessment = async (subject: string, signal?: AbortSignal): Promise<CreatedTrackAssessment> => {
 	let assessment: ApiAssessment
 	let assessmentId: string | null
 	try {
@@ -73,10 +77,11 @@ export const startTrackAssessment = async (subject: string) => {
 			subject,
 			objective: subject,
 			skip: false,
-		})
+		}, { signal })
 		assessment = parseAssessment(response.data)
 		assessmentId = assessment.assessment_id || getLocationId(response.headers)
 	} catch (error) {
+		if (signal?.aborted) throw error
 		const response = getRecordValue(error, 'response')
 		const responseData = getRecordValue(response, 'data')
 		assessmentId = getAssessmentId(responseData) ?? getLocationId(getRecordValue(response, 'headers'))
@@ -85,26 +90,45 @@ export const startTrackAssessment = async (subject: string) => {
 	}
 
 	if (!assessmentId) throw new Error('A API não retornou o identificador do diagnóstico.')
-	const deadline = Date.now() + 60_000
-	const isPending = (status: string) => ['pending', 'queued', 'running', 'in_progress', 'generating'].includes(status)
 
-	while (isPending(assessment.status) || (assessment.questions?.length ?? 0) === 0) {
-		if (Date.now() >= deadline) {
-			throw new Error('O diagnóstico não ficou pronto em até 1 minuto. Tente novamente.')
-		}
-		await delay(1000)
-		const { data: refreshed } = await api.get<unknown>(`/api/v1/assessments/${encodeURIComponent(assessmentId)}`)
-		assessment = parseAssessment(refreshed)
-		if (assessment.status === 'failed') {
-			throw new Error(assessment.error_code || 'Não foi possível gerar as perguntas do diagnóstico.')
-		}
+	if (assessment.status === 'failed') {
+		throw new Error(assessment.error_code || 'Não foi possível gerar as perguntas do diagnóstico.')
 	}
 
-	const questions = toQuestions(assessment)
+	const questions = assessment.status === 'completed' && (assessment.questions?.length ?? 0) > 0
+		? toQuestions(assessment)
+		: []
+
+	return { assessmentId, questions }
+}
+
+export const waitForTrackAssessment = async (assessmentId: string, signal?: AbortSignal) => {
+	const terminalPayload = await subscribeToJob<ApiAssessment>({
+		channel: 'assessment',
+		resourceId: assessmentId,
+		timeoutMs: 60_000,
+		signal,
+		timeoutErrorMessage: 'O diagnóstico não ficou pronto em até 1 minuto. Tente novamente.',
+		isTerminal: (payload) => payload.status === 'completed' || payload.status === 'failed',
+	})
+
+	if (terminalPayload.status === 'failed') {
+		throw new Error(terminalPayload.error_code || 'Não foi possível gerar as perguntas do diagnóstico.')
+	}
+
+	const questions = toQuestions(terminalPayload)
 	if (questions.length === 0) {
 		throw new Error('O diagnóstico não retornou perguntas para avaliar seu nível.')
 	}
 	return { assessmentId, questions }
+}
+
+export const startTrackAssessment = async (subject: string, signal?: AbortSignal) => {
+	const created = await createTrackAssessment(subject, signal)
+	if (created.questions.length > 0) {
+		return created
+	}
+	return waitForTrackAssessment(created.assessmentId, signal)
 }
 
 export const submitTrackAssessment = async (assessmentId: string, answers: AssessmentSelection[]) => {

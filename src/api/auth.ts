@@ -7,7 +7,9 @@ interface AuthResponse {
 	user: AuthUser
 }
 
-export type CurrentUserUpdate = Partial<Pick<AuthUser, 'name' | 'email'>>
+export type CurrentUserUpdate = Partial<Pick<AuthUser, 'name' | 'email'>> & {
+	avatar?: string | null
+}
 
 export const loginUser = async (credentials: LoginCredentials) => {
 	const { data } = await api.post<AuthResponse>('/api/v1/auth/login', {

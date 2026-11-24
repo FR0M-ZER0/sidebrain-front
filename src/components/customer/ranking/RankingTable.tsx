@@ -1,14 +1,14 @@
 import { Fragment } from 'react'
-import { ArrowDown, ArrowUp, ChevronDown, ChevronUp, Minus } from 'lucide-react'
+import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Minus } from 'lucide-react'
 import type { RankingDataset, RankingParticipant } from '../../../types/ranking'
+import { AvatarImage } from '../../general/AvatarImage'
 
 interface RankingTableProps {
   dataset: RankingDataset
-  isExpanded: boolean
-  onToggleExpanded: () => void
+  onPageChange: (page: number) => void
 }
 
-const PODIUM_CUTOFF_RANK = 5
+const PODIUM_CUTOFF_RANK = 3
 
 const getInitials = (name: string) => name
 	.split(' ')
@@ -43,7 +43,9 @@ const RankingRow = ({ participant, maxScore }: { participant: RankingParticipant
 		<td>
 			<div className="ranking-student-cell">
 				<span className="ranking-table-avatar" role="img" aria-label={`Avatar de ${participant.name}`}>
-					{getInitials(participant.name)}
+					{participant.avatar
+						? <AvatarImage src={participant.avatar} name={participant.name} className="h-full w-full rounded-full object-cover" />
+						: getInitials(participant.name)}
 				</span>
 				<span className="ranking-student-copy">
 					<strong>
@@ -65,20 +67,14 @@ const RankingRow = ({ participant, maxScore }: { participant: RankingParticipant
 	</tr>
 )
 
-export const RankingTable = ({ dataset, isExpanded, onToggleExpanded }: RankingTableProps) => {
-	const listedParticipants = dataset.participants.filter((participant) => participant.rank > 3)
-	const hasOnlyPodiumParticipants = dataset.participants.length <= 3
-	const tableParticipants = hasOnlyPodiumParticipants ? dataset.participants : listedParticipants
-	const initialTableRowCount = hasOnlyPodiumParticipants
-		? tableParticipants.length
-		: Math.max(dataset.initialVisibleCount - 3, 0)
-	const visibleParticipants = isExpanded ? tableParticipants : tableParticipants.slice(0, initialTableRowCount)
-	const maxScore = Math.max(...dataset.participants.map((participant) => participant.score), 1)
-	const totalDisplayed = isExpanded
-		? dataset.participants.length
-		: Math.min(dataset.initialVisibleCount, dataset.participants.length)
-	const hasAdditionalParticipants = dataset.participants.length > dataset.initialVisibleCount
-	const nextRank = dataset.initialVisibleCount + 1
+export const RankingTable = ({ dataset, onPageChange }: RankingTableProps) => {
+	const { participants, pagination } = dataset
+	const page = pagination?.page ?? 1
+	const totalPages = pagination?.totalPages ?? 1
+	const totalItems = pagination?.totalItems ?? participants.length
+	const maxScore = Math.max(...dataset.podium.map((participant) => participant.score), ...participants.map((participant) => participant.score), 1)
+	const firstPosition = participants[0]?.rank ?? 0
+	const lastPosition = participants.at(-1)?.rank ?? 0
 	const footerContext = dataset.division ? 'da divisão' : 'no ranking global'
 
 	return (
@@ -103,7 +99,7 @@ export const RankingTable = ({ dataset, isExpanded, onToggleExpanded }: RankingT
 						</tr>
 					</thead>
 					<tbody>
-						{visibleParticipants.map((participant) => (
+						{participants.map((participant) => (
 							<Fragment key={participant.id}>
 								<RankingRow participant={participant} maxScore={maxScore} />
 								{participant.rank === PODIUM_CUTOFF_RANK && (
@@ -121,20 +117,28 @@ export const RankingTable = ({ dataset, isExpanded, onToggleExpanded }: RankingT
 			</div>
 
 			<footer className="ranking-table-footer">
-				<span>Mostrando {totalDisplayed} de {dataset.participants.length} estudantes {footerContext}</span>
-				{hasAdditionalParticipants && (
-					<button
-						type="button"
-						className="ranking-expand-button"
-						aria-expanded={isExpanded}
-						onClick={onToggleExpanded}
-					>
-						{isExpanded
-							? <>Ver menos <ChevronUp size={15} aria-hidden="true" /></>
-							: <>Ver ranking completo ({nextRank}º ao {dataset.participants.length}º) <ChevronDown size={15} aria-hidden="true" /></>}
-					</button>
+				<span>{participants.length ? `Mostrando ${firstPosition}º ao ${lastPosition}º de ${totalItems} estudantes ${footerContext}` : `Nenhum estudante ${footerContext}`}</span>
+				{totalPages > 1 && (
+					<nav aria-label="Paginação do ranking" className="flex items-center gap-2">
+						<button
+							type="button"
+							className="ranking-expand-button"
+							disabled={page <= 1}
+							onClick={() => onPageChange(page - 1)}
+						>
+							<ChevronLeft size={15} aria-hidden="true" /> Anterior
+						</button>
+						<span aria-live="polite">Página {page} de {totalPages}</span>
+						<button
+							type="button"
+							className="ranking-expand-button"
+							disabled={page >= totalPages}
+							onClick={() => onPageChange(page + 1)}
+						>
+							Próxima <ChevronRight size={15} aria-hidden="true" />
+						</button>
+					</nav>
 				)}
-				{!hasAdditionalParticipants && <span role="status">Fim do ranking</span>}
 			</footer>
 		</section>
 	)

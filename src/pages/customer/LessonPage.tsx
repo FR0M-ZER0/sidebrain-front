@@ -80,7 +80,8 @@ export const LessonPage = () => {
 				pendingStepPreparation,
 			}
 			: location.state
-		navigate(`/lessons/${lesson?.id ?? ''}/quiz`, { state })
+		const search = lesson?.trackId ? `?${new URLSearchParams({ trackId: lesson.trackId })}` : ''
+		navigate(`/lessons/${lesson?.id ?? ''}/quiz${search}`, { state })
 	}
 
 	useEffect(() => {
@@ -90,7 +91,7 @@ export const LessonPage = () => {
 			}
 
 			const target = event.target
-			if (target instanceof HTMLElement && (target.isContentEditable || target.closest('input, textarea, select, [contenteditable="true"], [role="textbox"]'))) {
+			if (target instanceof HTMLElement && (target.isContentEditable || target.closest('input, textarea, select, [contenteditable="true"], [role="textbox"], .mentor-widget'))) {
 				return
 			}
 
@@ -105,7 +106,7 @@ export const LessonPage = () => {
 	const lesson = lessonState.status === 'success' ? lessonState.lesson : null
 
 	return (
-		<LessonFocusLayout streakCount={lesson?.streakCount} onExit={requestExit}>
+		<LessonFocusLayout streakCount={lesson?.streakCount} trackId={lesson?.trackId} onExit={requestExit} mentorContextRequired mentorContext={lesson ? { screen: { type: 'lesson', lesson_id: lesson.id }, lessonTitle: lesson.title } : undefined}>
 			{lessonState.status === 'loading' && <LessonLoading />}
 			{lessonState.status === 'error' && (
 				<LessonError message={lessonState.error?.message ?? 'Ocorreu um erro inesperado.'} onRetry={lessonState.retry} />

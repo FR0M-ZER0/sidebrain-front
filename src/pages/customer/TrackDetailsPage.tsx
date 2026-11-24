@@ -179,8 +179,6 @@ export const TrackDetailsPage = () => {
 
 	return (
 		<StudentPageLayout
-			notifications={1}
-			streakCount={12}
 			className="track-details-shell"
 			pageClassName="track-details-page"
 			breadcrumb={track && (

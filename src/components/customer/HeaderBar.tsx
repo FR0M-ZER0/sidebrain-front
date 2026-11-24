@@ -1,12 +1,13 @@
-import { Bell, Flame, Search } from 'lucide-react'
+import { Flame, Search } from 'lucide-react'
+import { NotificationBell } from './NotificationBell'
 
 interface HeaderBarProps {
   xp: number
-  notifications: number
+  userId?: string
   streakCount?: number
 }
 
-export const HeaderBar = ({ xp, notifications, streakCount }: HeaderBarProps) => {
+export const HeaderBar = ({ xp, userId, streakCount }: HeaderBarProps) => {
 	return (
 		<header className="topbar">
 			<div className="search-box" role="search">
@@ -17,10 +18,7 @@ export const HeaderBar = ({ xp, notifications, streakCount }: HeaderBarProps) =>
 			<div className="topbar-actions">
 				<div className="currency-pill">{xp.toLocaleString('pt-BR')} XP</div>
 				{typeof streakCount === 'number' && <div className="header-streak-pill" aria-label={`${streakCount} dias de sequência`}><Flame size={18} aria-hidden="true" />{streakCount}</div>}
-				<button type="button" className="notification-button" aria-label="Notificações">
-					<Bell className="notification-icon" size={18} aria-hidden="true" />
-					<span className="notification-count">{notifications}</span>
-				</button>
+				<NotificationBell key={userId} userId={userId} />
 				
 			</div>
 		</header>

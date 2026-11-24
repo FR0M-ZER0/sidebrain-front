@@ -4,11 +4,13 @@ import type { ReactNode } from 'react'
 import { Bot, Send, X } from 'lucide-react'
 import {
 	acceptMentorConsent, createMentorConversation, deleteAllMentorConversations, deleteMentorConversation,
-	getMentorConsent, listMentorConversations, listMentorMessages, retryMentorGeneration,
+	getMentorConsent, getMentorConversation, listMentorConversations, listMentorMessages, retryMentorGeneration,
 	revokeMentorConsent, sendMentorMessage, streamMentorGeneration,
 } from '../../../api/mentorApi'
-import type { MentorConsent, MentorConversation, MentorGeneration, MentorMessage } from '../../../api/mentorApi'
+import type { MentorConsent, MentorConversation, MentorGeneration, MentorMessage, MentorPageContext, MentorScreenContext } from '../../../api/mentorApi'
 import { MarkdownContent } from '../../general/MarkdownContent'
+import { useAppSelector } from '../../../hooks/redux'
+import { mentorSession } from './mentorSession'
 
 const MarkdownAnswerEditor = lazy(async () => {
 	const module = await import('../lesson/MarkdownAnswerEditor')
@@ -36,7 +38,8 @@ const errorMessage = (error: unknown) => {
 	return 'Não foi possível concluir a operação. Tente novamente.'
 }
 
-export const MentorSection = ({ trackId }: { trackId: string }) => {
+export const MentorSection = ({ trackId, pageContext, contextRequired = false }: { trackId: string; pageContext?: MentorPageContext; contextRequired?: boolean }) => {
+	const userId = useAppSelector((state) => state.auth.user?.id) ?? ''
 	const [isOpen, setIsOpen] = useState(false)
 	const [hasOpened, setHasOpened] = useState(false)
 	const [showPrompt, setShowPrompt] = useState(true)
@@ -44,6 +47,9 @@ export const MentorSection = ({ trackId }: { trackId: string }) => {
 	const [error, setError] = useState('')
 	const [busy, setBusy] = useState(false)
 	const [consentDismissed, setConsentDismissed] = useState(false)
+	useEffect(() => {
+		mentorSession.activate(userId, trackId)
+	}, [userId, trackId])
 	const refreshConsent = async () => {
 		try { setConsent(await getMentorConsent()); setError('') } catch (e) { setError(errorMessage(e)) }
 	}
@@ -75,8 +81,11 @@ export const MentorSection = ({ trackId }: { trackId: string }) => {
 				{error && <p role="alert" className="mentor-error">{error}</p>}
 				{!consent && <button type="button" className="link-button" onClick={() => void refreshConsent()}>Consultar aviso de privacidade</button>}
 				<TrackConversations
-					key={trackId}
+					key={`${userId}:${trackId}`}
 					trackId={trackId}
+					userId={userId}
+					pageContext={pageContext}
+					contextRequired={contextRequired}
 					authorized={Boolean(consent?.authorized)}
 					onConsentRequired={() => { setConsentDismissed(false); void refreshConsent() }}
 					consentMessage={consent && !consent.authorized && !consentDismissed && <div className="mentor-message mentor-message--mentor mentor-consent-message">
@@ -108,14 +117,13 @@ export const MentorSection = ({ trackId }: { trackId: string }) => {
 	</div>
 }
 
-const TrackConversations = ({ trackId, authorized, onConsentRequired, consentMessage, consentOption }: { trackId: string; authorized: boolean; onConsentRequired: () => void; consentMessage: ReactNode; consentOption: ReactNode }) => {
+const TrackConversations = ({ trackId, userId, authorized, onConsentRequired, consentMessage, consentOption, pageContext, contextRequired }: { trackId: string; userId: string; authorized: boolean; onConsentRequired: () => void; consentMessage: ReactNode; consentOption: ReactNode; pageContext?: MentorPageContext; contextRequired: boolean }) => {
 	const [items, setItems] = useState<MentorConversation[]>([])
 	const [selected, setSelected] = useState('')
 	const [page, setPage] = useState(1)
 	const [pages, setPages] = useState(1)
 	const [error, setError] = useState('')
 	const [busy, setBusy] = useState(true)
-	const initialConversation = useRef<Promise<MentorConversation> | null>(null)
 	const load = async (nextPage = 1) => {
 		const result = await listMentorConversations(trackId, nextPage)
 		setItems((old) => nextPage === 1 ? result.data : [...old, ...result.data.filter((item) => !old.some((entry) => entry.id === item.id))])
@@ -123,27 +131,32 @@ const TrackConversations = ({ trackId, authorized, onConsentRequired, consentMes
 	}
 	useEffect(() => { let active = true
 		listMentorConversations(trackId).then((result) => { if (active) { setItems((old) => [...old, ...result.data.filter((item) => !old.some((entry) => entry.id === item.id))]); setPages(result.total_pages) } }).catch((e: unknown) => { if (active) setError(errorMessage(e)) })
-		initialConversation.current ??= createMentorConversation(trackId)
-		initialConversation.current.then((created) => {
+		mentorSession.getConversation(userId, trackId).then((conversationId) => {
 			if (active) {
-				setItems((old) => [created, ...old.filter((item) => item.id !== created.id)])
-				setSelected(created.id)
+				setSelected(conversationId ?? '')
 				setBusy(false)
+				if (conversationId) void getMentorConversation(conversationId).then((conversation) => {
+					if (active) setItems((old) => [conversation, ...old.filter((item) => item.id !== conversation.id)])
+				}).catch(() => {})
 			}
 		}).catch((e: unknown) => { if (active) { setError(errorMessage(e)); setBusy(false) } })
 		return () => { active = false }
-	}, [trackId])
+	}, [trackId, userId])
+	const selectConversation = (id: string) => {
+		mentorSession.selectConversation(userId, trackId, id || null)
+		setSelected(id)
+	}
 	const action = async (run: () => Promise<void>) => { setBusy(true); setError(''); try { await run() } catch (e) { setError(errorMessage(e)) } finally { setBusy(false) } }
 	const options = <details className="mentor-options">
 		<summary>Opções</summary>
 		<div className="mentor-options-menu">
-			<button type="button" disabled={busy} onClick={() => void action(async () => { const created = await createMentorConversation(trackId); setItems((old) => [created, ...old]); setSelected(created.id) })}>Nova conversa</button>
-			<button type="button" disabled={busy || !selected} onClick={() => { if (window.confirm('Excluir esta conversa e seu conteúdo?')) void action(async () => { await deleteMentorConversation(selected); writePending(selected, {}); setSelected(''); await load() }) }}>Excluir conversa</button>
-			<button type="button" disabled={busy} onClick={() => { if (window.confirm('Excluir todas as conversas de mentoria de todas as trilhas? Esta ação não revoga a autorização.')) void action(async () => { await deleteAllMentorConversations(); clearMentorStorage(); setSelected(''); await load() }) }}>Excluir todo o histórico</button>
+			<button type="button" disabled={busy} onClick={() => void action(async () => { const created = await createMentorConversation(trackId); setItems((old) => [created, ...old]); selectConversation(created.id) })}>Nova conversa</button>
+			<button type="button" disabled={busy || !selected} onClick={() => { if (window.confirm('Excluir esta conversa e seu conteúdo?')) void action(async () => { await deleteMentorConversation(selected); writePending(selected, {}); selectConversation(''); await load() }) }}>Excluir conversa</button>
+			<button type="button" disabled={busy} onClick={() => { if (window.confirm('Excluir todas as conversas de mentoria de todas as trilhas? Esta ação não revoga a autorização.')) void action(async () => { await deleteAllMentorConversations(); clearMentorStorage(); selectConversation(''); await load() }) }}>Excluir todo o histórico</button>
 			<details className="mentor-history">
 				<summary>Ver o histórico de conversas</summary>
 				<label htmlFor="mentor-conversation">Selecione uma conversa</label>
-				<select id="mentor-conversation" value={selected} disabled={busy} onChange={(e) => setSelected(e.target.value)}>
+				<select id="mentor-conversation" value={selected} disabled={busy} onChange={(e) => selectConversation(e.target.value)}>
 					<option value="">Selecione uma conversa</option>
 					{items.map((item) => <option key={item.id} value={item.id}>Conversa de {new Date(item.created_at).toLocaleString('pt-BR')}</option>)}
 				</select>
@@ -155,11 +168,11 @@ const TrackConversations = ({ trackId, authorized, onConsentRequired, consentMes
 	return <div className="mentor-conversations">
 		{error && <p role="alert" className="mentor-error">{error}</p>}
 		{busy && !selected && <p role="status">Preparando uma nova conversa...</p>}
-		{selected ? <MentorChat key={selected} conversationId={selected} authorized={authorized} onConsentRequired={onConsentRequired} options={options} consentMessage={consentMessage} /> : <>{consentMessage}{options}</>}
+		{selected ? <MentorChat key={selected} conversationId={selected} authorized={authorized} onConsentRequired={onConsentRequired} options={options} consentMessage={consentMessage} pageContext={pageContext} contextRequired={contextRequired} /> : <>{consentMessage}{options}</>}
 	</div>
 }
 
-type PendingRequest = { kind: 'send'; content: string; key: string } | { kind: 'retry'; generationId: string; key: string }
+type PendingRequest = { kind: 'send'; content: string; key: string; context?: MentorScreenContext } | { kind: 'retry'; generationId: string; key: string }
 const storageKey = (id: string) => `sidebrain:mentor:${id}`
 const clearMentorStorage = () => {
 	try {
@@ -180,7 +193,7 @@ const writePending = (id: string, value: { pending?: PendingRequest; generationI
 		// A conversa continua utilizável quando o armazenamento da sessão está indisponível.
 	}
 }
-const MentorChat = ({ conversationId, authorized, onConsentRequired, options, consentMessage }: { conversationId: string; authorized: boolean; onConsentRequired: () => void; options: ReactNode; consentMessage: ReactNode }) => {
+const MentorChat = ({ conversationId, authorized, onConsentRequired, options, consentMessage, pageContext, contextRequired }: { conversationId: string; authorized: boolean; onConsentRequired: () => void; options: ReactNode; consentMessage: ReactNode; pageContext?: MentorPageContext; contextRequired: boolean }) => {
 	const [messages, setMessages] = useState<MentorMessage[]>([])
 	const [content, setContent] = useState('')
 	const [editorVersion, setEditorVersion] = useState(0)
@@ -235,7 +248,7 @@ const MentorChat = ({ conversationId, authorized, onConsentRequired, options, co
 		writePending(conversationId, { pending: operation })
 		try {
 			const accepted = operation.kind === 'send'
-				? await sendMentorMessage(conversationId, operation.content, operation.key)
+				? await sendMentorMessage(conversationId, operation.content, operation.key, operation.context)
 				: await retryMentorGeneration(conversationId, operation.generationId, operation.key)
 			writePending(conversationId, { generationId: accepted.generation_id })
 			setPending(null); setContent(''); setEditorVersion((version) => version + 1); setGeneration(null); setGenerationId(accepted.generation_id)
@@ -251,10 +264,11 @@ const MentorChat = ({ conversationId, authorized, onConsentRequired, options, co
 	}
 	const submit = () => {
 		const trimmed = content.trim()
-		if (!trimmed || trimmed.length > 4000 || !authorized || busy || generationId || pending) return
-		void request({ kind: 'send', content: trimmed, key: crypto.randomUUID() })
+		if (!trimmed || trimmed.length > 4000 || !authorized || busy || generationId || pending || (contextRequired && !pageContext)) return
+		void request({ kind: 'send', content: trimmed, key: crypto.randomUUID(), ...(pageContext ? { context: pageContext.screen } : {}) })
 	}
 	return <div className="mentor-chat">
+		{contextRequired && !pageContext && <p role="status">O contexto da lição ou questão ainda não está disponível.</p>}
 		{error && !pending && <div role="alert" className="mentor-error">{error} {generationId && <button type="button" className="link-button" onClick={() => setStreamAttempt((n) => n + 1)}>Reconectar</button>} <button type="button" className="link-button" onClick={() => setHistoryAttempt((n) => n + 1)}>Atualizar histórico</button></div>}
 		<div ref={messagesRef} className="mentor-messages" aria-live="polite" aria-label="Mensagens da conversa" onScroll={(event) => {
 			const container = event.currentTarget
@@ -265,8 +279,8 @@ const MentorChat = ({ conversationId, authorized, onConsentRequired, options, co
 			{pending?.kind === 'send' && <div className="mentor-message mentor-message--student"><strong>Você</strong><MarkdownContent className="mentor-markdown" content={pending.content} onRender={scrollToLatest} /></div>}
 			{consentMessage}
 			{generationId && <p>Pensando...</p>}
-			{generation?.status === 'failed' && !pending && <div><p>Não foi possível gerar a resposta. Você pode tentar novamente.</p><button type="button" className="link-button" disabled={busy || !authorized} onClick={() => void request({ kind: 'retry', generationId: generation.id, key: crypto.randomUUID() })}>Tentar novamente</button></div>}
-			{pending && !busy && <div role="alert" className="mentor-error mentor-message-error">Ocorreu um erro. <button type="button" className="link-button" disabled={!authorized} onClick={() => void request(pending)}>Tente novamente</button></div>}
+			{generation?.status === 'failed' && !pending && <div><p>Não foi possível gerar a resposta. Ao tentar novamente, será usado o contexto original da mensagem.</p><button type="button" className="link-button" disabled={busy || !authorized} onClick={() => void request({ kind: 'retry', generationId: generation.id, key: crypto.randomUUID() })}>Tentar novamente</button></div>}
+			{pending && !busy && <div role="alert" className="mentor-error mentor-message-error">Ocorreu um erro. A nova tentativa usará o contexto original da mensagem. <button type="button" className="link-button" disabled={!authorized} onClick={() => void request(pending)}>Tente novamente</button></div>}
 		</div>
 		<form className="mentor-compose" onSubmit={(e) => { e.preventDefault(); submit() }}>
 			<div className="mentor-compose-field">
@@ -276,7 +290,7 @@ const MentorChat = ({ conversationId, authorized, onConsentRequired, options, co
 				<span className={`mentor-character-count ${content.length > 4000 ? 'mentor-error' : ''}`}>{content.length}/4000</span>
 			</div>
 			{content.length > 4000 && <span className="mentor-error" role="alert">A mensagem deve ter no máximo 4000 caracteres.</span>}
-			<div className="mentor-compose-footer">{options}<button type="submit" className="primary-button" disabled={!authorized || busy || Boolean(generationId) || Boolean(pending) || !content.trim() || content.length > 4000}>Enviar <Send size={15} aria-hidden="true" /></button></div>
+			<div className="mentor-compose-footer">{options}<button type="submit" className="primary-button" disabled={!authorized || busy || Boolean(generationId) || Boolean(pending) || (contextRequired && !pageContext) || !content.trim() || content.length > 4000}>Enviar <Send size={15} aria-hidden="true" /></button></div>
 		</form>
 	</div>
 }

@@ -87,7 +87,6 @@ export const TrailLevelAssessmentPage = () => {
 
 	return (
 		<StudentPageLayout
-			notifications={1}
 			className="track-create-shell"
 			pageClassName="track-create-page track-start-page"
 			breadcrumb={(

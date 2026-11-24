@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { after, before, beforeEach, test } from 'node:test'
-import { createServer } from 'vite'
+import { createServer } from './viteTestServer.mjs'
 
 let server
 let api
@@ -35,7 +35,7 @@ beforeEach(() => {
 	respond = () => { throw new Error('Resposta de teste não configurada') }
 })
 
-const page = (data, current = 1, total = 1) => ({ data, page: current, total_pages: total })
+const page = (data, current = 1, total = 1) => ({ data, page: current, total_pages: total, total_items: data.length * total })
 const mission = (id, stepId, extra = {}) => ({
 	id, title: `Missão ${id}`, stepId, stepTitle: `Etapa ${stepId}`,
 	difficulty: 'medium', xp_reward: 150, criteria: 'number_of_lessons_completed', criteria_value: 3,

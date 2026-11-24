@@ -7,6 +7,7 @@ export interface UserProfile {
 	name: string
 	email: string
 	avatarUrl: string
+	avatarSlug: string | null
 	planTier: PlanTier
 	currentXp: number
 	memberSince?: string
@@ -53,5 +54,5 @@ export interface AuthSessionState {
 
 export interface EditProfileFormData {
 	name: string
-	avatarUrl: string
+	avatar?: string | null
 }

@@ -9,6 +9,15 @@ export interface MentorConsent {
  authorized: boolean
  granted_at: string | null
 }
+export type MentorScreenContext =
+ | { type: 'lesson'; lesson_id: string }
+ | { type: 'quiz'; lesson_id: string; quiz_id: string; answer_id?: string }
+export interface MentorPageContext {
+ screen: MentorScreenContext
+ lessonTitle: string
+ questionNumber?: number
+ questionCount?: number
+}
 export interface MentorConversation { id: string; track_id: string; created_at: string; updated_at: string }
 export interface MentorMessage { id: string; sequence: number; role: 'student' | 'mentor'; content: string; created_at: string }
 export interface MentorGeneration { id: string; message_id: string; status: 'queued' | 'processing' | 'completed' | 'failed'; response_message_id: string | null; error_code: string | null }
@@ -29,7 +38,7 @@ export const deleteMentorConversation = async (id: string) => { await api.delete
 export const deleteAllMentorConversations = async () => { await api.delete(base) }
 export const listMentorMessages = async (id: string, page = 1) => (await api.get<MentorPage<MentorMessage>>(`${conversation(id)}/messages`, { params: { page, page_size: 100 } })).data
 export const getMentorMessage = async (id: string, messageId: string) => (await api.get<MentorMessage>(`${conversation(id)}/messages/${encodeURIComponent(messageId)}`)).data
-export const sendMentorMessage = async (id: string, content: string, key: string) => (await api.post<MentorAccepted>(`${conversation(id)}/messages`, { content }, { headers: { 'Idempotency-Key': key } })).data
+export const sendMentorMessage = async (id: string, content: string, key: string, context?: MentorScreenContext) => (await api.post<MentorAccepted>(`${conversation(id)}/messages`, { content, ...(context ? { context } : {}) }, { headers: { 'Idempotency-Key': key } })).data
 export const getMentorGeneration = async (id: string, generationId: string) => (await api.get<MentorGeneration>(generation(id, generationId))).data
 export const retryMentorGeneration = async (id: string, generationId: string, key: string) => (await api.post<MentorAccepted>(`${generation(id, generationId)}/retry`, undefined, { headers: { 'Idempotency-Key': key } })).data
 

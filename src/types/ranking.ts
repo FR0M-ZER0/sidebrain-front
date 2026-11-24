@@ -48,6 +48,12 @@ export interface RankingDataset {
 	userSummary: RankingUserSummary | null
 	currentUserName?: string
   initialVisibleCount: number
+	pagination?: {
+		page: number
+		pageSize: number
+		totalItems: number
+		totalPages: number
+	}
 }
 
 export interface RankingViewState {

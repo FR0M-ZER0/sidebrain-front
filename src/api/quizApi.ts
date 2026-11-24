@@ -3,6 +3,7 @@ import { api } from './api'
 export type QuizAnswerRate = 'good' | 'perfect' | 'wrong' | 'almost_got_it'
 
 export interface QuizAnswerEvaluation {
+	id: string
 	rate: QuizAnswerRate
 	reason: string | null
 }
@@ -35,10 +36,11 @@ export const getLessonQuizzes = async (lessonId: string): Promise<LessonQuiz[]> 
 
 export const submitLessonQuizAnswer = async (quizId: string, text: string): Promise<QuizAnswerEvaluation> => {
 	const { data } = await api.post<unknown>(`/api/v1/quizzes/${encodeURIComponent(quizId)}/answers`, { text })
-	if (!isRecord(data) || !['good', 'perfect', 'wrong', 'almost_got_it'].includes(String(data.rate))) {
+	if (!isRecord(data) || typeof data.id !== 'string' || !data.id.trim() || !['good', 'perfect', 'wrong', 'almost_got_it'].includes(String(data.rate))) {
 		throw new Error('A resposta foi salva, mas a avaliação da IA veio em um formato inválido.')
 	}
 	return {
+		id: data.id,
 		rate: data.rate as QuizAnswerRate,
 		reason: typeof data.reason === 'string' ? data.reason : null,
 	}

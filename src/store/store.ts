@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { setApiAccessToken, setOnUnauthorized } from '../api/api'
-import authReducer, { AUTH_TOKEN_STORAGE_KEY, clearCredentials } from './slices/authSlice'
+import authReducer, { AUTH_TOKEN_STORAGE_KEY, clearCredentials, setRestoredToken } from './slices/authSlice'
+import { createSessionSharing } from './sessionSharing'
 
 export const store = configureStore({
 	reducer: {
@@ -32,7 +33,17 @@ const syncAuthState = () => {
 syncAuthState()
 store.subscribe(syncAuthState)
 
+const sessionSharing = createSessionSharing(() => {
+	const { accessToken, user, isInitialized, rememberMe } = store.getState().auth
+	return accessToken && user && isInitialized ? { accessToken, rememberMe } : null
+})
+
+export const restoreSharedSession = async () => {
+	if (store.getState().auth.accessToken) return
+	const session = await sessionSharing.requestSession()
+	if (session) store.dispatch(setRestoredToken(session))
+}
+
 setOnUnauthorized(() => {
 	store.dispatch(clearCredentials())
 })
-

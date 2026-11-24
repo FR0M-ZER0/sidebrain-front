@@ -4,6 +4,12 @@ export interface LoginCredentials {
 	rememberMe: boolean
 }
 
+export interface Avatar {
+	slug: string
+	name: string
+	imageUrl: string
+}
+
 export interface AuthUser {
 	id: string
 	name: string
@@ -11,6 +17,7 @@ export interface AuthUser {
 	createdAt?: string
 	xp?: number
 	missionsCompleted?: number
+	avatar?: Avatar
 }
 
 export interface LoginFormValidationErrors {
